@@ -1,0 +1,24 @@
+/*
+
+DESCRIPTION(Count the number of distinct tuples in lineitem using the primary key.)
+
+SELECT Count(*)
+FROM (
+    SELECT DISTINCT l_orderkey, l_linenumber
+    FROM lineitem) as dst;
+
+RESULT(6001215)
+RESULT_FILE(lineitem_distinct_primekey-results.csv)
+
+ */
+
+LOAD lineitem;
+
+linedist = GLA:DistinctGLA< [val1:BIGINT, val2:INT] >
+    FROM lineitem
+    USING lineitem.l_orderkey, lineitem.l_linenumber
+    AS orderkey:BIGINT, linenumber:INT; 
+
+counter = GLA:CountGLA linedist USING 0 AS count:BIGINT;
+
+PRINT counter using count AS count:BIGINT INTO "lineitem_distinct_primekey-results.csv";

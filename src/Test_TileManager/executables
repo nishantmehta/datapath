@@ -1,0 +1,19 @@
+Test_TileManager/executable/tile:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	NumaMemoryAllocator
+	Data
+	QueryManager
+	Hash
+	DiskIO
+	Column
+	ChunkNew
+	ExecutionEngineNew
+	WayPointsNew
+	CPUWorkers
+	Test_TileManager

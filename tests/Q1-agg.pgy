@@ -1,0 +1,20 @@
+/* 
+
+DESCRIPTION(Test one join and aggregate)
+
+SELECT count(*) 
+FROM lineitem l, orders o
+WHERE l.l_orderkey = o.o_orderkey 
+AND o.o_orderdate < date '07/03/1998';
+
+RESULT(5923721) 
+RESULT_FILE(Q1-agg-result.csv)
+
+*/
+
+LOAD lineitem;
+LOAD orders;
+sel = FILTER orders BY orders.o_orderdate < '1998/07/03';
+lo = JOIN lineitem BY lineitem.l_orderkey, sel BY orders.o_orderkey;
+rez = AGGREGATE Count FROM lo USING 1.0 AS count;
+PRINT rez USING count AS count:BIGINT INTO "Q1-agg-result.csv" ;

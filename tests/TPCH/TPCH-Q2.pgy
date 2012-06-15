@@ -1,0 +1,153 @@
+/*
+
+DESCRIPTION(TPC-H Query 2 version 2.14.3)
+
+select
+    s_acctbal,
+    s_name,
+    n_name,
+    p_partkey,
+    p_mfgr,
+    s_address,
+    s_phone,
+    s_comment
+from
+    part,
+    supplier,
+    partsupp,
+    nation,
+    region
+where
+    p_partkey = ps_partkey
+    and s_suppkey = ps_suppkey
+    and p_size = 15
+    and p_type like '%BRASS'
+    and s_nationkey = n_nationkey
+    and n_regionkey = r_regionkey
+    and r_name = 'EUROPE'
+    and ps_supplycost = (
+        select
+            min(ps_supplycost)
+        from
+            partsupp, supplier,
+            nation, region
+        where
+            p_partkey = ps_partkey
+            and s_suppkey = ps_suppkey
+            and s_nationkey = n_nationkey
+            and n_regionkey = r_regionkey
+            and r_name = 'EUROPE'
+        )
+order by
+    s_acctbal desc,
+    n_name,
+    s_name,
+    p_partkey
+limit
+    10;
+
+RESULT(
+</9938.53/>,</Supplier#000005359/>,</UNITED/> </KINGDOM/>,</185358/>,</Manufacturer#4/>,              </QKuHYh,vZGiwu2FWEJoLDx04/>,</33-429-790-6131/>,                                                                                                        </uriously/> </regular/> </requests/> </hag/>,
+</9937.84/>,</Supplier#000005969/>,           </ROMANIA/>,</108438/>,</Manufacturer#1/>,     </ANDENSOSmk,miq23Xfb5RWt6dvUcvt6Qa/>,</29-520-692-3537/>,                                              </efully/> </express/> </instructions./> </regular/> </requests/> </against/> </the/> </slyly/> </fin/>,
+</9936.22/>,</Supplier#000005250/>,</UNITED/> </KINGDOM/>,   </249/>,</Manufacturer#4/>,             </B3rqp0xbSEim4Mpy2RH/> </J/>,</33-320-228-2957/>,</etect/> </about/> </the/> </furiously/> </final/> </accounts./> </slyly/> </ironic/> </pinto/> </beans/> </sleep/> </inside/> </the/> </furiously/>,
+</9923.77/>,</Supplier#000002324/>,           </GERMANY/>, </29821/>,</Manufacturer#4/>,                          </y3OD9UywSTOk/>,</17-779-299-1839/>,                                                                      </ackages/> </boost/> </blithely./> </blithely/> </regular/> </deposits/> </c/>,
+</9871.22/>,</Supplier#000006373/>,           </GERMANY/>, </43868/>,</Manufacturer#5/>,                            </J8fcXWsTqM/>,</17-813-485-8637/>,                               </etect/> </blithely/> </bold/> </asymptotes./> </fluffily/> </ironic/> </platelets/> </wake/> </furiously;/> </blit/>,
+</9870.78/>,</Supplier#000001286/>,           </GERMANY/>, </81285/>,</Manufacturer#2/>, </YKA,E2fjiVd7eUrzp2Ef8j1QxGo2DFnosaTEH/>,</17-516-924-4574/>,                                                              </regular/> </accounts./> </furiously/> </unusual/> </courts/> </above/> </the/> </fi/>,
+</9870.78/>,</Supplier#000001286/>,           </GERMANY/>,</181285/>,</Manufacturer#4/>, </YKA,E2fjiVd7eUrzp2Ef8j1QxGo2DFnosaTEH/>,</17-516-924-4574/>,                                                              </regular/> </accounts./> </furiously/> </unusual/> </courts/> </above/> </the/> </fi/>,
+</9852.52/>,</Supplier#000008973/>,            </RUSSIA/>, </18972/>,</Manufacturer#2/>,              </t5L67YdBYYH6o,Vz24jpDyQ9/>,</32-188-594-7038/>,                                                                          </rns/> </wake/> </final/> </foxes./> </carefully/> </unusual/> </depende/>,
+</9847.83/>,</Supplier#000008097/>,            </RUSSIA/>,</130557/>,</Manufacturer#2/>,                     </xMe97bpE69NzdwLoX/>,</32-375-640-3593/>,                                                  </the/> </special/> </excuses./> </silent/> </sentiments/> </serve/> </carefully/> </final/> </ac/>,
+</9847.57/>,</Supplier#000006345/>,            </FRANCE/>, </86344/>,</Manufacturer#1/>,</VSt3rzk3qG698u6ld8HhOByvrTcSTSvQlDQDag/>,</16-886-766-7945/>,        </ges./> </slyly/> </regular/> </requests/> </are./> </ruthless,/> </express/> </excuses/> </cajole/> </blithely/> </across/> </the/> </unu/>)
+
+RESULT_FILE(TPCH-Q2-result.csv)
+
+*/
+
+LOAD part;
+LOAD supplier;
+LOAD partsupp;
+LOAD nation;
+LOAD region;
+
+selpart =
+FILTER
+    part
+BY
+    MATCH(part.p_type, ".*BRASS")
+    && part.p_size == 15;
+
+selregion =
+FILTER
+    region
+BY
+    region.r_name == 'EUROPE';
+
+j1 =
+JOIN
+    nation BY nation.n_regionkey,
+    selregion BY region.r_regionkey;
+
+j2 =
+JOIN
+    supplier BY supplier.s_nationkey,
+    j1 BY nation.n_nationkey;
+
+j3 =
+JOIN
+    partsupp BY partsupp.ps_partkey,
+    selpart BY part.p_partkey;
+
+j4 =
+JOIN
+    j3 BY partsupp.ps_suppkey,
+    j2 BY supplier.s_suppkey;
+
+topk =
+GLA:TopKGLA
+<
+    [
+        s_acctbal : FLOAT   : DESC ,
+        n_name    : HString : ASC  ,
+        s_name    : HString : ASC  ,
+        p_partkey : INT     : ASC
+    ],
+    [
+        p_mfgr    : HString ,
+        s_address : HString ,
+        s_phone   : HString ,
+        s_comment : HString
+    ]
+> (10)
+FROM
+    j4
+USING
+    supplier.s_acctbal ,
+    nation.n_name      ,
+    supplier.s_name    ,
+    part.p_partkey     ,
+    part.p_mfgr        ,
+    supplier.s_address ,
+    supplier.s_phone   ,
+    supplier.s_comment;
+AS
+    s_acctbal : FLOAT   ,
+    n_name    : HString ,
+    s_name    : HString ,
+    p_partkey : INT     ,
+    p_mfgr    : HString ,
+    s_address : HString ,
+    s_phone   : HString ,
+    s_comment : HString;
+
+PRINT
+    topk
+USING
+    s_acctbal,
+    n_name,
+    s_name,
+    p_partkey,
+    p_mfgr,
+    s_address,
+    s_phone,
+    s_comment
+INTO
+    "TPCH-Q2-result.csv";

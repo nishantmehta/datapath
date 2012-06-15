@@ -1,0 +1,21 @@
+Test_Hstring/executable/hstring:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Column
+	NumaMemoryAllocator
+	Hash
+	Data
+	Chunk
+	DiskIO
+	ExecutionEngine
+	WayPoints
+	CPUWorkers
+	QueryManager
+	Bitstring
+	Diagnose
+	Test_Hstring

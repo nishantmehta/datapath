@@ -1,0 +1,95 @@
+# This make variable neeeds to be set to /bin/bash otherwise dash takes over
+# and -e is not correctly interpreted
+SHELL:=/bin/bash
+
+# The makefile generator will automatically find all of the directories in the project that
+# contain .h files, and use them to build up the .h include string...
+# However, if there are some additional include directories that are outside of the project, then
+# they should be listed here.
+INCLUDE =  -I /usr/include/libxml2/
+
+# The makefile generator will automatically find all of the directories in the project that
+# contain .m4 files, and use them to build up the .m4 include string...
+# However, if there are some additional include directories that are outside of the project, then
+# they should be listed here.
+M4INCLUDE =
+
+# The makefile that is generated will support a "make clean" that kills all of the .o files,
+# all of the executables, and all of the .cc and .h files that were generated using m4.
+# If there are any other files that you want the Makefile to remove under the "make clean"
+# command, put them here
+REMOVES = Planner/source/y.tab.c Planner/source/y.tab.h Planner/source/lex.yy.c LemonTranslator/parser/DataPathLexer.c LemonTranslator/parser/DataPathParser.c LemonTranslator/parser/DPtree.c
+
+# this is the compiler to use for C++ files
+CC = g++
+
+# this is the compiler to use for .m4 files
+M4 = m4
+
+# these are the compiler flags that are used when the final linking is done
+LINKFLAGS = -lpthread -lstdc++
+
+# these are the compiler flags that are used when object files are created
+CCFLAGS = -c -w -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+
+# debug info
+CCFLAGS += -g
+# print the debug messages
+# CCFLAGS+= -DDEBUG
+# print the messages processed by EventProcessors
+#CCFLAGS+= -DDEBUG_EVPROC
+
+# run a Valgrind-like check of the mmap memory allocator
+# CCFLAGS+= -DMMAP_CHECK
+
+# switch to malloc allocation for everythign to allow Valgrind to test memory
+# WARNING: THIS DEACTIVATES DISK AND MEMORY OPTIMIZATION SO USE ONLY FOR DEBUGGING
+# CCFLAGS+=-DMMAP_IS_MALLOC
+
+# define this variable if more than 64 queries are run concurrently (less than 128)
+#CCFLAGS+= -DLONGBITSTRING
+
+# variables for string dictionary construction
+#CCFLAGS+= -DSLOW_MAP_DSTRING
+#CCFLAGS+= -DUSE_GETLINE
+
+# use NUMA memory allocation strategies
+#CCFLAGS += -DUSE_NUMA
+
+# use huge pages for memory allocation
+# CCFLAGS += -DUSE_HUGE_PAGES
+
+# use linux performance counters
+CCFLAGS += -DUSE_PERF_LINUX
+
+# warm-up the system first
+#CCFLAGS += -DWARMUP_SYSTEM
+
+# compiler code optimization
+CCFLAGS += -O3 -msse3
+
+
+# antlr3 executable
+ANTLR = java -jar /usr/local/lib/antlr-3.3-complete.jar
+
+# yacc/lex executables
+YACC = bison
+LEX = flex
+
+
+# if there are any special object files that won't be compiled using C++ or m4, then rules for making them
+# won't be automatically generated, and they should be given explicitly here
+SQLite/object/sqlite3.o: SQLite/source/sqlite3.c  SQLite/headers/sqlite3.h
+	gcc $(CCFLAGS) -o SQLite/object/sqlite3.o SQLite/source/sqlite3.c
+
+Tool_Planner/object/y.tab.o: Tool_Planner/source/Parser.y
+	$(YACC) -o Tool_Planner/source/y.tab.c -d Tool_Planner/source/Parser.y
+	sed -n -e "s/  __attribute__ ((__unused__))$$/# ifndef __cplusplus\n  __attribute__ ((__unused__));\n# endif/" Tool_Planner/source/y.tab.c 
+	$(CC) $(CCFLAGS) -o Tool_Planner/object/y.tab.o Tool_Planner/source/y.tab.c
+
+Tool_Planner/object/lex.yy.o: Tool_Planner/source/Lexer.l
+	$(LEX) -o Tool_Planner/source/lex.yy.c Tool_Planner/source/Lexer.l
+	$(CC) $(CCFLAGS) -o Tool_Planner/object/lex.yy.o Tool_Planner/source/lex.yy.c
+
+ltparser: LemonTranslator/parser/*.g 
+	parserMake.sh

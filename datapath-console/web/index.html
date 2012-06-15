@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>DataPath Console</title>
+  <link rel="shortcut icon" type="image/x-icon" href="resources/images/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="resources/css/reset.min.css" />
+  <link rel="stylesheet" type="text/css" href="resources/css/datapath_ui.css" />
+  <link rel="stylesheet" type="text/css" href="resources/css/jquery-ui-1.8.16.custom.css" />
+  <link rel="stylesheet" type="text/css" href="resources/css/codemirror.css" />
+  <link rel="apple-touch-icon" href="resources/images/datapath.png" />
+</head>
+<body ontouchmove="BlockMove(event);" >
+  <h1>DataPath Console<span id="user-info"></span><a href="#logout" id="login-info"></a></h1>
+  <div id="datapath-content">
+    <div class="loading-box" style="top: 30%; left: 35%;">Loading DataPath Configuration</div>
+  </div>
+  <div id="refresh-div"><a href="javascript:location.reload(true)"
+  id="refresh-dp">Refresh DataPath</a> </div>
+  <script type="text/javascript" src="resources/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="resources/js/jquery-ui-1.8.18.min1.js"></script>
+  <script type="text/javascript" src="resources/js/codemirror.js"></script>
+  <script type="text/javascript" src="resources/js/clike.js"></script>
+  <script type="text/javascript" src="resources/js/foldcode.js"></script>
+  <script type="text/javascript" src="resources/js/match-highlighter.js"></script>
+  <script type="text/javascript" src="resources/js/searchcursor.js"></script>
+  <script type="text/javascript" src="resources/js/formatting.js"></script>
+  <script type="text/javascript" src="resources/js/jquery.printElement.js"></script>
+  <script type="text/javascript" src="resources/js/jquery.touchSwipe-1.2.5.js"></script>
+  <script type="text/javascript" src="resources/js/datapath_ui.js"></script>
+  <script type="text/javascript" src="resources/js/jquery.flot.min.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load('visualization', '1.0', {'packages':['corechart', 'gauge', 'table']});
+      function BlockMove(event) {
+      // Tell Safari not to move the window.
+    //event.preventDefault() ;
+      }
+  </script>
+</body>
+</html>

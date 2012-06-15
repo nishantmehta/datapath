@@ -1,0 +1,6 @@
+SELECT AVG(o_totalprice) AS agg
+FROM orders, customer, nation
+WHERE
+o_custkey = c_custkey
+AND n_nationkey = c_nationkey;
+;

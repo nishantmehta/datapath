@@ -1,0 +1,99 @@
+/*
+
+DESCRIPTION(TPC-H Query 4 version 2.14.3)
+
+select
+    o_orderpriority,
+    count(*) as order_count
+from
+    orders
+where
+    o_orderdate >= date '1993-07-01'
+    and o_orderdate < date '1993-07-01' + interval '3' month
+    and exists (
+        select
+            *
+        from
+            lineitem
+        where
+            l_orderkey = o_orderkey
+            and l_commitdate < l_receiptdate
+)
+group by
+    o_orderpriority
+order by
+    o_orderpriority
+limit 10;
+
+RESULT(
+       1-URGENT,10594
+         2-HIGH,10476
+       3-MEDIUM,10410
+4-NOT SPECIFIED,10556
+          5-LOW,10487)
+
+RESULT_FILE(TPCH-Q4-result.csv)
+
+*/
+
+LOAD orders;
+LOAD lineitem;
+
+selorders =
+FILTER
+    orders
+BY
+    orders.o_orderdate >= '1993-07-01'
+    && orders.o_orderdate < '1993-10-01';
+
+sellineitem =
+FILTER
+    lineitem
+BY
+    lineitem.l_commitdate < lineitem.l_receiptdate;
+
+jol =
+JOIN
+    sellineitem BY lineitem.l_orderkey,
+    selorders BY orders.o_orderkey;
+
+gby =
+GLA:GroupByGLA
+<
+    [
+        o_orderpriority:HString
+    ],
+    GLA:CountGLA
+>
+FROM
+    jol
+USING
+    orders.o_orderpriority,
+    1.0
+AS
+    o_orderpriority:HString,
+    order_count:BIGINT;
+
+topK =
+GLA:TopKGLA
+<
+    [
+        o_orderpriority : HString : ASC
+    ],
+    [
+        order_count     : BIGINT
+    ]
+> (10)
+FROM
+    gby
+USING
+    o_orderpriority,
+    order_count;
+
+PRINT
+    topK
+USING
+    o_orderpriority,
+    order_count
+INTO
+    "TPCH-Q4-result.csv";

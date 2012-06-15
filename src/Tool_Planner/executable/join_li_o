@@ -1,0 +1,6 @@
+SELECT AVG(l_extendedprice) AS agg
+FROM lineitem, orders
+WHERE
+l_orderkey = o_orderkey
+AND o_orderdate <= '1997-01-01'
+AND l_quantity < 8 ;;

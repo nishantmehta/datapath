@@ -1,0 +1,4 @@
+SELECT COUNT(o_orderkey) AS cnt
+FROM region, orders
+WHERE
+r_regionkey = o_orderkey ;;

@@ -1,0 +1,92 @@
+This file describes general conventions used in all code generated
+templates.
+
+Each Waypoint will have a mandatory argument that is passed in
+variable M4_QueryDesc and optional argument, M4_GlobalDesc.
+
+M4_QueryDesc has the following shape:
+
+( ( Q1, desc_Q1 ),
+  ( Q2, desc_Q2) ..
+)
+
+the description is waypoint specific but has the property that all the
+attributes inside are guarded by either in_att(att_name) or
+out_att(att_name). If an attribute is guarded by in_att than it needs
+to be accessed form the input chunk. out_att guarded attributes need
+to be placed in the output chunk (if any). In this way we can detect
+what columns are used automatically, without the need to explicitly
+specify that.
+
+Example 1: Selection
+
+M4_QueryDesc :=
+						 ( (Q1, in_att(att2)>in_att(att2)),
+						   (Q2, in_att(att3)+in_att(att4)==10)
+						 )
+
+The following macros are defined by the system without generating any
+code (they build sets used by other macros)
+
+M4_EXTRACT_QUERY_IN_ATTS(M4_WPName)
+This macro will extract all the input attributes used by all the
+queries and define the set: IN_ATTS_[WPName]_[Query]
+
+M4_EXTRACT_QUERY_OUT_ATTS(M4_WPName)
+This macro will extract all the input attributes used by all the
+queries and define the set: OUT_ATTS_[WPName]_[Query]
+
+M4_EXTRACT_GLOBAL_IN_ATTS(M4_WPName)
+M4_EXTRACT_GLOBAL_OUT_ATTS(M4_WPName)
+do the same thing for global attributes and define sets
+IN_ATTS_[WPName]_Global
+OUT_ATTS_[WPName]_Global
+
+Also sets IN_ATTS_[WPName] and OUT_ATTS_[WPName] that contain all attributs used by all
+queries (or global atts) need to be defined.
+
+
+M4_DISCOVER_ATTS(M4_WPName, M4_QueryDesc, M4_GlobalDesc)
+Is a macro that calls all the macros above to find all the attributes
+
+------------
+Auxiliary macro to extract lists of attributs from arguments
+
+M4_EXTRACT_ATTS([DESC],[MARKER],[RESULT_SET]).
+e.g. M4_EXTRACT_ATTS ([M4_QueryDesc], [in_att], [input_attributes])
+extracts all the attributes guarded by in_att() from M4_QueryDesc and
+puts them into the set input_attributes
+--------
+
+M4_ACCESS_COLUMNS(input)
+This macro extracts the columns in the chunk and makes them available
+as arrays with the name attName_data so that attName_data[i] gives the
+i-th value of the attribute. The macro generates code that unpacks the
+general structure of the chunk and defines the variables:
+
+M4_ACCESS_ATTRIBUTES(qry,i) generates code to access all the
+attributes mentioned in the queries qry (C++ QueryIDSet variable)
+The result of the code is that the variable attName_val is defined for
+all the in/out variables, with the correct type. If the column is
+valid, the i-th entry in the column is loaded in the variable,
+otherwise it is undefined. For output variables the result is not
+automatically stored in a column (user has to explicitly do that) and
+the name of the variable is attName_rez. Notice that an attribute
+might be both in and out 
+
+
+M4_EVAL_EXPR([Expression])
+This macro will replace the in_att(att) with attName_val and
+out_att(att) by attName_rez. This should result in generating the C++
+code that manipulates correctly the expressions and that hopefully
+results in attName_rez containing the value of the attribute or some
+conditions being evaluated
+
+
+----------
+DEF_ARG_EXTRACTOR([macro_name], num) 
+defines (if not already defined) a macro that extracts the num-th
+element from the argument
+
+DEF_ARG_EXTRACTOR([macro_name], num1, num2) 
+extract arg num2 of the arg num1

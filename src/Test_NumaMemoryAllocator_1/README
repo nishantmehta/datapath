@@ -1,0 +1,3 @@
+Test for the NumaMemoryAllocator. Generators (processors) do some task and send time taken to finish task to Adder. Adder adds up time from all generators. This test will be used to benchmark NUMA allocator performance with and without NUMA memory allocation.
+
+

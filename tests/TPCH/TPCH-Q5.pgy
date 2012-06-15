@@ -1,0 +1,156 @@
+/*
+
+DESCRIPTION(TPC-H Query 5 version 2.14.3)
+
+select
+    n_name,
+    sum(l_extendedprice * (1 - l_discount)) as revenue
+from
+    customer,
+    orders,
+    lineitem,
+    supplier,
+    nation,
+    region
+where
+    c_custkey = o_custkey
+    and l_orderkey = o_orderkey
+    and l_suppkey = s_suppkey
+    and c_nationkey = s_nationkey
+    and s_nationkey = n_nationkey
+    and n_regionkey = r_regionkey
+    and r_name = 'ASIA'
+    and o_orderdate >= date '1994-01-01'
+    and o_orderdate < date '1994-01-01' + interval '1' year
+group by
+    n_name
+order by
+    revenue desc
+limit 10;
+
+RESULT(
+INDONESIA,55502041.1697,
+  VIETNAM,55295086.9967,
+    CHINA,53724494.2566,
+    INDIA,52035512.0002,
+    JAPAN,45410175.6954)
+
+RESULT_FILE(TPCH-Q5-result.csv)
+
+*/
+
+LOAD customer;
+LOAD orders;
+LOAD lineitem;
+LOAD supplier;
+LOAD nation AS nation1;
+LOAD nation AS nation2;
+LOAD region AS region1;
+LOAD region AS region2;
+
+// Right hand side of master join
+
+sel_region_r =
+FILTER
+    region1
+BY
+    region.r_name == 'ASIA';
+
+join_nation_region_r =
+JOIN
+    nation1 BY nation,n_regionkey,
+    sel_region_r BY region.r_regionkey;
+
+sel_orders =
+FILTER
+    orders
+BY
+    orders.o_orderdate >= '1994/01/01'
+    && orders.o_orderdate < '1995/01/01';
+
+join_customer_nation =
+JOIN
+    customer BY customer.c_nationkey,
+    join_nation_region_r BY nation.r_nationkey;
+
+join_rhs =
+JOIN
+    sel_orders BY orders.o_custkey,
+    join_customer_nation BY customer.c_custkey;
+
+// Left hand side of master join
+
+sel_region_l =
+FILTER
+    region2
+BY
+    region.r_name == 'ASIA';
+
+join_nation_region_l =
+JOIN
+    nation2 BY nation.n_regionkey,
+    sel_region_l BY region.r_regionkey;
+
+join_supplier_nation =
+JOIN
+    supplier BY supplier.s_nationkey,
+    join_nation_region_l BY nation.n_nationkey;
+
+join_lhs =
+JOIN
+    lineitem BY lineitem.l_suppkey,
+    join_supplier_nation BY supplier.s_suppkey;
+
+// Master join
+
+join_master =
+JOIN
+    join_lhs BY (lineitem.l_orderkey, supplier.s_nationkey),
+    join_rhs BY (orders.o_orderkey, customer.c_nationkey);
+
+// Group by
+
+gby =
+GLA:GroupByGLA
+<
+    [
+        n_name:HString
+    ],
+    GLA:SumGLA
+>
+FROM
+    join_master
+USING
+    nation.n_name,
+    lineitem.l_extendedprice * (1 - lineitem.l_discount)
+AS
+    n_name:HString,
+    revenue:DOUBLE;
+
+// Order by
+
+orderby =
+GLA:TopKGLA
+<
+    [
+        revenue : DOUBLE : DESC
+    ],
+    [
+        n_name  : HString
+    ]
+> (10)
+FROM
+    gby
+USING
+    revenue,
+    n_name;
+
+// Print
+
+PRINT
+    orderby
+USING
+    n_name,
+    revenue
+INTO
+    "TPCH-Q5-result.csv";

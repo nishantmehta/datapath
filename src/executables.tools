@@ -1,0 +1,76 @@
+Test_Loader/executable/loader:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Column
+	NumaMemoryAllocator
+	Hash
+	Test_Loader
+
+Test_CompressedColumn/executable/compr:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Column
+	NumaMemoryAllocator
+	Hash
+	Test_CompressedColumn
+
+
+Tool_BulkLoader/executable/BulkLoader.out:
+	-ldl
+	-lsqlite3
+	-lboost_serialization
+	SQLite
+	M4
+	Messaging
+	DiskIO
+	Column
+	Global
+	DataStructures
+	DataTypes
+ 	Data
+  IDs
+	Chunk
+	NumaMemoryAllocator
+	Hash
+	QueryManager
+	Tool_BulkLoader
+
+Tool_DataPathLemon/executable/dpLemon:
+	-rdynamic
+	-fPIC
+	-ldl
+	-lsqlite3
+	-lboost_serialization
+	WPFunctionModules
+	SQLite
+	M4
+	Messaging
+	DiskIO
+	Column
+	Global
+	DataStructures
+	DataTypes
+ 	Data
+  IDs
+	Chunk
+	NumaMemoryAllocator
+	Hash
+	QueryManager
+  CodeLoader
+	ExecutionEngine
+	LemonTranslator
+	WayPoints
+	WorkUnits
+	Catalog
+	AttributeManager
+	Tool_DataPathLemon

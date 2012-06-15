@@ -1,0 +1,76 @@
+1. Automate the extraction of information from DataPath
+
+a. What are the datatypes. Run SQLite query on metadata
+b. 
+
+
+
+2. GLA Type vs properties
+
+Type refers to the type of ouput: state, single, multi, fragment
+The type influences the OUTPUT API
+
+a. state --> nothing
+b. single
+
+void GetResult(Type1& v1, Type2& val, ...){ ... }
+
+c. multi
+
+void Finalize(){ .. }
+bool GetNextResult(Type1& v1, Type2& val, ...){
+...
+}
+
+d. fragment
+
+  struct GLA_NAME_Iterator {
+  
+   /** fill in with iterator code */         
+   
+   bool isDone(){ return true; }
+  };
+
+ int GetNumFragments(void){ 
+     int numFrags=1;
+     /* determine how many fragments to split the output into */
+     return numFrags;
+ }
+
+GLA_NAME_Iterator* Finalize(int _fragment){
+	/* create iterator for fragment _fragment */
+	GLA_NAME_Iterator* it = new GLA_NAME_Iterator( ...);
+	
+	return it;
+}
+
+bool GetNextResult(GLA_NAME_Iterator* it, Type1& v1, Type2& val, ...){
+  /* check if we are done. Use different code if detection performed differently*/
+  if (it->isDone())
+     return false;
+
+  /* produce 1 tuple.*/
+ 
+  /* advance iterator */ 
+}
+
+
+
+
+
+Properties: chunk boundary, iteratable, ...
+
+
+
+C. Info to put in a comment at start of file
+
+/** GLA description. Please keep in sync with rest of implementation 
+
+   m4_define(GLA_NAME_INPUTS,</(name, type), ...  />)
+   m4_define(GLA_NAME_OUTPUTS, </(name, type), ...  />)
+
+   m4_define(GLA_NAME_NameOfProperty)
+
+   m4_define(GLA_NAME_TYPE, single|multi|...)
+
+*/

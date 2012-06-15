@@ -1,0 +1,161 @@
+
+#include "WorkDescription.h"
+#include "ExecEngineData.h"
+#include "Column.h"
+#include "ColumnIterator.cc"
+#include "MMappedStorage.h"
+#include "BString.h"
+#include "BStringIterator.h"
+
+// Note: in this test, there are seven columns in each chunk.  The first
+// four have the values that are going to be aggregated (the first is agged
+// by query 0, the second by query 1, and so on).  The next (fifth) is hashed by
+// query 0 and query 1.  The sixth is hashed (RHS) by query 2 and query 3; it is
+// also used by query 1.  The seventh is hashed (LHS) by all queries.
+
+
+int TableScanFunc (WorkDescription &workDescription, ExecEngineData &result) {
+
+	// extact the work description
+	TableScanWorkDescription myWork;
+	myWork.swap (workDescription);
+
+	// this is the result chunk
+	Chunk output;
+
+	// this tells us which chunk we are building
+	int whichChunk = myWork.get_whichChunk ();
+
+	// get all of the queries that are active here
+	QueryExitContainer &whichExits = myWork.get_whichQueryExits ();
+	Bitstring whichQueries;
+	whichQueries.Empty ();
+	for (whichExits.MoveToStart (); whichExits.RightLength (); whichExits.Advance ()) {
+		whichQueries.Union (whichExits.Current ().query); 
+	}
+
+	// this tells us if we are going to the RHS of the join
+	int isLHS = myWork.get_isLHS ();
+
+	if (isLHS) {
+
+		// get all of the output columns and their iterators
+		MMappedStorage myStore0, myStore1, myStore2, myStore3, myStore6;
+		Column col0 (myStore0), col1 (myStore1), col2 (myStore2), col3 (myStore3), col6 (myStore6);
+		ColumnIterator <int> col0Iter (col0);
+		ColumnIterator <int> col1Iter (col1);
+		ColumnIterator <int> col2Iter (col2);
+		ColumnIterator <int> col3Iter (col3);
+		ColumnIterator <int> col6Iter (col6);
+
+		// get the output bitmap and its iterator
+		MMappedStorage myStore;
+		Column bitmapOut (myStore);
+		BStringIterator myOutBStringIter (bitmapOut, whichQueries);
+
+		// now actually set up the data
+		for (int i = 0; i < 5000; i++) {
+
+			// load up the data
+			if (whichQueries.IsMember (0)) {
+				col0Iter.Insert (whichChunk);
+				col0Iter.Advance ();
+			}
+			if (whichQueries.IsMember (1)) { 
+				col1Iter.Insert (whichChunk);
+				col1Iter.Advance ();
+			}
+			if (whichQueries.IsMember (2)) {
+				col2Iter.Insert (whichChunk);
+				col2Iter.Advance ();
+			}
+			if (whichQueries.IsMember (3)) {
+				col3Iter.Insert (whichChunk);
+				col3Iter.Advance ();
+			}
+		
+			// everyone has column 6, which is the hash attribute
+			int val = whichChunk * 5000 + i;
+			col6Iter.Insert (val);
+			col6Iter.Advance ();
+	
+			// add the new bitstring in
+			myOutBStringIter.Insert (whichQueries);
+			myOutBStringIter.Advance ();
+		}
+
+		// load all of the columns into the chunk
+		col0Iter.Done (col0);
+		output.SwapColumn (col0, 0);
+		col1Iter.Done (col1);
+		output.SwapColumn (col1, 1);
+		col2Iter.Done (col2);
+		output.SwapColumn (col2, 2);
+		col3Iter.Done (col3);
+		output.SwapColumn (col3, 3);
+		col6Iter.Done (col6);
+		output.SwapColumn (col6, 6);
+
+		// and put the bitmap in the output
+		myOutBStringIter.Done ();
+		output.SwapBitmap (myOutBStringIter);	
+
+		// and give back the result
+		ChunkContainer tempResult (output);
+		tempResult.swap (result);
+
+		return 1;
+
+	// in this case we are supplying the RHS of the join
+	} else {
+
+		// get all of the output columns and their iterators
+		MMappedStorage myStore4, myStore5;
+		Column col4 (myStore4), col5 (myStore5);
+		ColumnIterator <int> col4Iter (col4);
+		ColumnIterator <int> col5Iter (col5);
+
+		// get the output bitmap and its iterator
+		MMappedStorage myStore;
+		Column bitmapOut (myStore);
+		BStringIterator myOutBStringIter (bitmapOut, whichQueries);
+
+		// now actually set up the data
+		for (int i = 0; i < 5000; i++) {
+
+			// load up the data
+			if (whichQueries.IsMember (0) || whichQueries.IsMember (1)) {
+				int val = whichChunk * 5000 + i;
+				col4Iter.Insert (val);
+				col4Iter.Advance ();
+			}
+			if (whichQueries.IsMember (1) || whichQueries.IsMember (2) || whichQueries.IsMember (3)) { 
+				int val = whichChunk * 5000 + i;
+				col5Iter.Insert (val);
+				col5Iter.Advance ();
+			}
+	
+			// add the new bitstring in
+			myOutBStringIter.Insert (whichQueries);
+			myOutBStringIter.Advance ();
+		}
+
+		// load all of the columns into the chunk
+		col4Iter.Done (col4);
+		output.SwapColumn (col4, 4);
+		col5Iter.Done (col5);
+		output.SwapColumn (col5, 5);
+
+		// and put the bitmap in the output
+		myOutBStringIter.Done ();
+		output.SwapBitmap (myOutBStringIter);	
+
+		// and give back the result
+		ChunkContainer tempResult (output);
+		tempResult.swap (result);
+
+		return 1;
+	}	
+}
+
+

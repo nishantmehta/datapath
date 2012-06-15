@@ -1,0 +1,8 @@
+This directory contains all the source files that are a mix of SQL and
+C++. These files are translated first into C++ then compiled. By
+isolating the files here, the use of SQL in the system is confined and
+kept under control.
+
+The files in this directory have -SQL attached to the name and the
+extra extension m4. To ensure they are compiled into the project, the
+object *-SQL.o must be specified in the Makefiles.

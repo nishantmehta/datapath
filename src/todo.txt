@@ -1,0 +1,20 @@
+All iterators need to remember start positions (curPosInCOlumn) so that
+storage can directly jump to that point.
+
+BitStringIterator need to remember end counter as well, so that we can end
+safely.
+
+We need to make shallow copies of all iterators and then pass this jumping
+information. We can not just pass everything in constructors, because once
+column is swapped with one of them, we cannt create others ! So support good
+shallow copy of all iterators.
+
+All metadata will be in memory, but now need to store information about slices
+as well.
+
+We need to process one slice at once, we dont need to subpartition within
+slices.
+
+In writer, once we get all LHS or RHS chunks, then start launching slices of
+them.
+

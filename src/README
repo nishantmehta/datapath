@@ -1,0 +1,48 @@
+
+To compile/run DataPath and the planner:
+
+1) First compile maker.cc, which builds the makefile maker:
+
+prompt% g++ -o maker maker.cc
+
+2) Then build the makefile:
+
+prompt% ./maker executables Makefile_prelude
+
+3) At this point the makefile should exist.  To compile DataPath, just type:
+
+prompt% make DataPath
+
+4) Next, compile the planner:
+
+prompt% make Planner
+
+5) Next, go into the DataPath/executable directory.  Create the pipe EXECUTE 
+used by the planner to communicate with the database:
+
+prompt% mkfifo EXECUTE
+
+6) In the same directory, create the symbolic link from /MDisks/datapath.sqlite;
+this gives you access to the catalog:
+
+prompt% ln -s /MDisks/datapath.sqlite .
+
+7) Make yourself root and then fire up datapath
+
+prompt% sudo bash
+prompt% ./DataPath
+
+8) In another shell, go to the Planner/executable directory.  Create a link to the
+catalog:
+
+prompt% ln -s /MDisks/datapath.sqlite .
+
+9) Then run the planner:
+
+prompt% ./Planner
+
+10) Finally you can enter in the name of a file that contains onr or more SQL queries,
+and the system will run them!
+
+
+

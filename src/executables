@@ -1,0 +1,100 @@
+Test_Data/executable/Test_Data:
+  M4
+  Global
+  IDs
+  Messaging
+  Data
+  Test_Data
+
+Tool_DataPath/executable/DataPath:
+	-rdynamic
+	-fPIC
+	-ldl
+	-lxml2
+	SQLite/object/sqlite3.o
+	AttributeManager
+	Catalog
+	Chunk
+	CodeGenerator
+	Tool_DataPath
+	DataTypes
+	DataStructures
+	DiskIO
+	ExecutionEngine
+	Global
+	Hash
+	IDs
+	M4
+	SimpleMemoryAllocator
+	QueryManager
+	WPFunctionModules
+	SQLite
+	Messaging
+	WayPoints
+	WorkUnits
+	Translator
+
+Tool_Planner/executable/Planner:
+	-lxml2
+	Tool_Planner/object/y.tab.o
+	Tool_Planner/object/lex.yy.o
+	SQLite/object/sqlite3.o
+	AttributeManager
+	Catalog
+	Global
+	IDs
+	QueryManager
+	SQLite
+	Messaging
+	DataTypes
+	Tool_Planner
+
+Tool_BulkLoader/executable/BulkLoader:
+	-ldl
+	SQLite/object/sqlite3.o
+	SQLite
+	M4
+	Messaging
+	DiskIO
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Chunk
+	SimpleMemoryAllocator
+	QueryManager
+	Tool_BulkLoader
+
+Tool_SimpleDataPath/executable/SimpleDataPath:
+	-rdynamic
+	-fPIC
+	-ldl
+	-lxml2
+	SQLite/object/sqlite3.o
+	SQLite
+	M4
+	Messaging
+	DiskIO
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Chunk
+	SimpleMemoryAllocator
+	QueryManager
+	AttributeManager
+	Catalog
+	CodeGenerator
+	ExecutionEngine
+	Hash
+	WayPoints
+	WorkUnits
+	Tool_SimpleDataPath
+
+
+Test_Data/executable/Test_Data:
+  IDs
+  Data
+  Test_Data
+  Global
+  M4

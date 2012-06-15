@@ -1,0 +1,22 @@
+Test_JoinLHSRHS/executable/JoinLHSRHS:
+ -lsqlite3
+	-rdynamic
+  M4
+  Global
+  IDs
+  Column
+  Hash
+  Messaging
+  Data
+  NumaMemoryAllocator
+  Test_JoinLHSRHS
+  DataPathGraph
+  WayPointsNew
+  ExecutionEngineNew
+  CPUWorkers
+  DataStructures
+  DataTypes
+  ChunkNew
+  DiskIO
+  QueryManager
+  Test_JoinLHSRHS

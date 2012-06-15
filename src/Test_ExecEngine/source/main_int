@@ -1,0 +1,77 @@
+
+#define SIZE 10000000
+
+void simple_sanity_check_using_insert() {
+
+	// insert the data
+	MMappedStorage myStore;
+	Column myCol (myStore);
+	ColumnIterator <int> myIter (myCol);
+	for (int i = 0; i < SIZE; i++) {
+		myIter.Insert (i);
+		myIter.Advance ();
+	}
+	myIter.Done (myCol);
+
+	//Now check sanity
+
+	// build an iterator for the column
+	ColumnIterator <int> myIter_o (myCol);
+
+	// and iterate!
+	for (int i = 0; i < SIZE; i++) {
+		assert (myIter_o.GetCurrent () == i);
+		myIter_o.Advance ();
+	}
+}
+
+void simple_sanity_check_using_partinsert() {
+
+	// insert the data
+	MMappedStorage myStore;
+	Column myCol (myStore);
+	ColumnIterator <int> myIter (myCol);
+	for (int i = 0; i < SIZE; i++) {
+		myIter.Insert (i);
+		myIter.Advance ();
+	}
+	myIter.Done (myCol);
+
+	//Now check sanity
+
+	// build an iterator for the column
+	ColumnIterator <int> myIter_o (myCol);
+
+	// and iterate!
+	for (int i = 0; i < SIZE/2; i++) {
+		assert (myIter_o.GetCurrent () == i);
+		myIter_o.Advance ();
+	}
+
+	// Now we want to insert while read above
+	ColumnIterator <int> myIter_p; // write only
+	// new create deep copy of the column
+	myIter_p.CreateDeepCopy(myIter_o);
+	// now add more data to new column using new iterator
+	for (int i = SIZE/2; i < SIZE; i++) {
+		int val = myIter_o.GetCurrent ();
+		assert (val == i);
+		myIter_p.Insert(val);
+		myIter_o.Advance ();
+		myIter_p.Advance ();
+	}
+	myIter_p.Done(myCol);
+
+	// Create empty column
+	Column newCol;
+	// swap out internal column in this column
+	myIter_o.Done(newCol);
+
+	ColumnIterator <int> myIter_r (newCol);
+	for (int i = 0; i < SIZE; i++) {
+		assert (myIter_r.GetCurrent () == i);
+		myIter_r.Advance ();
+	}
+	myIter_r.Done (newCol);
+}
+

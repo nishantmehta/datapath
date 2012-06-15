@@ -1,0 +1,6 @@
+Tool_DiskDeleteRelation/executable/delrel:
+	-lsqlite3
+	M4
+	Global
+	DataStructures
+	Tool_DiskDeleteRelation

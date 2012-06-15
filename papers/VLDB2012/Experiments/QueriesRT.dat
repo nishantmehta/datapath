@@ -1,0 +1,4 @@
+Query		RunTime	MaxLook	MaxHash MaxCPU	CMiss		BMiss
+Q1			54.9		157			5.7			23.2		9.6			64.2
+Q2			13.7		96.3		63.5		14.1		10.4		63.1
+Q3			

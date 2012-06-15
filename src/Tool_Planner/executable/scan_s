@@ -1,0 +1,4 @@
+SELECT COUNT(s_suppkey) AS agg
+FROM supplier
+WHERE
+s_suppkey > 1024 ;;

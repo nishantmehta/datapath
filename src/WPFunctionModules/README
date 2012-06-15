@@ -1,0 +1,32 @@
+This directory contains the M4 modules used to generate the functions
+needed by each waypoint. For each waypoint there is a file called:
+Waypoint.cc.m4 that contains the main module definition of that waypoint. 
+
+Normally, the code generator would load all the definitions of modules
+and then call the module initialization macros to define functions for
+each waypoint. The file AllDefs.m4 should include all the parts needed
+in order to compile any code. This file should be kept up to date when
+more waypoints are added.
+
+This directory shuld contain mostly cc-like code. All the tedious M4
+macros should be provided in the M4/ directory.
+
+To get things compiled:
+1. The Attribute manager has to produce "Attributes.m4"
+2. The Query manager has to produce "Queries.m4"
+3. The Code generator has to produce "Main.m4"
+
+make then will produce a library called: "GenCode.so" that can be
+loaded dynamically.
+
+
+The file "Main.m4" has to look like this:
+--------------------
+include(Modules.m4)
+
+M4_CODE_GENERATION_PREAMBLE
+
+M4_SELECTION_MODULE(Wp1, ...)
+
+M4_JOIN_MODULE(Wp5, ...)
+...

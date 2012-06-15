@@ -1,0 +1,6 @@
+SELECT SUM(l_linenumber)
+FROM customer, lineitem 
+WHERE
+c_custkey = l_partkey;
+;
+

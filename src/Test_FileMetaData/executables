@@ -1,0 +1,19 @@
+Test_FileMetaData/executable/meta:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Column
+	NumaMemoryAllocator
+	Hash
+	Data
+	ChunkNew
+	DiskIO
+	ExecutionEngineNew
+	WayPointsNew
+	CPUWorkers
+	QueryManager
+	Test_FileMetaData

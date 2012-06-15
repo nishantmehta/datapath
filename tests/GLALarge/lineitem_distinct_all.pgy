@@ -1,0 +1,34 @@
+/*
+
+DESCRIPTION(Count the number of distinct tuples in lineitem using all columns.)
+
+SELECT Count(*)
+FROM (
+    SELECT DISTINCT *
+    FROM lineitem) as dst;
+
+RESULT(6001215)
+RESULT_FILE(lineitem_distinct_all-results.csv)
+
+ */
+
+LOAD lineitem;
+
+linedist = GLA:DistinctGLA< [val1:BIGINT, val2:INT, val3:INT, val4:INT,
+            val5:FLOAT, val6:FLOAT, val7:FLOAT, val8:FLOAT, val9:HString,
+            val10:HString, val11:DATE, val12:DATE, val13:DATE, val14:HString,
+            val15:HString, val16:HString] >
+    FROM lineitem
+    USING lineitem.l_orderkey, lineitem.l_partkey, lineitem.l_suppkey, lineitem.l_linenumber,
+        lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax,
+        lineitem.l_returnflag, lineitem.l_linestatus, lineitem.l_shipdate, lineitem.l_commitdate,
+        lineitem.l_receiptdate, lineitem.l_shipinstruct, lineitem.l_shipmode,
+        lineitem.l_comment
+    AS orderkey:BIGINT, partkey:INT, suppkey:INT, linenumber:INT, quantity:FLOAT,
+        extendedprice:FLOAT, discount:FLOAT, tax:FLOAT, returnflag:HString,
+        linestatus:HString, shipdate:DATE, commitdate:DATE, receiptdate:DATE,
+        shipinstruct:HString, shipmode:HString, comment:HString;
+
+counter = GLA:CountGLA linedist USING 0 AS count:BIGINT;
+
+PRINT counter using count AS count:BIGINT INTO "lineitem_distinct_all-results.csv";

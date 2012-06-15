@@ -1,0 +1,40 @@
+LOAD lineitem;
+
+PRINT
+    lineitem
+USING
+    lineitem.l_orderkey,
+    lineitem.l_partkey,
+    lineitem.l_suppkey,
+    lineitem.l_linenumber,
+    lineitem.l_quantity,
+    lineitem.l_extendedprice,
+    lineitem.l_discount,
+    lineitem.l_tax,
+    lineitem.l_returnflag,
+    lineitem.l_linestatus,
+    lineitem.l_shipdate,
+    lineitem.l_commitdate,
+    lineitem.l_receiptdate,
+    lineitem.l_shipinstruct,
+    lineitem.l_shipmode,
+    lineitem.l_comment
+AS
+    l_orderkey : BIGINT,
+    l_partkey : INT,
+    l_suppkey : INT,
+    l_linenumber : INT,
+    l_quantity : FLOAT,
+    l_extendedprice : FLOAT,
+    l_discount : FLOAT,
+    l_tax : FLOAT,
+    l_returnflag : HString,
+    l_linestatus : HString,
+    l_shipdate : DATE,
+    l_commitdate : DATE,
+    l_receiptdate : DATE,
+    l_shipinstruct : HString,
+    l_shipmode : HString,
+    l_comment : HString
+INTO
+    "linetest.csv";

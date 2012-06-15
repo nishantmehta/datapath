@@ -1,0 +1,10 @@
+double lk_gamma (double x, void *params);
+double lk_gamma_deriv (double x, void *params);
+void lk_gamma_fdf (double x, void *params, double *y, double *dy);
+double gamma_solver(double c);
+double nlk_power_law(double x, void * params);
+double nlk_stretched_exponential(double x, void * params);
+double zeta_solver(void * p);
+double stretched_exponential_solver(void * p);
+double nlk_lognormal3(double x, void * params);
+double lognormal3_solver(void * p);

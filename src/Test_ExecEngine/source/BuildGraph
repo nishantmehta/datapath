@@ -1,0 +1,391 @@
+
+	// first thing we do is to build a graph... get the various waypoints
+	WayPointID tableScanLHSID ("TableScanLHS");
+	WayPointID tableScanRHSID ("TableScanRHS");
+	WayPointID joinID ("Join");
+	WayPointID selectionID ("Selection");
+	WayPointID printIDOne ("PrintOne");
+	WayPointID printIDTwo ("PrintTwo");
+	WayPointID printIDThree ("PrintThree");
+	WayPointID aggIDOne ("AggregateOne");
+	WayPointID aggIDTwo ("AggregateTwo");
+	WayPointID cleaner ("Cleaner");
+	WayPointID writer ("Writer");
+
+	// Get the various queries
+	QueryID nullOne;
+	QueryID queryOne (0);
+	QueryID queryTwo (1);
+	QueryID queryThree (2);
+	QueryID queryFour (3);
+	
+	// create the nine query exits
+	QueryExit writerExit (nullOne, writer);	
+	QueryExit queryExitOne (queryOne, printIDOne);
+	QueryExit queryExitOneCopy (queryExitOne);
+	QueryExit queryExitTwo (queryTwo, printIDTwo);
+	QueryExit queryExitTwoCopy (queryExitTwo);
+	QueryExit queryExitThree (queryThree, printIDThree);
+	QueryExit queryExitThreeCopy (queryExitThree);
+	QueryExit queryExitFour (queryFour, printIDThree);
+	QueryExit queryExitFourCopy (queryExitFour);
+	QueryExit queryExitFive (queryOne, joinID);
+	QueryExit queryExitFiveCopy (queryExitFive);
+	QueryExit queryExitSix (queryTwo, joinID);
+	QueryExit queryExitSixCopy (queryExitSix);
+	QueryExit queryExitSeven (queryThree, joinID);
+	QueryExit queryExitSevenCopy (queryExitSeven);
+	QueryExit queryExitEight (queryFour, joinID);
+	QueryExit queryExitEightCopy (queryExitEight);
+
+	// now create the nodes
+	myGraph.AddNode (tableScanLHSID);
+	myGraph.AddNode (tableScanRHSID);
+	myGraph.AddNode (selectionID);
+	myGraph.AddNode (printIDOne);
+	myGraph.AddNode (printIDTwo);
+	myGraph.AddNode (printIDThree);
+	myGraph.AddNode (aggIDOne);
+	myGraph.AddNode (aggIDTwo);
+	myGraph.AddNode (joinID);
+	myGraph.AddNode (cleaner);
+	myGraph.AddNode (writer);	
+
+	// and create the links
+	myGraph.AddLink (tableScanLHSID, selectionID, queryExitOne);	
+	myGraph.AddLink (tableScanLHSID, selectionID, queryExitTwo);	
+	myGraph.AddLink (tableScanLHSID, selectionID, queryExitThree);	
+	myGraph.AddLink (tableScanLHSID, selectionID, queryExitFour);	
+	myGraph.AddLink (tableScanRHSID, joinID, queryExitFive);	
+	myGraph.AddLink (tableScanRHSID, joinID, queryExitSix);	
+	myGraph.AddLink (tableScanRHSID, joinID, queryExitSeven);	
+	myGraph.AddLink (tableScanRHSID, joinID, queryExitEight);	
+	myGraph.AddLink (selectionID, joinID, queryExitOne);
+	myGraph.AddLink (selectionID, joinID, queryExitTwo);
+	myGraph.AddLink (selectionID, joinID, queryExitThree);
+	myGraph.AddLink (selectionID, joinID, queryExitFour);
+	myGraph.AddLink (joinID, aggIDOne, queryExitOne);
+	myGraph.AddLink (joinID, aggIDOne, queryExitTwo);
+	myGraph.AddLink (joinID, aggIDTwo, queryExitThree);
+	myGraph.AddLink (joinID, aggIDTwo, queryExitFour);
+	myGraph.AddLink (aggIDOne, printIDOne, queryExitOne);
+	myGraph.AddLink (aggIDOne, printIDTwo, queryExitTwo);
+	myGraph.AddLink (aggIDTwo, printIDThree, queryExitThree);
+	myGraph.AddLink (aggIDTwo, printIDThree, queryExitFour);
+	myGraph.AddLink (cleaner, writer, writerExit);
+
+	/**********************************/
+	/**** DO THE WRITER */
+	/**********************************/
+
+	// first, get the function we will send to it
+	WorkFunc tempFunc = WriterFunc;
+	WriterWorkFunc myWriterWorkFunc (tempFunc);
+	WorkFuncContainer myWriterWorkFuncs;
+	myWriterWorkFuncs.Insert (myWriterWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it (none!)
+	// note that by definition, the writer has a single query exit that flows
+	// into it... the exit is the writer itelf (since chunks sent along that path
+	// get written by the writer), and the query is a null, since there is not an
+	// actual query associated with data sent along that path
+	QueryExitContainer myWriterEndingQueryExits;
+	QueryExitContainer myWriterFlowThroughQueryExits;
+	myWriterEndingQueryExits.Insert (writerExit);
+
+	// here is the waypoint configuration data
+	WriterConfigureData writerConfigure (writer, myWriterWorkFuncs, 
+		myWriterEndingQueryExits, myWriterFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (writerConfigure);
+
+	/**********************************/
+	/**** DO THE CLEANER */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = EmptyHashTableWorkFunc;
+	CleanerWorkFunc myCleanerWorkFunc (tempFunc);
+	WorkFuncContainer myCleanerWorkFuncs;
+	myCleanerWorkFuncs.Insert (myCleanerWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it (none!)
+	QueryExitContainer myCleanerEndingQueryExits;
+	QueryExitContainer myCleanerFlowThroughQueryExits;
+
+	// here is the waypoint configuration data
+	HashTable tempTable;
+	tempTable.Clone (centralHashTable);
+	HashTableCleanerConfigureData cleanerConfigure (cleaner, myCleanerWorkFuncs, 
+		myCleanerEndingQueryExits, myCleanerFlowThroughQueryExits, tempTable);
+
+	// and add it
+	myConfigs.Insert (cleanerConfigure);
+
+	/**********************************/
+	/**** DO THE LHS TABLE SCAN */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = TableScanFunc;
+	TableScanWorkFunc myTableScanWorkFunc (tempFunc);
+	WorkFuncContainer myTableScanWorkFuncs;
+	myTableScanWorkFuncs.Insert (myTableScanWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it (none!)
+	QueryExitContainer myTableScanEndingQueryExits;
+	QueryExitContainer myTableScanFlowThroughQueryExits;
+
+	// this is the set of query exits that come from it
+	QueryExitContainer fromMe;
+	fromMe.Insert (queryExitFourCopy);
+	fromMe.Insert (queryExitThreeCopy);
+	fromMe.Insert (queryExitTwoCopy);
+	fromMe.Insert (queryExitOneCopy);
+	
+	// here is the waypoint configuration data
+	int LHS = 1;
+	TableScanConfigureData tableScanConfigure (tableScanLHSID, myTableScanWorkFuncs, 
+		myTableScanEndingQueryExits, myTableScanFlowThroughQueryExits, LHS, fromMe);
+
+	// and add it
+	myConfigs.Insert (tableScanConfigure);
+
+	/**********************************/
+	/**** DO THE RHS TABLE SCAN */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = TableScanFunc;
+	TableScanWorkFunc myRHSTableScanWorkFunc (tempFunc);
+	WorkFuncContainer myRHSTableScanWorkFuncs;
+	myRHSTableScanWorkFuncs.Insert (myRHSTableScanWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it (none!)
+	QueryExitContainer myRHSTableScanEndingQueryExits;
+	QueryExitContainer myRHSTableScanFlowThroughQueryExits;
+
+	// this is the set of query exits that come from it
+	QueryExitContainer fromMeRHS;
+	fromMeRHS.Insert (queryExitFiveCopy);
+	fromMeRHS.Insert (queryExitSixCopy);
+	fromMeRHS.Insert (queryExitSevenCopy);
+	fromMeRHS.Insert (queryExitEightCopy);
+	
+	// here is the waypoint configuration data
+	LHS = 0;
+	TableScanConfigureData tableScanRHSConfigure (tableScanRHSID, myRHSTableScanWorkFuncs, 
+		myRHSTableScanEndingQueryExits, myRHSTableScanFlowThroughQueryExits, LHS, fromMeRHS);
+
+	// and add it
+	myConfigs.Insert (tableScanRHSConfigure);
+	
+	/**********************************/
+	/**** DO THE SELECTION */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = SelectionFunc;
+	SelectionWorkFunc mySelectionWorkFunc (tempFunc);
+	WorkFuncContainer mySelectionWorkFuncs;
+	mySelectionWorkFuncs.Insert (mySelectionWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer mySelectionEndingQueryExits;
+	QueryExitContainer mySelectionFlowThroughQueryExits;
+	queryExitOneCopy.copy (queryExitOne);
+	queryExitTwoCopy.copy (queryExitTwo);
+	queryExitThreeCopy.copy (queryExitThree);
+	queryExitFourCopy.copy (queryExitFour);
+	mySelectionFlowThroughQueryExits.Insert (queryExitOneCopy);
+	mySelectionFlowThroughQueryExits.Insert (queryExitTwoCopy);
+	mySelectionFlowThroughQueryExits.Insert (queryExitThreeCopy);
+	mySelectionFlowThroughQueryExits.Insert (queryExitFourCopy);
+
+	// here is the waypoint configuration data
+	SelectionConfigureData selectionConfigure (selectionID, mySelectionWorkFuncs, 
+		mySelectionEndingQueryExits, mySelectionFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (selectionConfigure);
+
+	/**********************************/
+	/**** DO THE JOIN */
+	/**********************************/
+
+	// first, get the three functions to send 
+	tempFunc = JoinRHSFunc;
+	JoinRHSWorkFunc myJoinRHSFunc (tempFunc);
+	tempFunc = JoinLHSFunc;
+	JoinLHSWorkFunc myJoinLHSFunc (tempFunc);
+	tempFunc = JoinLHSHashFunc;
+	JoinLHSHashWorkFunc myJoinLHSHashFunc (tempFunc);
+	WorkFuncContainer myJoinWorkFuncs;
+	myJoinWorkFuncs.Insert (myJoinRHSFunc);
+	myJoinWorkFuncs.Insert (myJoinLHSFunc);
+	myJoinWorkFuncs.Insert (myJoinLHSHashFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myJoinEndingQueryExits;
+	QueryExitContainer myJoinFlowThroughQueryExits;
+	queryExitOneCopy.copy (queryExitOne);
+	queryExitTwoCopy.copy (queryExitTwo);
+	queryExitThreeCopy.copy (queryExitThree);
+	queryExitFourCopy.copy (queryExitFour);
+	myJoinFlowThroughQueryExits.Insert (queryExitOneCopy);
+	myJoinFlowThroughQueryExits.Insert (queryExitTwoCopy);
+	myJoinFlowThroughQueryExits.Insert (queryExitThreeCopy);
+	myJoinFlowThroughQueryExits.Insert (queryExitFourCopy);
+	myJoinEndingQueryExits.Insert (queryExitFive);
+	myJoinEndingQueryExits.Insert (queryExitSix);
+	myJoinEndingQueryExits.Insert (queryExitSeven);
+	myJoinEndingQueryExits.Insert (queryExitEight);
+	
+	// now copy the hash table
+	tempTable.Clone (centralHashTable);
+
+	// now copy the ending and flow through query exits
+	QueryExitContainer myJoinEndingQueryExitsCopy;
+	myJoinEndingQueryExitsCopy.copy (myJoinEndingQueryExits);
+        QueryExitContainer myJoinFlowThroughQueryExitsCopy;
+	myJoinFlowThroughQueryExitsCopy.copy (myJoinFlowThroughQueryExits);
+
+	// create the configuration object
+	JoinConfigureData joinConfigure (joinID, myJoinWorkFuncs, 
+		myJoinEndingQueryExits, myJoinFlowThroughQueryExits, writer,
+		cleaner, myJoinEndingQueryExitsCopy, myJoinFlowThroughQueryExitsCopy,
+		tempTable);
+
+	// and add it
+	myConfigs.Insert (joinConfigure);
+
+	/**********************************/
+	/**** DO THE FIRST AGGREGATE */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = AggWorkFunc;
+	AggOneChunkWorkFunc myAggOneWorkFunc (tempFunc);
+	tempFunc = FinishUpAggWorkFunc;
+	AggFinishUpWorkFunc myAggOneFinishUpWorkFunc (tempFunc);
+	WorkFuncContainer myAggOneWorkFuncs;
+	myAggOneWorkFuncs.Insert (myAggOneWorkFunc);
+	myAggOneWorkFuncs.Insert (myAggOneFinishUpWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myAggOneEndingQueryExits;
+	QueryExitContainer myAggOneFlowThroughQueryExits;
+	queryExitOneCopy.copy (queryExitOne);
+	queryExitTwoCopy.copy (queryExitTwo);
+	myAggOneFlowThroughQueryExits.Insert (queryExitOneCopy);
+	myAggOneFlowThroughQueryExits.Insert (queryExitTwoCopy);
+
+	// here is the waypoint configuration data
+	AggregateConfigureData aggOneConfigure (aggIDOne, myAggOneWorkFuncs, 
+		myAggOneEndingQueryExits, myAggOneFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (aggOneConfigure);
+	
+	/**********************************/
+	/**** DO THE SECOND AGGREGATE */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = AggWorkFunc;
+	AggOneChunkWorkFunc myAggTwoWorkFunc (tempFunc);
+	tempFunc = FinishUpAggWorkFunc;
+	AggFinishUpWorkFunc myAggTwoFinishUpWorkFunc (tempFunc);
+	WorkFuncContainer myAggTwoWorkFuncs;
+	myAggTwoWorkFuncs.Insert (myAggTwoWorkFunc);
+	myAggTwoWorkFuncs.Insert (myAggTwoFinishUpWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myAggTwoEndingQueryExits;
+	QueryExitContainer myAggTwoFlowThroughQueryExits;
+	queryExitThreeCopy.copy (queryExitThree);
+	queryExitFourCopy.copy (queryExitFour);
+	myAggTwoFlowThroughQueryExits.Insert (queryExitThreeCopy);
+	myAggTwoFlowThroughQueryExits.Insert (queryExitFourCopy);
+
+	// here is the waypoint configuration data
+	AggregateConfigureData aggTwoConfigure (aggIDTwo, myAggTwoWorkFuncs, 
+		myAggTwoEndingQueryExits, myAggTwoFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (aggTwoConfigure);
+
+	/**********************************/
+	/**** DO THE FIRST PRINT */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = PrintChunk;
+	PrintWorkFunc myPrintOneWorkFunc (tempFunc);
+	WorkFuncContainer myPrintOneWorkFuncs;
+	myPrintOneWorkFuncs.Insert (myPrintOneWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myPrintOneEndingQueryExits;
+	QueryExitContainer myPrintOneFlowThroughQueryExits;
+	queryExitOneCopy.copy (queryExitOne);
+	myPrintOneEndingQueryExits.Insert (queryExitOneCopy);
+
+	// here is the waypoint configuration data
+	PrintConfigureData printOneConfigure (printIDOne, myPrintOneWorkFuncs, 
+		myPrintOneEndingQueryExits, myPrintOneFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (printOneConfigure);
+
+	/**********************************/
+	/**** DO THE SECOND PRINT */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = PrintChunk;
+	PrintWorkFunc myPrintTwoWorkFunc (tempFunc);
+	WorkFuncContainer myPrintTwoWorkFuncs;
+	myPrintTwoWorkFuncs.Insert (myPrintTwoWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myPrintTwoEndingQueryExits;
+	QueryExitContainer myPrintTwoFlowThroughQueryExits;
+	queryExitTwoCopy.copy (queryExitTwo);
+	myPrintTwoEndingQueryExits.Insert (queryExitTwoCopy);
+
+  // here is the waypoint configuration data
+	PrintConfigureData printTwoConfigure (printIDTwo, myPrintTwoWorkFuncs, 
+		myPrintTwoEndingQueryExits, myPrintTwoFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (printTwoConfigure);
+
+	/**********************************/
+	/**** DO THE THIRD PRINT */
+	/**********************************/
+
+	// first, get the function we will send to it
+	tempFunc = PrintChunk;
+	PrintWorkFunc myPrintThreeWorkFunc (tempFunc);
+	WorkFuncContainer myPrintThreeWorkFuncs;
+	myPrintThreeWorkFuncs.Insert (myPrintThreeWorkFunc);
+
+	// this is the set of query exits that end at it, and flow through it
+	QueryExitContainer myPrintThreeEndingQueryExits;
+	QueryExitContainer myPrintThreeFlowThroughQueryExits;
+	queryExitThreeCopy.copy (queryExitThree);
+	queryExitFourCopy.copy (queryExitFour);
+	myPrintThreeEndingQueryExits.Insert (queryExitThreeCopy);
+	myPrintThreeEndingQueryExits.Insert (queryExitFourCopy);
+
+	// here is the waypoint configuration data
+	PrintConfigureData printThreeConfigure (printIDThree, myPrintThreeWorkFuncs, 
+		myPrintThreeEndingQueryExits, myPrintThreeFlowThroughQueryExits);
+
+	// and add it
+	myConfigs.Insert (printThreeConfigure);
+
+	cout << "Done creating the graph and the configuration objects.\n";
+

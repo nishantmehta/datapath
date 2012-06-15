@@ -1,0 +1,4 @@
+SELECT COUNT(r_regionkey) AS agg
+FROM region
+WHERE
+r_regionkey > 0 ;;

@@ -1,0 +1,26 @@
+
+	/* Graph */
+digraph G {
+	compound=true;
+	rankstep=1.25;
+	label="LEMON Data Path Network";
+	node[shape=ellipse,fontsize=12,fontcolor=black,color=grey];
+	bgcolor=white;
+	edge [arrowsize=1,fontsize=10];
+
+	/* Nodes */
+	subgraph cluster_print {label="print"; labelloc="b";};
+	subgraph cluster_rez {label="rez"; labelloc="b";};
+	subgraph cluster_lo {label="lo"; labelloc="b";};
+	subgraph cluster_sel {label="sel"; labelloc="b";};
+	subgraph cluster_orders {label="orders"; labelloc="b";};
+	subgraph cluster_lineitem {label="lineitem"; labelloc="b";};
+
+	/* Relationships */
+	edge [arrowsize=1,color=red,label="{0} print"]	 rez->print
+	edge [arrowsize=1,color=blue,label="{0} print"]	 lo->rez
+	edge [arrowsize=1,color=red,label="{0} lo"]	 sel->lo
+	edge [arrowsize=1,color=blue,label="{0} lo"]	 orders->sel
+	edge [arrowsize=1,color=blue,label="{0} print"]	 lineitem->lo
+
+}

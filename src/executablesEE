@@ -1,0 +1,22 @@
+Test_ExecEngine/executable/Test_EE:
+ -lsqlite3
+  M4
+  Global
+  IDs
+  Column
+  Hash
+  Messaging
+  Data
+  NumaMemoryAllocator
+  Test_ExecEngine
+  DataPathGraph
+  WayPoints
+  ExecutionEngine
+  CPUWorkers
+  DataStructures
+  DataTypes
+  Chunk
+  DiskIO
+  QueryManager
+  Bitstring
+  HashCleanerMetaData

@@ -1,0 +1,14 @@
+Test_Serialize/executable/test:
+	-lsqlite3
+	M4
+ 	Messaging
+	Global
+	DataStructures
+	DataTypes
+	IDs
+	Column
+	NumaMemoryAllocator
+	Hash
+	Data
+	ChunkNew
+	Test_Serialize

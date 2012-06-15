@@ -1,0 +1,37 @@
+SELECT SUM(l_extendedprice * (1 - l_discount)) AS revenue
+FROM lineitem, orders
+WHERE
+l_orderkey = o_orderkey;
+
+
+
+SELECT SUM(l_extendedprice * (1 - l_discount)) AS revenue
+FROM lineitem, orders
+WHERE
+l_orderkey = o_orderkey;
+
+
+SELECT SUM(l_extendedprice * (1 - l_discount)) AS revenue
+FROM lineitem, orders
+WHERE
+l_orderkey = o_orderkey;
+
+SELECT AVG(o_totalprice) AS agg
+FROM orders, customer, nation
+WHERE
+o_custkey = c_custkey
+AND n_nationkey = c_nationkey;
+
+
+SELECT AVG(o_totalprice) AS agg
+FROM orders, customer, nation
+WHERE
+o_custkey = c_custkey
+AND n_nationkey = c_nationkey;
+
+SELECT AVG(o_totalprice) AS agg
+FROM orders, customer, nation
+WHERE
+o_custkey = c_custkey
+AND n_nationkey = c_nationkey;
+;

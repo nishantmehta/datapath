@@ -1,0 +1,4 @@
+SELECT COUNT(n_nationkey) AS agg
+FROM nation, orders
+WHERE
+n_nationkey = o_orderkey ;;
