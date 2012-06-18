@@ -588,6 +588,7 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
       // for a pattern matcher, we have to build an expression
       // of the form: PatternMather ctObj(pattern)
       // then on use do ctObj.IsMatch(expr)
+      $type = "bool";
 
       $isCT = lInfo.IsListConstant();
 

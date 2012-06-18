@@ -101,8 +101,55 @@ JOIN
     j3 BY partsupp.ps_suppkey,
     j2 BY supplier.s_suppkey;
 
-topk =
-GLA:TopKGLA
+gby =
+GLA:GroupByGLA
+<
+    [
+        p_partkey : INT
+    ],
+    [
+        GLA:MinimumGLA
+        <
+            [
+                ps_supplycost : FLOAT,
+            ],
+            [
+                s_acctbal : FLOAT   ,
+                n_name    : HString ,
+                s_name    : HString ,
+                p_mfgr    : HString ,
+                s_address : HString ,
+                s_phone   : HString ,
+                s_comment : HString
+            ]
+        >
+    ]
+>
+FROM
+    j4
+USING
+    part.p_partkey,
+    partsupp.ps_supplycost,
+    supplier.s_acctbal,
+    nation.n_name,
+    supplier.s_name,
+    part.p_mfgr,
+    supplier.s_address,
+    supplier.s_phone,
+    supplier.s_comment
+AS
+    gby_p_partkey     : INT      ,
+    gby_ps_supplycost : FLOAT    ,
+    gby_s_acctbal     : FLOAT    ,
+    gby_n_name        : HString  ,
+    gby_s_name        : HString  ,
+    gby_p_mfgr        : HString  ,
+    gby_s_address     : HString  ,
+    gby_s_phone       : HString  ,
+    gby_s_comment     : HString;
+
+orderby =
+GLA:OrderByGLA
 <
     [
         s_acctbal : FLOAT   : DESC ,
@@ -118,16 +165,37 @@ GLA:TopKGLA
     ]
 > (10)
 FROM
-    j4
+    gby
 USING
-    supplier.s_acctbal ,
-    nation.n_name      ,
-    supplier.s_name    ,
-    part.p_partkey     ,
-    part.p_mfgr        ,
-    supplier.s_address ,
-    supplier.s_phone   ,
-    supplier.s_comment;
+    gby_s_acctbal ,
+    gby_n_name    ,
+    gby_s_name    ,
+    gby_p_partkey ,
+    gby_p_mfgr    ,
+    gby_s_address ,
+    gby_s_phone   ,
+    gby_s_comment
+AS
+    ord_s_acctbal : FLOAT    ,
+    ord_n_name    : HString  ,
+    ord_s_name    : HString  ,
+    ord_p_partkey : INT      ,
+    ord_p_mfgr    : HString  ,
+    ord_s_address : HString  ,
+    ord_s_phone   : HString  ,
+    ord_s_comment : HString;
+
+PRINT
+    orderby
+USING
+    ord_s_acctbal ,
+    ord_n_name    ,
+    ord_s_name    ,
+    ord_p_partkey ,
+    ord_p_mfgr    ,
+    ord_s_address ,
+    ord_s_phone   ,
+    ord_s_comment
 AS
     s_acctbal : FLOAT   ,
     n_name    : HString ,
@@ -136,18 +204,6 @@ AS
     p_mfgr    : HString ,
     s_address : HString ,
     s_phone   : HString ,
-    s_comment : HString;
-
-PRINT
-    topk
-USING
-    s_acctbal,
-    n_name,
-    s_name,
-    p_partkey,
-    p_mfgr,
-    s_address,
-    s_phone,
-    s_comment
+    s_comment : HString
 INTO
     "TPCH-Q2-result.csv";

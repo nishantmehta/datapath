@@ -230,13 +230,27 @@ m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
 m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
             VAR(_A_) = theIterator->first.VAR(_A_);
 />)dnl
+            FATALIF(theIterator == groupByMap.end(), "WHY??");
+
+m4_case(reval(<GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
             INNER_GLA& gla = theIterator->second;
             gla.GetResult(ARGS(INNER_GLA</_OUTPUT/>));
-
-            FATALIF(theIterator == groupByMap.end(), "WHY??");
             ++theIterator;
 
             return true;
+/>, </multi/>, </dnl
+            bool gotResult = false;
+            while( theIterator != groupByMap.end() !gotResult ) {
+                INNER_GLA& gla = theIterator->second;
+                gotResult = gla.GetNextResult(ARGS(INNER_GLA</_OUTPUT/>));
+                if( !gotResult )
+                    ++theIterator;
+            }
+
+            return gotResult;
+/>, </dnl
+</#/>error Unsupported inner GLA result type.
+/>)dnl
         }
     }
 };
