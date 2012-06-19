@@ -55,7 +55,7 @@ string ResultChecker :: getFileName( string path ) {
 vector<string> ResultChecker :: tokenize( istream& str ) {
     vector<string> result;
 
-    stringstream cur();
+    stringstream cur;
 
     char c;
     bool inQuote = false;
@@ -76,7 +76,8 @@ vector<string> ResultChecker :: tokenize( istream& str ) {
             case DELIMITER:
                 if( !inQuote ) {
                     result.push_back( cur.str() );
-                    cur = stringstream();
+                    cur.str("");
+                    cur.clear();
                 }
                 else {
                     cur.put( DELIMITER );
