@@ -38,6 +38,8 @@ dnl
 extern "C"
 int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
 
+    const char DELIM = '|';
+
     // get the work description
     PrintWorkDescription myWork;
     myWork.swap (workDescription);
@@ -74,7 +76,7 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
 
 <//><//>m4_foreach(</_A_/>, M4_PRINT_LIST(_Q_),</dnl
             curr+=ToString(M4_VAL_SUBST(_A_),buffer+curr);
-            buffer[curr-1]=','; dnl // ALIN CHANGE TO CONSTANT DEFINING OUTPUT SEPARATOR
+            buffer[curr-1]=DELIM; dnl // ALIN CHANGE TO CONSTANT DEFINING OUTPUT SEPARATOR
 <//><//>/>)dnl
 
             // now we print the buffer

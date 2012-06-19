@@ -99,6 +99,16 @@ m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
 />)dnl
     }
 
+m4_if(MY_REZTYPE, </multi/>, </dnl
+    void Finalize() {
+        // Call Finalize on each GLA individually
+
+m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+        m4_first(__GLA__).Finalize();
+/>)dnl
+    }
+/>)dnl
+
     void GetResult(TYPED_REF_ARGS(MY_OUTPUTS)) {
         // Call GetResult on each GLA individually.
 

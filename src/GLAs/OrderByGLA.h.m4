@@ -98,7 +98,7 @@ dnl # checked every time.
 dnl # This would be faster for simple types, but could be bad if a rank is a
 dnl # complex type that requires a lot of time to compare (like strings)
 // Auxiliary function to compare tuples
-inline bool GreaterThanTopK(TOPK_NAME<//>_Tuple& t1, TOPK_NAME<//>_Tuple& t2) {
+inline bool GreaterThanTopK( const TOPK_NAME<//>_Tuple& t1, const TOPK_NAME<//>_Tuple& t2) {
 m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
     if( (TYPE(_A_)) t1.VAR(_A_) m4_if(ORDER(_A_), </ASC/>, <, >) (TYPE(_A_)) t2.VAR(_A_) )
         return true;
@@ -153,9 +153,9 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
         // Actually, gcc freaks out if you try to do that, so make it a
         // heap.
         if( __builtin_expect(tuples.size() < K, 0 ) )
-            make_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
-
-        sort_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
+            sort(tuples.begin(), tuples.end(), GreaterThanTopK);
+        else
+            sort_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
     }
 
     // internal function
@@ -194,14 +194,11 @@ m4_foreach(</_A_/>,</MY_OUTPUT/>,</dnl
 };
 
 void TOPK_NAME::AddItem(TYPED_ARGS(MY_INPUT)) {
-    if (tuples.size() == K<//>dnl
-m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
- && (TYPE(_A_)) VAR(_A_) m4_if(ORDER(_A_), </ASC/>, >=, <=) (TYPE(_A_)) this->VAR(_A_)<//>dnl
-/>)dnl
-) // fast path
-                 return;
 
     TOPK_NAME<//>_Tuple tuple(ARGS(MY_INPUT));
+
+    if( tuples.size() == K && !GreaterThanTopK( tuple, tuples.front() ) )
+                 return;
 
     AddTupleInternal(tuple);
 }
@@ -222,6 +219,7 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
     }
     else {
         pop_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
+
         tuples.pop_back();
         tuples.push_back(tuple) ;
         push_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
@@ -234,11 +232,8 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
 void TOPK_NAME::AddState(TOPK_NAME& other) {
     // go over all the contents of other and insert it into ourselves
     for(int i = 0; i < other.tuples.size(); i++) {
-        if (tuples.size() < K || (true <//>dnl
-m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
- && (TYPE(_A_)) other.tuples[i].VAR(_A_) m4_if(ORDER(_A_), </ASC/>, <, >) (TYPE(_A_)) this->VAR(_A_)<//>dnl
-/>)dnl
- ))
+
+        if( tuples.size() < K || GreaterThanTopK( other.tuples[i], tuples.front() ) )
             AddTupleInternal(other.tuples[i]);
     }
 }

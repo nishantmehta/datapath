@@ -29,8 +29,8 @@ public:
   void AddState(CountGLA& o){ count+=o.count; }
 
   // we only support one tuple as output
-  void GetResult(BIGINT& _count){ 
-	  _count=count; 
+  void GetResult(BIGINT& _count){
+	  _count=count;
   }
 };
 

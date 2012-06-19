@@ -68,8 +68,8 @@ class ResultChecker {
     string getFileName( string path );
 
     // Turns a list of items separated by newlines or commas into a vector
-    vector<string> tokenize( istream& str );
-    vector<string> tokenize( string str );
+    vector<string> tokenize( istream& str, const char DELIM );
+    vector<string> tokenize( string str, const char DELIM );
 
     // Used to parse the result files and expected data files.
     void parseResultFile( string fileName, vector<string>& types, vector<string>& values );

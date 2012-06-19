@@ -44,8 +44,10 @@ bool compareDouble( double d1, double d2, const double MAX_ABS_ERROR, const doub
 }
 
 bool compareDouble( string expected, string actual ) {
-    const double MAX_REL_ERROR = 0.00001;
-    const double MAX_ABS_ERROR = 100 * DBL_EPSILON;
+    // TODO: Change the relative and absolute errors when we are able to
+    // control the output a bit more
+    const double MAX_REL_ERROR = 0.001;
+    const double MAX_ABS_ERROR = 0.001;
 
     errno = 0;
 
@@ -65,8 +67,8 @@ bool compareDouble( string expected, string actual ) {
 }
 
 bool compareFloat( string expected, string actual ) {
-    const double MAX_REL_ERROR = 0.0001;
-    const double MAX_ABS_ERROR = 100 * FLT_EPSILON;
+    const double MAX_REL_ERROR = 0.001;
+    const double MAX_ABS_ERROR = 0.001;
 
     errno = 0;
 

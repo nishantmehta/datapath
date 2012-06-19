@@ -255,6 +255,14 @@ m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
 
     void Finalize() {
         theIterator = groupByMap.begin();
+        for( ; iter != iterEnd; ++iter ) {
+            INNER_GLA & gla = iter->second;
+m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
+</#/>error Finalizing fragmented inner GLAs not supported.
+/>, </multi/>, </dnl
+            gla.Finalize();
+/>)dnl
+        }
     }
 
     bool GetNextResult(TYPED_REF_ARGS(GLUE_LISTS(GBY_ATTS, INNER_GLA</_OUTPUT/>))) {
@@ -265,12 +273,12 @@ m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
             return false;
         }
         else {
-m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
-            VAR(_A_) = theIterator->first.VAR(_A_);
-/>)dnl
             FATALIF(theIterator == groupByMap.end(), "WHY??");
 
 m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
+m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
+            VAR(_A_) = theIterator->first.VAR(_A_);
+/>)dnl
             INNER_GLA& gla = theIterator->second;
             gla.GetResult(ARGS(INNER_GLA</_OUTPUT/>));
             ++theIterator;
@@ -279,6 +287,10 @@ m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
 />, </multi/>, </dnl
             bool gotResult = false;
             while( theIterator != endIt && !gotResult ) {
+m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
+                VAR(_A_) = theIterator->first.VAR(_A_);
+/>)dnl
+
                 INNER_GLA& gla = theIterator->second;
                 gotResult = gla.GetNextResult(ARGS(INNER_GLA</_OUTPUT/>));
                 if( !gotResult )

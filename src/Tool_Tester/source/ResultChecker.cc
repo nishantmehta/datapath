@@ -28,8 +28,6 @@
 #include "ResultChecker.h"
 #include "ComparisonFunctions.h"
 
-#define DELIMITER ','
-
 using namespace std;
 
 // Comparison functions
@@ -52,7 +50,7 @@ string ResultChecker :: getFileName( string path ) {
     return path.substr( index + 1, string::npos );
 }
 
-vector<string> ResultChecker :: tokenize( istream& str ) {
+vector<string> ResultChecker :: tokenize( istream& str, const char DELIM ) {
     vector<string> result;
 
     stringstream cur;
@@ -60,33 +58,45 @@ vector<string> ResultChecker :: tokenize( istream& str ) {
     char c;
     bool inQuote = false;
 
+    // Discard leading whitespace
+    bool discardWS = true;
+
     while( str.get(c) ) {
-        switch( c ) {
-            case '"':
-                inQuote = !inQuote;
-                break;
-            case '\\':
-                if( !str.get(c) ) {
-                    cerr << "Escape character found, but no character after it!" << endl;
-                }
-                else {
-                    cur.put(c);
-                }
-                break;
-            case DELIMITER:
-                if( !inQuote ) {
-                    result.push_back( cur.str() );
-                    cur.str("");
-                    cur.clear();
-                }
-                else {
-                    cur.put( DELIMITER );
-                }
-                break;
-            default:
+        if( c == '"') {
+            inQuote = !inQuote;
+            discardWS = false;
+        }
+        else if( c == '\\') {
+            if( !str.get(c) ) {
+                cerr << "Escape character found, but no character after it!" << endl;
+            }
+            else {
+                cur.put(c);
+            }
+        }
+        else if( c == '\n' || c == DELIM ) {
+            if( !inQuote ) {
+                result.push_back( cur.str() );
+                cur.str("");
+                cur.clear();
+                discardWS = true;
+            }
+            else {
+                cur.put( c );
+            }
+        }
+        else if( c == '\t' || c == ' ' ) {
+            if( !discardWS )
                 cur.put(c);
         }
+        else {
+            discardWS = false;
+            cur.put(c);
+        }
     }
+
+    if( !discardWS ) // We have a token stored in cur that we need to extract
+        result.push_back( cur.str() );
 
     return result;
 }
@@ -117,9 +127,9 @@ vector<string> ResultChecker :: tokenize( istream& str ) {
 }
 */
 
-vector<string> ResultChecker :: tokenize( string str ) {
+vector<string> ResultChecker :: tokenize( string str, const char DELIM ) {
     istringstream ss(str);
-    return tokenize( ss );
+    return tokenize( ss, DELIM );
 }
 
 void ResultChecker :: AddItem( string& fileName, string& description, vector<string>& expected,
@@ -261,10 +271,10 @@ void ResultChecker :: parseResultFile( string fileName, vector<string>& types, v
         return;
     }
 
-    types = tokenize( line );
+    types = tokenize( line, ',' );
 
     // Everything else are the values. Just tokenize them.
-    values = tokenize( fin );
+    values = tokenize( fin, '|' );
 }
 
 /*
@@ -321,7 +331,7 @@ void ResultChecker :: parseDataFile( string fileName, string& sourceFile, double
     description = line;
 
     // The rest of the file consists of values. Tokenize them.
-    values = tokenize( fin );
+    values = tokenize( fin, '|' );
 }
 
 void ResultChecker :: Start( string startTime, string endTime, vector<string>& expectedFiles,

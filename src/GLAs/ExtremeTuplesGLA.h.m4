@@ -143,8 +143,9 @@ void GLA_NAME :: AddItem( TYPED_ARGS(MY_INPUT) ) {
 m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
  && (TYPE(_A_)) VAR(_A_) m4_if(ORDER(_A_), </MIN/>, >, <) (TYPE(_A_)) this->VAR(_A_)<//>dnl
 />)dnl
- ) // fast path
+ ) { // fast path
         return;
+    }
     else if( tuples.size() > 0<//>dnl
 m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
  && (TYPE(_A_)) VAR(_A_) == (TYPE(_A_)) this->VAR(_A_)<//>dnl
@@ -196,6 +197,7 @@ m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
 }
 
 void GLA_NAME :: Finalize() {
+    pos = 0;
     sort( tuples.begin(), tuples.end(), BetterThan );
 }
 

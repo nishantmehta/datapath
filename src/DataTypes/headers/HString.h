@@ -419,8 +419,12 @@ inline __uint64_t& HString::GetHashValue() {
 }
 
 inline int ToString(HString& hstr, char* buffer) {
-	strcpy(buffer, hstr.GetStr());
-	return strlen(buffer) + 1;
+    buffer[0] = '"';
+	strcpy(buffer+1, hstr.GetStr());
+    int len = strlen( buffer );
+    buffer[len] = '"';
+    buffer[len+1] = '\0';
+	return len + 2;
 }
 
 inline const char* HString::GetString() const {
