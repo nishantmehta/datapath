@@ -20,14 +20,6 @@ dnl # TOPK_TUPLE: list of elements of the tuple (var, type)...
 
 dnl # Define some useful macros first
 
-m4_redefine(</m4_to_upper/>,</dnl
-<//>m4_translit(</$1/>, </abcdefghijklmnopqrstuvwxyz/>, </ABCDEFGHIJKLMNOPQRSTUVWXYZ/>)<//>dnl
-/>)
-
-m4_redefine(</m4_undefine_fully/>,</dnl
-<//>m4_ifdef(</$1/>, </m4_undefine(</$1/>)m4_undefine_fully(</$1/>)/>)<//>dnl
-/>)
-
 m4_redefine(</m4_fix_order/>, </dnl
 <//>m4_if(m4_to_upper(</$1/>), </ASC/>, </ASC/>, </m4_if(m4_to_upper(</$1/>), </DESC/>, </DESC/>, </ASC/>)/>)<//>dnl
 />)
@@ -38,7 +30,7 @@ m4_define(</OrderByGLA/>,</dnl
 m4_redefine(</TOPK_NAME/>, </$1/>)dnl
 m4_redefine(</TOPK_TUPLE/>, </$3/>)dnl
 dnl
-m4_undefine_fully(</TOPK_RANK/>)dnl
+m4_undefine_full(</TOPK_RANK/>)dnl
 dnl
 m4_redefine(</__TEMP__/>,</$2/>)dnl
 m4_foreach(</_A_/>,</__TEMP__/>,</dnl
@@ -48,9 +40,11 @@ m4_foreach(</_A_/>,</__TEMP__/>,</dnl
 dnl
 m4_define(</TOPK_RANK/>, m4_quote(TOPK_RANK))dnl
 dnl
-m4_redefine(</MY_INPUT/>, GLUE_LISTS(</TOPK_RANK/>, </TOPK_TUPLE/>))dnl
+m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</$2/>, </TOPK_TUPLE/>)))dnl
 m4_redefine(</MY_OUTPUT/>, m4_defn(</MY_INPUT/>))dnl
 m4_redefine(</MY_REZTYPE/>, </multi/>)dnl
+dnl
+m4_redefine(</MY_INIT/>, </(_limit, BIGINT)/>)dnl
 dnl
 #include "DataTypes.h"
 #include <algorithm>
@@ -65,6 +59,7 @@ using namespace std;
 /** Information for Meta-GLAs
     m4_qdefine(</TOPK_NAME</_INPUT/>/>, </MY_INPUT/>)
     m4_qdefine(</TOPK_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
+    m4_qdefine(</TOPK_NAME</_INIT/>/>, </MY_INIT/>)
     m4_qdefine(</</GLA_REZTYPE_/>TOPK_NAME/>, </MY_REZTYPE/>)
 */
 
@@ -87,7 +82,7 @@ m4_foreach(</_A_/>,</MY_INPUT/>,</dnl
 
     TOPK_NAME<//>_Tuple& operator=(const TOPK_NAME<//>_Tuple& _other) {
 m4_foreach(</_A_/>,</MY_INPUT/>,</dnl
-      VAR(_A_) = _other.VAR(_A_);
+        VAR(_A_) = _other.VAR(_A_);
 />)dnl
         return *this;
     }
@@ -137,7 +132,7 @@ private:
     // types
     typedef vector<TOPK_NAME<//>_Tuple> TupleVector;
 
-  long long int count; // number of tuples covered
+    long long int count; // number of tuples covered
 
     // k as in top-k
     int K;
@@ -147,8 +142,8 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
     TYPE(_A_) VAR(_A_);
 />)<//>dnl
 
-  TupleVector tuples;
-  int pos; // position of the output iterator
+    TupleVector tuples;
+    int pos; // position of the output iterator
 
     // function to force sorting so that GetNext gets the tuples in order
     void Sort() {
@@ -174,14 +169,13 @@ public:
     // function to add an intem
     void AddItem(TYPED_ARGS(MY_INPUT));
 
-    // take the state from ohter and incorporate it into this object
+    // take the state from other and incorporate it into this object
     // this is a + operator on TOPK_NAME
     void AddState(TOPK_NAME& other);
 
     // finalize the state and prepare for result extraction
     void Finalize() {
        Sort(); pos = 0;
-       cout << "Total number of tuples in Topk=" << count << endl;
   }
 
     // iterator through the content in order (can be destructive)
@@ -200,7 +194,7 @@ m4_foreach(</_A_/>,</MY_OUTPUT/>,</dnl
 };
 
 void TOPK_NAME::AddItem(TYPED_ARGS(MY_INPUT)) {
-    if (count > K<//>dnl
+    if (tuples.size() == K<//>dnl
 m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
  && (TYPE(_A_)) VAR(_A_) m4_if(ORDER(_A_), </ASC/>, >=, <=) (TYPE(_A_)) this->VAR(_A_)<//>dnl
 />)dnl
@@ -214,6 +208,7 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
 
 void TOPK_NAME::AddTupleInternal(TOPK_NAME<//>_Tuple& tuple){
     ++count;
+
     if (tuples.size() < K) {
         tuples.push_back(tuple);
 
@@ -231,7 +226,7 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
         tuples.push_back(tuple) ;
         push_heap(tuples.begin(), tuples.end(), GreaterThanTopK);
 m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
-        this->VAR(_A_) = tuples.front().VAR(_A_);
+            this->VAR(_A_) = tuples.front().VAR(_A_);
 />)<//>dnl
     }
 }
@@ -239,7 +234,7 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
 void TOPK_NAME::AddState(TOPK_NAME& other) {
     // go over all the contents of other and insert it into ourselves
     for(int i = 0; i < other.tuples.size(); i++) {
-        if (count < K || (true <//>dnl
+        if (tuples.size() < K || (true <//>dnl
 m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
  && (TYPE(_A_)) other.tuples[i].VAR(_A_) m4_if(ORDER(_A_), </ASC/>, <, >) (TYPE(_A_)) this->VAR(_A_)<//>dnl
 />)dnl

@@ -5,7 +5,7 @@
 
 STAT_LIBS =  ../../../GLAs/CurveFittingLib/libcfit.a
 
-LIBS = -lgsl -lgslcblas
+LIBS = -lgsl -lgslcblas -lonig
 
 # pattern matching library to use
 PAT_MATCH=2 # 1: xpression 2:onig

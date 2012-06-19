@@ -84,7 +84,7 @@ m4_define(</FIND_MIN/>, </dnl
 	  best$1 = (best$1 > hash) ? hash: best$1; 
 	}
 	// remove this after debugging
-	FATALIF(best$1 != MAX_HASH && WHICH_SEGMENT(best$1) !=0, "Hash out of range %ld", best$1);
+	FATALIF(best$1 != MAX_HASH && WHICH_SEGMENT(best$1) !=0, "Hash out of range %llu", (unsigned long long) best$1);
 
 />)dnl
 
@@ -541,7 +541,7 @@ int totalhash = 0;
 							// See if any query in query class is eligible for this comparision
 							qBits = QueryIDSet(m4_first(_A_), true);
 							qBits.Intersect(rez);
-							m4_define(</list/>, </m4_second(_A_)/>, <//>)
+							m4_define(</list/>, </m4_second(_A_)/>)
 							if (
 							/*	!qBits.IsEmpty () && */
 							<//>m4_foreach( </_B_/>, m4_quote(reval(</m4_args/>list)), </dnl

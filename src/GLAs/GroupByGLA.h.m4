@@ -37,16 +37,22 @@ m4_define(</INNER_GLA/>, </$3/>)dnl
 m4_define(</GLA_NAME/>, </$1/>)dnl
 m4_define(</GBY_ATTS/>,m4_quote($2))dnl
 dnl
-m4_define(</USE_FRAGMENTS/>,</NUM_EXEC_ENGINE_THREADS/>);dnl
+m4_define(</USE_FRAGMENTS/>,</NUM_EXEC_ENGINE_THREADS/>)dnl
 dnl
 m4_define(</MY_REZTYPE/>, m4_ifdef(</USE_FRAGMENTS/>, </fragment/>, </multi/>))dnl
 dnl
 m4_ifndef(INNER_GLA</_INPUT/>, </SCAN_GLA_FILE(INNER_GLA)/>)dnl
 dnl
+m4_ifdef(INNER_GLA</_INIT/>, </dnl
+<//>m4_redefine(</MY_INIT/>, m4_defn(INNER_GLA</_INIT/>))<//>dnl
+/>, </dnl
+<//>m4_redefine(</MY_INIT/>, <//>)<//>dnl
+/>)dnl
 
 /* Information for meta GLAs
     m4_qdefine(</GLA_NAME</_INPUT/>/>, </GLUE_LISTS(GBY_ATTS, INNER_GLA</_INPUT/>)/>)
     m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </GLUE_LISTS(GBY_ATTS, INNER_GLA</_OUTPUT/>)/>)
+    m4_qdefine(</GLA_NAME</_INIT/>/>, </MY_INIT/>)
     m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
  */
 
@@ -122,12 +128,26 @@ private:
 
 m4_ifdef(</USE_FRAGMENTS/>,</dnl
      vector<MapType::iterator> theIterators;  // the iterators, only 2 elements if multi, many if fragment
- />,</dnl
+/>,</dnl
      MapType::iterator theIterator;
- />)dnl
+/>)dnl
+
+m4_ifval(MY_INIT, </dnl
+<//>m4_foreach(</_A_/>, </MY_INIT/>, </dnl
+    TYPE(_A_) VAR(_A_);
+<//>/>)dnl
+/>)dnl
 
 public:
+m4_ifval(MY_INIT, </dnl
+    GLA_NAME<//>(TYPED_ARGS(MY_INIT)) : groupByMap( INIT_SIZE ) {
+<//>m4_foreach(</_A_/>, </MY_INIT/>, </dnl
+        this->VAR(_A_) = VAR(_A_);
+<//>/>)dnl
+    }
+/>, </dnl
     GLA_NAME</():groupByMap(INIT_SIZE)/> {}
+/>)dnl
     ~GLA_NAME</()/> {}
 
     void AddItem(TYPED_ARGS(GLUE_LISTS(GBY_ATTS,INNER_GLA</_INPUT/>))) {
@@ -140,7 +160,12 @@ public:
             // create an empty GLA and insert
             // better to not add the item here so we do not have
             // to transport a large state
-            INNER_GLA gla;
+dnl         # Note: I have to do this annoying check to make sure ARGS(MY_INIT)
+dnl         # is not empty before putting the parentheses because if you just
+dnl         # put a pair of empty parentheses there, instead of calling the
+dnl         # default constructor (which is explicity defined!), gcc will just
+dnl         # freak out and think you're defining some other bizarre type.
+            INNER_GLA gla<//>m4_ifval(ARGS(MY_INIT), </(/>ARGS(MY_INIT)</)/>, <//>);
             Key_<//>GLA_NAME key(ARGS(GBY_ATTS));
             groupByMap.insert(MapType::value_type(key, gla));
             it = groupByMap.find(key); // reposition
@@ -205,6 +230,19 @@ m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
     }
 
     GLA_NAME<//>_Iterator* Finalize(int fragment){
+        // Call finalize on all inner GLAs in this fragment.
+        MapType::iterator iter = theIterators[fragment];
+        MapType::iterator iterEnd = theIterators[fragment+1];
+
+        for( ; iter != iterEnd; ++iter ) {
+            INNER_GLA & gla = iter->second;
+m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
+</#/>error Finalizing fragmented inner GLAs not supported.
+/>, </dnl
+            gla.Finalize();
+/>)dnl
+        }
+
         GLA_NAME<//>_Iterator* rez
             = new GLA_NAME<//>_Iterator(theIterators[fragment], theIterators[fragment+1] );
         return rez;
@@ -232,7 +270,7 @@ m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
 />)dnl
             FATALIF(theIterator == groupByMap.end(), "WHY??");
 
-m4_case(reval(<GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
+m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
             INNER_GLA& gla = theIterator->second;
             gla.GetResult(ARGS(INNER_GLA</_OUTPUT/>));
             ++theIterator;
@@ -240,7 +278,7 @@ m4_case(reval(<GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
             return true;
 />, </multi/>, </dnl
             bool gotResult = false;
-            while( theIterator != groupByMap.end() !gotResult ) {
+            while( theIterator != endIt && !gotResult ) {
                 INNER_GLA& gla = theIterator->second;
                 gotResult = gla.GetNextResult(ARGS(INNER_GLA</_OUTPUT/>));
                 if( !gotResult )
@@ -257,4 +295,4 @@ m4_case(reval(<GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
 m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
 typedef GLA_NAME::GLA_NAME<//>_Iterator GLA_NAME<//>_Iterator;
 />)dnl
-/>)dnl # end of the GroypByTemplate
+/>)dnl # end of the GroupByTemplate

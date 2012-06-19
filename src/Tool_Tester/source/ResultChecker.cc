@@ -28,6 +28,8 @@
 #include "ResultChecker.h"
 #include "ComparisonFunctions.h"
 
+#define DELIMITER ','
+
 using namespace std;
 
 // Comparison functions
@@ -51,6 +53,45 @@ string ResultChecker :: getFileName( string path ) {
 }
 
 vector<string> ResultChecker :: tokenize( istream& str ) {
+    vector<string> result;
+
+    stringstream cur();
+
+    char c;
+    bool inQuote = false;
+
+    while( str.get(c) ) {
+        switch( c ) {
+            case '"':
+                inQuote = !inQuote;
+                break;
+            case '\\':
+                if( !str.get(c) ) {
+                    cerr << "Escape character found, but no character after it!" << endl;
+                }
+                else {
+                    cur.put(c);
+                }
+                break;
+            case DELIMITER:
+                if( !inQuote ) {
+                    result.push_back( cur.str() );
+                    cur = stringstream();
+                }
+                else {
+                    cur.put( DELIMITER );
+                }
+                break;
+            default:
+                cur.put(c);
+        }
+    }
+
+    return result;
+}
+
+/*
+vector<string> ResultChecker :: tokenize( istream& str ) {
     string line;
 
     vector<string> result;
@@ -73,6 +114,7 @@ vector<string> ResultChecker :: tokenize( istream& str ) {
 
     return result;
 }
+*/
 
 vector<string> ResultChecker :: tokenize( string str ) {
     istringstream ss(str);

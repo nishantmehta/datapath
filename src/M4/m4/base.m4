@@ -164,4 +164,36 @@ m4_define(</_m4_foreach/>,
 m4_define(</m4_append/>,
 </m4_define(</$1/>, m4_ifdef(</$1/>, </m4_defn(</$1/>)</$3/>/>)</$2/>)/>)
 
+###
+### Miscellaneous macros found to be useful
+###
+
+# ensures that a macro has been completely undefined
+# this is because GNU M4's define and undefine actually behave as pushdef and popdef
+m4_define(</m4_undefine_full/>, </dnl
+<//>m4_ifdef(</$1/>, </m4_undefine(</$1/>)m4_undefine_full(</$1/>)/>)<//>dnl
+/>)
+
+# Undefines a macro if it is defined
+m4_define(</m4_ifdef_undef/>, </dnl
+<//>m4_ifdef(</$1/>, </m4_undefine(</$1/>)/>)dnl
+/>)dnl
+
+# If a macro with the name $1 is defined, undefines it.
+# Then, defines $1 to mean $2.
+m4_define(</m4_redefine/>,</dnl
+<//>m4_ifdef_undef(</$1/>)dnl
+<//>m4_define(</$1/>, </$2/>)dnl
+/>)
+
+# transforms an ASCII string to uppercase
+m4_define(</m4_to_upper/>, </dnl
+<//>m4_translit(</$1/>, </abcdefghijklmnopqrstuvwxyz/>, </ABCDEFGHIJKLMNOPQRSTUVWXYZ/>)<//>dnl
+/>)
+
+# transforms an ASCII string to lowercase
+m4_define(</m4_to_lower/>, </dnl
+<//>m4_translit(</$1/>, </ABCDEFGHIJKLMNOPQRSTUVWXYZ/>, </abcdefghijklmnopqrstuvwxyz/>)<//>dnl
+/>)
+
 m4_divert(0)<//>dnl

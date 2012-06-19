@@ -472,7 +472,7 @@ inline void* HString::OptimizedSerialize(HString& hstr, void* buffer) {
 }
 
 inline HString HString::Deserialize(void* buffer) {
-	//return HString(*(__uint64_t*)buffer, *((__uint64_t*)buffer + 1), ((char*)buffer)+16);
+	return HString(*(__uint64_t*)buffer, *((__uint64_t*)buffer + 1), ((char*)buffer)+16);
 }
 
 /* This function is used by HStringIterator to add entries in dictionary. It sets 62nd bit

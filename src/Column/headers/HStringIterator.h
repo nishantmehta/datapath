@@ -68,14 +68,14 @@ public:
 	// is taken out of the iterator and put into iterateMe
 	void Done (Column &iterateMe);
 
-	// advance to the next object in the column... 
+	// advance to the next object in the column...
 	void Advance ();
 
 
 	// add a new data object into the column at the current position, overwriting the
 	// bytes that are already there.  Note that if the size of addMe differs from the
 	// size of the object that is already there, addMe will over-run part of the next
-	// object.  Sooooo... overwrite existing objects in the column with care! 
+	// object.  Sooooo... overwrite existing objects in the column with care!
 	void Insert (HString &addMe);
 	void Insert (const HString &addMe);
 
@@ -83,7 +83,7 @@ public:
 	// it should not be read (it is undefined what happens if you read it)
 	int AtUnwrittenByte ();
 
-	// returns the data object at the current position in the column... 
+	// returns the data object at the current position in the column...
 	HString GetCurrent ();
 
 	// Is the string frequent
@@ -127,7 +127,7 @@ HStringIterator& HStringIterator::operator=(const HStringIterator& other) {
 	// any crap can be here because this is just to support STL
 }
 
-inline 
+inline
 HString HStringIterator :: GetCurrent () {
 
 	if (it.IsInvalid ())
@@ -138,13 +138,13 @@ HString HStringIterator :: GetCurrent () {
 	return HString(*(__uint64_t*)myData, *((__uint64_t*)myData + 1), myData+16);
 }
 
-inline 
+inline
 int HStringIterator :: AtUnwrittenByte () {
 	//return (objLen == 0);
 	return it.AtUnwrittenByte ();
 }
 
-inline 
+inline
 bool HStringIterator :: IsFrequent (__uint64_t hashVal) {
 
 	totalCNT++;
@@ -155,9 +155,9 @@ bool HStringIterator :: IsFrequent (__uint64_t hashVal) {
 
 		return (it->second > MIN_FREQUENT) || (it->second > MIN_THRESHOLD*totalCNT);
 	}
-	
+
 	hashFrequencyMap[hashVal]=1;
-	
+
 	return false;
 }
 
@@ -207,7 +207,7 @@ void HStringIterator :: Insert (HString &addMe) {
     *((__uint64_t*) myData + 1) = addMe.GetStrLength();
     // GetString() is sure to have some value if string is not in dictionary
     strcpy(myData + 16, addMe.GetString());
-	FATALIF(addMe.GetStrLength() > 256, "String is too weird size %ld", addMe.GetStrLength());
+	FATALIF(addMe.GetStrLength() > 256, "String is too weird size %lld", (long long) addMe.GetStrLength());
   }
 }
 
@@ -226,7 +226,7 @@ void HStringIterator :: Advance () {
     it.SetObjLen (((HString*) it.GetData())->GetObjLength ());
 
   //fprintf(stderr, "\nSize string = %ld", it.GetObjLen());
-	FATALIF(it.GetObjLen() > 256, "String is too weird size %ld", it.GetObjLen());
+	FATALIF(it.GetObjLen() > 256, "String is too weird size %lld", (long long) it.GetObjLen());
   it.EnsureSpace (it.GetObjLen(), it.GetObjLen());
 }
 

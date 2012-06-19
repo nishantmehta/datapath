@@ -37,7 +37,7 @@ m4_foreach(</_A_/>,</$3/>,</dnl
 m4_append(</__TEMP__/>, _A_<//>, </</, />/>)dnl
 />)dnl
 />)dnl
-__TEMP__<//>dnl
+m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
 />)dnl
 
 dnl # macro to list arguments with types
@@ -48,7 +48,7 @@ m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl
 m4_foreach(</_A_/>,</$*/>,</dnl
 m4_append(</__TEMP__/>, TYPE(_A_) VAR(_A_),</</, />/>)dnl
 />)dnl
-__TEMP__<//>dnl
+m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
 />)dnl
 
 
@@ -60,7 +60,7 @@ m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl
 m4_foreach(</_A_/>,</$*/>,</dnl
 m4_append(</__TEMP__/>, TYPE(_A_)& VAR(_A_),</</, />/>)dnl
 />)dnl
-__TEMP__<//>dnl
+m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
 />)dnl
 
 
@@ -72,7 +72,7 @@ m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl
 m4_foreach(</_A_/>,</$*/>,</dnl
 m4_append(</__TEMP__/>, VAR(_A_),</</, />/>)dnl
 />)dnl
-__TEMP__<//>dnl
+m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
 />)dnl
 
 
@@ -93,15 +93,6 @@ dnl # Note: the arguments will be evaluated
 m4_define(</m4_qdefine/>,</dnl
 <//>m4_quote(</m4_define(/>m4_dquote(m4_quote($1))</,/>m4_dquote(m4_quote($2))</)/>)dnl
 <//>m4_define(m4_quote($1),m4_quote($2))dnl
-/>)
-
-m4_define(</m4_ifdef_undef/>, </dnl
-<//>m4_ifdef(</$1/>, </m4_undefine(</$1/>)/>)dnl
-/>)dnl
-
-m4_define(</m4_redefine/>,</dnl
-<//>m4_ifdef_undef(</$1/>)dnl
-<//>m4_define(</$1/>, </$2/>)dnl
 />)
 
 m4_define(</m4_autoincr/>, </dnl

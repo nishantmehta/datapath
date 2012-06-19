@@ -11,7 +11,7 @@ dnl #
 dnl # Usage
 dnl # $1=GLA_NAME name of the class generated
 dnl # All other arguments are names of GLAs to multiplex.
-
+dnl
 m4_define(</Multiplexer/>,</dnl
 m4_redefine(</GLA_NAME/>, </$1/>)dnl
 dnl
@@ -32,39 +32,39 @@ dnl # variables in the input and output have values appended to them to make
 dnl # them unique.
 dnl # MY_INPUTS and MY_OUTPUTS contain lists of the total inputs and outputs
 dnl # to the multiplexer.
-m4_foreach(</_ARG_/>, m4_quote(m4_shift($@)), </
-<//>m4_redefine(</_GLANAME/>, </gla_/>GLAVAL)
-<//>m4_autoincr(</GLAVAL/>)
-<//>m4_redefine(</_GLA/>, </(/>_GLANAME</, />_ARG_</)/>)
-<//>m4_append(</INNER_GLA/>, m4_quote(_GLA), </</, />/>)
-<//>m4_ifndef(_ARG_</_INPUT/>, </SCAN_GLA_FILE(/>_ARG_</)/>)
+m4_foreach(</_ARG_/>, m4_quote(m4_shift($@)), </dnl
+<//>m4_redefine(</_GLANAME/>, </gla_/>GLAVAL)<//>dnl
+<//>m4_autoincr(</GLAVAL/>)<//>dnl
+<//>m4_redefine(</_GLA/>, </(/>_GLANAME</, />_ARG_</)/>)<//>dnl
+<//>m4_append(</INNER_GLA/>, m4_quote(_GLA), </</, />/>)<//>dnl
+<//>m4_ifndef(_ARG_</_INPUT/>, </SCAN_GLA_FILE(/>_ARG_</)/>)<//>dnl
 dnl # Handle GLA inputs
-<//>m4_foreach(</_INPUT_/>, _ARG_</_INPUT/>, </
-<//><//>m4_redefine(</_TMP_/>, m4_quote(</(/>m4_first(_INPUT_)</_/>INVAL</, />m4_second(_INPUT_)</)/>))
-<//><//>m4_append(</MY_INPUTS/>, _TMP_, </</, />/>)
-<//><//>m4_append(_GLANAME</_INPUT/>, _TMP_, </</, />/>)
-<//><//>m4_autoincr(</INVAL/>)
-<//>/>)
+<//>m4_foreach(</_INPUT_/>, _ARG_</_INPUT/>, </dnl
+<//><//>m4_redefine(</_TMP_/>, m4_quote(</(/>m4_first(_INPUT_)</_/>INVAL</, />m4_second(_INPUT_)</)/>))<//>dnl
+<//><//>m4_append(</MY_INPUTS/>, _TMP_, </</, />/>)<//>dnl
+<//><//>m4_append(_GLANAME</_INPUT/>, _TMP_, </</, />/>)<//>dnl
+<//><//>m4_autoincr(</INVAL/>)<//>dnl
+<//>/>)<//>dnl
 dnl # Handle GLA outputs
-<//>m4_foreach(</_OUTPUT/>, _ARG_</_OUTPUT/>, </
-<//><//>m4_redefine(</_TMP_/>, m4_quote(</(/>m4_first(_OUTPUT)</_/>OUTVAL</, />m4_second(_OUTPUT)</)/>))
-<//><//>m4_append(</MY_OUTPUTS/>, _TMP_, </</, />/>)
-<//><//>m4_append(_GLANAME</_OUTPUT/>, _TMP_, </</, />/>)
-<//><//>m4_autoincr(</OUTVAL/>)
-<//>/>)
+<//>m4_foreach(</_OUTPUT/>, _ARG_</_OUTPUT/>, </<//>dnl
+<//><//>m4_redefine(</_TMP_/>, m4_quote(</(/>m4_first(_OUTPUT)</_/>OUTVAL</, />m4_second(_OUTPUT)</)/>))<//>dnl
+<//><//>m4_append(</MY_OUTPUTS/>, _TMP_, </</, />/>)<//>dnl
+<//><//>m4_append(_GLANAME</_OUTPUT/>, _TMP_, </</, />/>)<//>dnl
+<//><//>m4_autoincr(</OUTVAL/>)<//>dnl
+<//>/>)<//>dnl
 dnl # Handle result types
-<//>m4_ifndef(</MY_REZTYPE/>,</
-<//><//>m4_define(</MY_REZTYPE/>, m4_quote(</GLA_REZTYPE_/>_ARG_))/>,</
-<//><//>m4_if(m4_quote(MY_REZTYPE), reval(</GLA_REZTYPE_/>_ARG_), <//>, </
-<//><//><//>m4_errprintn(</Have GLAs with different result types in the same multiplexer! />)
-<//><//><//>m4_exit(1)
-<//><//>/>)
-<//>/>)
+<//>m4_ifndef(</MY_REZTYPE/>,</<//>dnl
+<//><//>m4_define(</MY_REZTYPE/>, m4_quote(</GLA_REZTYPE_/>_ARG_))/>,</<//>dnl
+<//><//>m4_if(m4_quote(MY_REZTYPE), reval(</GLA_REZTYPE_/>_ARG_), <//>, </<//>dnl
+<//><//><//>m4_errprintn(</Have GLAs with different result types in the same multiplexer! />)<//>dnl
+<//><//><//>m4_exit(1)<//>dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 />)dnl
 dnl
-m4_if(MY_REZTYPE, single, <//>, </
-<//>m4_errprintn(</Multiplexing GLAs only supported for GLAs that return a single result./>)
-<//>m4_exit(1)
+m4_if(MY_REZTYPE, single, <//>, </<//>dnl
+<//>m4_errprintn(</Multiplexing GLAs only supported for GLAs that return a single result./>)<//>dnl
+<//>m4_exit(1)<//>dnl
 />)dnl
 dnl
 /** Information for Meta-GLAs

@@ -18,7 +18,7 @@
 
 #include "HString.h"
 #include <string>
-#include "oniguruma.h"
+#include <oniguruma.h>
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -37,10 +37,10 @@ public:
 
   // Dynamic xpressive
   PatternMatcher(string regexp);
-  
+
   // match function
   bool IsMatch (HString& str);
-  
+
   // destructor
   ~PatternMatcher(void);
 };
@@ -50,7 +50,7 @@ pthread_mutex_t  PatternMatcher::mutex __attribute__((weak)) =  PTHREAD_MUTEX_IN
 
 inline
 PatternMatcher :: PatternMatcher (string regexp) {
-  
+
 
   UChar* pattern = (UChar*) regexp.c_str();
   OnigErrorInfo einfo;

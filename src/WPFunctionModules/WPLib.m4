@@ -63,15 +63,15 @@ dnl # deals with both queries and attributess
 dnl # $1 = M4_Query_Desc: Query desc for each query
 dnl # $2 = M4_Attribute_Queries: Query set for each attribute used
 m4_define(</M4_DECLARE_QUERYIDS/>, </dnl
-  // get access to query manager
-  QueryManager& qm=QueryManager::GetQueryManager();
-  // set up the QueryIDs of the queries involved
+// get access to query manager
+    QueryManager& qm=QueryManager::GetQueryManager();
+    // set up the QueryIDs of the queries involved
 <//>dnl # defining the query ids. The ids look like QID_queryName
 <//>m4_foreach(</_Q_/>, </$1/>, </dnl
 <//><//>M4_DEFINE_QUERYID(</_Q_/>,</qm/>)dnl
 <//>/>)dnl
 
-  // defining querysets for each attribute.
+    // defining querysets for each attribute.
 dnl <//>m4_foreach(</_A_/>, </$2/>, </dnl
 dnl <//><//>M4_ATT_QUERYSET(</_A_/>,</qm/>)dnl
 dnl <//>/>)dnl
@@ -84,7 +84,7 @@ dnl $1 = part in description
 dnl $2 = QueryManager variable name
 m4_define(</M4_DEFINE_QUERYID/>,</dnl
 <//>m4_ifval( M4_QUERY_NAME($1), </dnl
-<//>  QueryID M4_QUERY_NAME($1)=</$2/>.GetQueryID("M4_QUERY_NAME($1)");
+QueryID M4_QUERY_NAME($1)=</$2/>.GetQueryID("M4_QUERY_NAME($1)");
 <//>/>, <//>)dnl
 />)dnl
 
@@ -92,7 +92,7 @@ dnl Macro to define the queryset for an attribute
 dnl $1 = part in description
 m4_define(</M4_ATT_QUERYSET/>,</dnl
 <//>m4_ifval(M4_ATT_AQ($1),</dnl
-<//>  QueryIDSet M4_ATT_AQ($1)<//>_Qrys(M4_QUERIES_AQ($1), true);
+<//>QueryIDSet M4_ATT_AQ($1)<//>_Qrys(M4_QUERIES_AQ($1), true);
 <//>/>)dnl
 />)dnl
 
@@ -111,19 +111,19 @@ dnl  $2 = Chunk input variable name
 dnl  $3 = start fragment range
 dnl  $4 = end fragment range
 m4_define(</M4_EXTRACT_COLUMN_FRAGMENT/>, </dnl
-    // extracting $1
+// extracting $1
 <//>M4_IFVALID_ATT($1, </dnl
 
-  Column M4_ATT_COL($1);
-	
-	if ($1<//>_Qrys.Overlaps(queriesToRun)){			
-    </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
-		if (! M4_ATT_COL($1).IsValid()){
-		  printf("ERROR: Column $1 not found in M4_WPName\n");
-			exit(1);
+    Column M4_ATT_COL($1);
+
+    if ($1<//>_Qrys.Overlaps(queriesToRun)){
+        </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
+        if (! M4_ATT_COL($1).IsValid()){
+            printf("ERROR: Column $1 not found in M4_WPName\n");
+            exit(1);
+        }
     }
-  }
-	M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/, $3, $4);
+    M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/, $3, $4);
 <//>/>)dnl
 />)dnl
 
@@ -131,76 +131,76 @@ m4_define(</M4_EXTRACT_COLUMN_FRAGMENT/>, </dnl
 dnl  $1 = attribute
 dnl  $2 = Chunk input variable name
 m4_define(</M4_EXTRACT_COLUMN/>, </dnl
-    // extracting $1
+// extracting $1
 <//>M4_IFVALID_ATT($1, </dnl
 
-  Column M4_ATT_COL($1);
-	
-	if ($1<//>_Qrys.Overlaps(queriesToRun)){			
-    </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
-		if (! M4_ATT_COL($1).IsValid()){
-		  printf("ERROR: Column $1 not found in M4_WPName\n");
-			exit(1);
+    Column M4_ATT_COL($1);
+
+    if ($1<//>_Qrys.Overlaps(queriesToRun)){
+        </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
+        if (! M4_ATT_COL($1).IsValid()){
+            printf("ERROR: Column $1 not found in M4_WPName\n");
+            exit(1);
+        }
     }
-  }
-	M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/);
+    M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/);
 <//>/>)dnl
 />)dnl
 
 dnl $1 = M4_Attribute_Queries
 dnl  $2 = Chunk input variable name
 m4_define(</M4_ACCESS_COLUMNS/>, </dnl
-  // Declaring and extracting all the columns that are needed
+// Declaring and extracting all the columns that are needed
 <//>dnl # declaring and extracting all the columns
 <//>m4_foreach( </_A_/>, </$1/>, </dnl
 <//><//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
-	QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
-	M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),$2)dnl
+    QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
+    M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),$2)dnl
 <//><//>/>)dnl
 <//>/>)dnl
 />)dnl
 
 dnl # macro that generates code to extract the existing bitmap
 m4_define(</M4_EXTRACT_BITMAP/>, </dnl
-  
-  Column inBitCol;
-  //SS </$1/>.SwapBitmap (inBitCol);
-//SS	BStringIterator queries (inBitCol);
-	BStringIterator queries;
-	</$1/>.SwapBitmap (queries);
+
+    Column inBitCol;
+    //SS </$1/>.SwapBitmap (inBitCol);
+    //SS BStringIterator queries (inBitCol);
+    BStringIterator queries;
+    </$1/>.SwapBitmap (queries);
 />)dnl
 
 dnl # macro to create the output bitmap
 m4_define(</M4_START_OUTPUT_BITMAP/>,</dnl
-	MMappedStorage bitStore;
-	Column outBitCol(bitStore);
-	BStringIterator outQueries (outBitCol, queriesToRun);
+    MMappedStorage bitStore;
+    Column outBitCol(bitStore);
+    BStringIterator outQueries (outBitCol, queriesToRun);
 />)dnl
 
 dnl # macro to put the output bitmap into the chunk instead of the inbitmap
 m4_define(</M4_PUTBACK_OUTBITMAP/>,</dnl
-  // close both in and out iterators
-  queries.Done(inBitCol);
-  //SSoutQueries.Done(outBitCol);
-  outQueries.Done();
-  // the out one gets placed in chunk
-  //SS</$1/>.SwapBitmap (outBitCol);
-  </$1/>.SwapBitmap (outQueries);
+// close both in and out iterators
+    queries.Done(inBitCol);
+    //SSoutQueries.Done(outBitCol);
+    outQueries.Done();
+    // the out one gets placed in chunk
+    //SS</$1/>.SwapBitmap (outBitCol);
+    </$1/>.SwapBitmap (outQueries);
 />)dnl
 
 dnl # same macro but for input
 m4_define(</M4_PUTBACK_INBITMAP/>,</dnl
-  // close both in and out iterators
-  //SSqueries.Done(inBitCol);
-  queries.Done();
-  //SS </$1/>.SwapBitmap (inBitCol);
-  </$1/>.SwapBitmap (queries);
+// close both in and out iterators
+    //SSqueries.Done(inBitCol);
+    queries.Done();
+    //SS </$1/>.SwapBitmap (inBitCol);
+    </$1/>.SwapBitmap (queries);
 />)dnl
 
 dnl $1 = Chunk output
 dnl This macro depends on the M4_DEFINE_OUT_BITMAP to define the output bitmap resBitMap
 m4_define(</M4_SET_OUT_BITMAP/>, </dnl
-  </$1/>.SwapBitmap (resBitmap);
+</$1/>.SwapBitmap (resBitmap);
 />)dnl
 
 
@@ -210,40 +210,40 @@ while (!queries.AtEndOfColumn ())dnl
 
 dnl # $1 is the variable that is set
 m4_define(</GET_QUERIES/>, </dnl
-  $1 = queries.GetCurrent();
-	qry.Intersect(queriesToRun);
-	queries.Advance();
+$1 = queries.GetCurrent();
+        qry.Intersect(queriesToRun);
+        queries.Advance();
 />)dnl
 
 dnl # $1 is the variable that is set
 m4_define(</GET_NEXT_QUERIES/>, </dnl
-  $1 = queries.GetCurrent();
-	queries.Advance();
+$1 = queries.GetCurrent();
+        queries.Advance();
 />)dnl
 
 
 m4_define(</SET_QUERIES/>, </dnl
-  outQueries.Insert($1);
-	outQueries.Advance();
+outQueries.Insert($1);
+        outQueries.Advance();
 />)dnl
 
 dnl $1 = M4_Attribute_Queries
 dnl $2 = QueryIDSet variable
 m4_define(</M4_ACCESS_ATTRIBUTES_TUPLE/>, </dnl
-    // extract values of attributes from streams
+// extract values of attributes from streams
 
 <//>m4_foreach(</_A_/>, </$1/>, </dnl
 <//>dnl access only valid attributes
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
     // extracting M4_ATT_AQ(_A_)
     M4_ATT_TYPE(M4_ATT_AQ(_A_)) M4_ATT_AQ(_A_);
-    if (M4_ATT_AQ(_A_)<//>_Qrys.Overlaps($2)){			
-		  M4_ATT_AQ(_A_) =  M4_ATT_AQ(_A_)<//>_Column.GetCurrent();		
+    if (M4_ATT_AQ(_A_)<//>_Qrys.Overlaps($2)){
+        M4_ATT_AQ(_A_) =  M4_ATT_AQ(_A_)<//>_Column.GetCurrent();
 <//>dnl we need to special case this since the HString has problems if Advance() goes over
 <//><//>m4_if(M4_ATT_TYPE(M4_ATT_AQ(_A_)),</VARCHAR/>,</dnl
-		if (!queries.AtEndOfColumn ()) // advance only if not last
+        if (!queries.AtEndOfColumn ()) // advance only if not last
 />)dnl
-		  M4_ATT_AQ(_A_)<//>_Column.Advance();
+        M4_ATT_AQ(_A_)<//>_Column.Advance();
     }dnl
 <//>/>)dnl
 <//>/>)dnl
@@ -307,7 +307,7 @@ $1<//>dnl
 
 dnl # extract the initializer from $1
 dnl # due to the templated GLAs, we need to do more manuevers
-dnl # we process the argument twice, once to extract the template 
+dnl # we process the argument twice, once to extract the template
 dnl # definitions and once to generate the code
 m4_define(</GLA_DEFS/>, </dnl
 GLA_DEF_ONE(m4_third(</$1/>))dnl
@@ -354,9 +354,9 @@ dnl $2 = Chunk input variable name
 m4_define(</M4_PUTBACK_COLUMNS/>, </dnl
 <//>m4_foreach(</_A_/>, </$1/>, </dnl
 <//><//>m4_ifval( M4_ATT_AQ(_A_), </dnl
-    // putting back column of M4_ATT_AQ(_A_)  											
-		if (M4_ATT_AQ(_A_)<//>_Qrys.Overlaps(queriesToRun)){			
-		  M4_ATT_AQ(_A_)<//>_Column.Done(col_<//>M4_ATT_AQ(_A_));
+    // putting back column of M4_ATT_AQ(_A_)
+        if (M4_ATT_AQ(_A_)<//>_Qrys.Overlaps(queriesToRun)){
+          M4_ATT_AQ(_A_)<//>_Column.Done(col_<//>M4_ATT_AQ(_A_));
       </$2/>.SwapColumn(M4_ATT_COL(M4_ATT_AQ(_A_)), M4_ATT_SLOT(M4_ATT_AQ(_A_)));
     }
 <//><//>/>)dnl
@@ -385,7 +385,7 @@ m4_define(</M4_ADD_OLD_STATE_TO_NEW/>,</dnl
 <//>QueryID foo;
 <//>AggStorage res;
 <//></$2/>.Remove (M4_QUERY_NAME($1), foo, res);
-<//>M4_QUERY_NAME($1)=foo; // not to loose M4_QUERY_NAME($1)		
+<//>M4_QUERY_NAME($1)=foo; // not to loose M4_QUERY_NAME($1)
 
 <//>struct M4_QUERY_STATE_TYPE($1) M4_QUERY_STATE($1)<//>Old;
 <//>res.Pop(&M4_QUERY_STATE($1)<//>Old);
@@ -447,7 +447,7 @@ m4_define(</M4_GET_QUERY_DATA/>, </dnl
     QueryID foo;
     AggStorage res;
     </$1/>.Remove (M4_QUERY_NAME($2), foo, res);
-    M4_QUERY_NAME($2)=foo; // not to loose M4_QUERY_NAME(_Q_)		
+    M4_QUERY_NAME($2)=foo; // not to loose M4_QUERY_NAME(_Q_)
 
     struct M4_QUERY_STATE_TYPE($2) M4_QUERY_STATE($2);
     res.Pop(&M4_QUERY_STATE($2));
@@ -456,19 +456,19 @@ m4_define(</M4_GET_QUERY_DATA/>, </dnl
 dnl $1 = Aggregate expression
 dnl $2 = Query desc
 m4_define(</M4_COMPUTE_AGGEGATE/>,</dnl
-			MMappedStorage storage;
-		  Column col(storage);
-			ColumnIterator<M4_ATT_TYPE(M4_ATT_NAME($1))> colIter(col);
-			M4_ATT_TYPE(M4_ATT_NAME($1)) val = M4_QUERY_STATE($2).M4_AGG_NAME($1).ComputeAggregate();
-			colIter.Insert(val);
-			colIter.Advance();
-			colIter.Done(col);
+            MMappedStorage storage;
+          Column col(storage);
+            ColumnIterator<M4_ATT_TYPE(M4_ATT_NAME($1))> colIter(col);
+            M4_ATT_TYPE(M4_ATT_NAME($1)) val = M4_QUERY_STATE($2).M4_AGG_NAME($1).ComputeAggregate();
+            colIter.Insert(val);
+            colIter.Advance();
+            colIter.Done(col);
 />)dnl
 
 dnl $1 = Aggregate expression
 dnl This depends on the M4_COMPUTE_AGGEGATE macro for defining the Column col
 m4_define(</M4_PUT_RESULT_IN_OUTPUT/>,</dnl
-     </$1/>.SwapColumn (col, M4_ATT_SLOT(M4_ATT_NAME(</$2/>))); 
+     </$1/>.SwapColumn (col, M4_ATT_SLOT(M4_ATT_NAME(</$2/>)));
 />)dnl
 
 dnl $1 = Query Desc
@@ -477,7 +477,7 @@ m4_define(</M4_COMPUTE_AGGREGATE/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_ATT_LIST((M4_ATT_LIST(</$1/>)))), </dnl
 <//><//>{
 <//><//><//>M4_COMPUTE_AGGEGATE(</_A_/>,</$1/>)dnl
-<//><//><//>M4_PUT_RESULT_IN_OUTPUT(</output/>,</_A_/>)dnl      
+<//><//><//>M4_PUT_RESULT_IN_OUTPUT(</output/>,</_A_/>)dnl
 <//><//>}
 <//>/>)dnl
 />)dnl
@@ -507,8 +507,8 @@ m4_define(</M4_CREATE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
 <//>m4_ifdef( ATT_TYPE_<//>m4_first(_A_), </dnl
     MMappedStorage storage_<//>m4_first(_A_);
-		Column col_<//>m4_first(_A_)(storage_<//>m4_first(_A_));
-		M4_COL_TYPE(m4_first(_A_)) colI_<//>m4_first(_A_)(col_<//>m4_first(_A_));
+        Column col_<//>m4_first(_A_)(storage_<//>m4_first(_A_));
+        M4_COL_TYPE(m4_first(_A_)) colI_<//>m4_first(_A_)(col_<//>m4_first(_A_));
 <//>/>)dnl
 <//>/>)dnl
 />)dnl
@@ -519,7 +519,7 @@ dnl $2 = output chunk
 dnl $3 = queries active
 m4_define(</M4_CLOSE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
-		colI_<//>m4_first(_A_)<//>.Done(col_<//>m4_first(_A_));
+        colI_<//>m4_first(_A_)<//>.Done(col_<//>m4_first(_A_));
     </$2/>.SwapColumn(col_<//>m4_first(_A_), M4_ATT_SLOT(m4_first(_A_)));
 <//>/>)dnl
 />)dnl
