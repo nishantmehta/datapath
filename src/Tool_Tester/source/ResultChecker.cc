@@ -55,23 +55,15 @@ vector<string> ResultChecker :: tokenize( istream& str, const char DELIM ) {
 
     stringstream cur;
 
-    char c;
+    char c, prev;
     bool inQuote = false;
-
-    // Discard leading whitespace
-    bool discardWS = true;
 
     while( str.get(c) ) {
         if( c == '"') {
             inQuote = !inQuote;
-            discardWS = false;
-        }
-        else if( c == '\\') {
-            if( !str.get(c) ) {
-                cerr << "Escape character found, but no character after it!" << endl;
-            }
-            else {
-                cur.put(c);
+            if( prev == '"' ) {
+                cur.put('"');
+                c = '\0';
             }
         }
         else if( c == '\n' || c == DELIM ) {
@@ -79,24 +71,20 @@ vector<string> ResultChecker :: tokenize( istream& str, const char DELIM ) {
                 result.push_back( cur.str() );
                 cur.str("");
                 cur.clear();
-                discardWS = true;
             }
             else {
                 cur.put( c );
             }
         }
-        else if( c == '\t' || c == ' ' ) {
-            if( !discardWS )
-                cur.put(c);
-        }
         else {
-            discardWS = false;
             cur.put(c);
         }
+
+        prev = c;
     }
 
-    if( !discardWS ) // We have a token stored in cur that we need to extract
-        result.push_back( cur.str() );
+    if( cur.str().length() > 0 )
+        result.push_back(cur.str());
 
     return result;
 }

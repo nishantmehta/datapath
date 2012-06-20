@@ -236,9 +236,9 @@ m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
 
         for( ; iter != iterEnd; ++iter ) {
             INNER_GLA & gla = iter->second;
-m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
+m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
 </#/>error Finalizing fragmented inner GLAs not supported.
-/>, </dnl
+/>, </multi/>, </dnl
             gla.Finalize();
 />)dnl
         }
