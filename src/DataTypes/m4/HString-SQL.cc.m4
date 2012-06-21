@@ -44,7 +44,7 @@ void HString::MergeAllLocalIntoGlobalDictionary() {
 		for (Dictionary::const_iterator it = localDictionaries[i]->begin(); it != localDictionaries[i]->end(); ++it) {
 
 			__uint64_t h = it->first;
-			assert(h & MSB_BITSET_3RD); // bit should be set
+			assert(IN_DICT(h)); // bit should be set
 			Dictionary::const_iterator it_global = globalDictionary.find(h);
 			if (it_global == globalDictionary.end()) { // if not found in global dictionary, add it
 			 	char* myCopy = strdup((it->second).c_str());
@@ -53,7 +53,7 @@ void HString::MergeAllLocalIntoGlobalDictionary() {
 				// If hash is found in global dictionary, see if strings are same. If not, just assert for now.
 				// Different strings indicates we need to change our hash computing function, or we can also choose to
 				// ignore the collision by making one of the frequent strings infrequent
-			  WARNINGIF((it_global->second) != (it->second), "When mergeing local into global dictionary global entry --%s-- has the same hash %ld as new entry --%s--", (it_global->second).c_str(), h,(it->second).c_str());
+			  WARNINGIF((it_global->second) != (it->second), "When merging local into global dictionary global entry --%s-- has the same hash %ld as new entry --%s--", (it_global->second).c_str(), h,(it->second).c_str());
 			}
 		}
 	}

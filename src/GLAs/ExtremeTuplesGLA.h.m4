@@ -68,11 +68,13 @@ m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
 />)dnl
     }
 
-    GLA_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) {
+    GLA_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) :
+m4_undefine_full(</_TMP_/>)dnl
 m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
-        this->VAR(_A_) = VAR(_A_);
+        m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
+VAR(_A_)</(/> VAR(_A_) </)/>
 />)dnl
-    }
+    { }
 
     GLA_NAME<//>_Tuple & operator = ( const GLA_NAME<//>_Tuple & _other ) {
 m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
@@ -138,6 +140,7 @@ public:
 };
 
 void GLA_NAME :: AddItem( TYPED_ARGS(MY_INPUT) ) {
+
     ++count;
     if( tuples.size() > 0<//>dnl
 m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
@@ -160,7 +163,7 @@ m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
         AddTupleInternal( tuple );
 
 m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
-        this->VAR(_A_) = VAR(_A_);
+        this->VAR(_A_) = tuples.front().VAR(_A_);
 />)dnl
     }
 }

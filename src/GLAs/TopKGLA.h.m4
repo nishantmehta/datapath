@@ -37,12 +37,14 @@ m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
 		topKScore = 0;
 	}
 
-	TOPK_NAME<//>_Tuple(FLOAT _rank, TYPED_REF_ARGS(TOPK_TUPLE)) {
-		topKScore = _rank;
+    // Use the initialization list to construct the members to ensure that
+    // deep copies are made
+	TOPK_NAME<//>_Tuple(FLOAT _rank, TYPED_REF_ARGS(TOPK_TUPLE)) :
+        topKScore( _rank )
 m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
-	    this->VAR(_A_) = VAR(_A_);
+	    </, />VAR(_A_) </(/> VAR(_A_) </)/>
 />)dnl
-	}
+	{ }
 
 	TOPK_NAME<//>_Tuple& operator=(const TOPK_NAME<//>_Tuple& _other) {
 		topKScore = _other.topKScore;

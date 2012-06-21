@@ -74,11 +74,15 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
 />)dnl
     }
 
-    TOPK_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) {
-m4_foreach(</_A_/>,</MY_INPUT/>,</dnl
-        this->VAR(_A_) = VAR(_A_);
+    // This constructor uses the initialization list to construct each
+    // element using its copy constructor to ensure a deep copy
+    TOPK_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) :
+m4_undefine_full(</_TMP_/>)dnl
+m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
+        m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
+VAR(_A_)</(/> VAR(_A_) </)/>
 />)dnl
-    }
+    { }
 
     TOPK_NAME<//>_Tuple& operator=(const TOPK_NAME<//>_Tuple& _other) {
 m4_foreach(</_A_/>,</MY_INPUT/>,</dnl
@@ -149,9 +153,6 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
     void Sort() {
         // If tuples doesn't contain at least K elements, it was never made
         // into a heap in the first place, so just sort it normally.
-
-        // Actually, gcc freaks out if you try to do that, so make it a
-        // heap.
         if( __builtin_expect(tuples.size() < K, 0 ) )
             sort(tuples.begin(), tuples.end(), GreaterThanTopK);
         else

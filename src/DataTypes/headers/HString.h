@@ -35,7 +35,34 @@
 // Our 61 bit hash has 3 bit spare at MSB position, we use one of it to
 // denote we have it in our global dictionary. If set, string has entry in
 // global dictionary
-#define MSB_BITSET_3RD 0x2000000000000000UL
+#define DICT_BIT 0x2000000000000000UL
+
+// This bit determines whether or not the HString has locally allocated storage
+// for its character array, which it must manage.
+#define LOCAL_BIT 0x4000000000000000UL
+
+// Mask for bits used for items in the dictionary
+#define DICT_HASH_MASK 0x3FFFFFFFFFFFFFFFUL
+
+// Mask for bits used in the string hash
+#define STR_HASH_MASK 0x1FFFFFFFFFFFFFFFUL
+
+// Macros to assist looking up items in the dictionary
+#define MASK_MAYBE_IN_DICT(x) ((x) | DICT_BIT & DICT_HASH_MASK)
+#define MASK_IN_DICT(x) ((x) & DICT_HASH_MASK)
+
+// Macro for masking hashes for comparison with other hashes
+#define MASK_HASH(x) ((x) & STR_HASH_MASK)
+
+// Macros to assist determining if a hash has a certain bit set
+#define IN_DICT(x) ((x) & DICT_BIT)
+#define LOCAL(x) ((x) & LOCAL_BIT)
+
+// Macros to set and unset certain bits
+#define SET_DICT_BIT(x) ((x) |= DICT_BIT)
+#define CLEAR_DICT_BIT(x) ((x) &= ~DICT_BIT)
+#define SET_LOCAL_BIT(x) ((x) |= LOCAL_BIT)
+#define CLEAR_LOCAL_BIT(x) ((x) &= ~LOCAL_BIT)
 
 // This is to align on 8 byte boundary, number returned will be multiple of 8
 #define BYTE_ALIGN(x) ((x+7) & ~7)
@@ -62,9 +89,6 @@ using namespace std;
 		WARNING: In this class we do no synchronization at all. We assume
 		that theser operations are embeded in code that does chunk size
 		synchronization on the dictionary.
-
-		Do not use it for temporary strings like HString("abcd"), since
-		this class does not maintain its own copy of string data, relies on you
 */
 
 class HString {
@@ -197,7 +221,13 @@ public:
     }
 
   // default constructor
-  HString(): mHash(MSB_BITSET_3RD), mStrLen(-1), mStr(NULL) {}
+  HString(): mHash(DICT_BIT), mStrLen(-1), mStr(NULL) {}
+
+  /*
+   * Deep copy constructor. If the string is not in the dictionary, local
+   * storage is allocated and a copy of the string is made.
+   */
+  HString( const HString & other );
 
   /** Function to look the string in a local dictionary. Bit is set if
 	 * in */
@@ -205,6 +235,8 @@ public:
 
 	// assignment operator
   void operator=(const char *input);
+
+  HString & operator = (const HString & other);
 
 /*** This operator== need to perform as fast as possible. Because it will be called for
 		 millions of string comparisions. Here is the strategy what is being followed:
@@ -261,7 +293,7 @@ public:
   /* destructor, never virtual here. If you make it virtual then all alignment will
 		 go haywire, because class will allocate space for __vptr
 	*/
-  ~HString(void){ }
+  ~HString(void);
 
 	void FromString (const char* str);
 
@@ -314,10 +346,15 @@ inline void FromString (HString& obj, const char* str) {
 }
 
 inline void HString::LookUpInLocalDictionary(Dictionary& localDictionary){
-	Dictionary::const_iterator it = localDictionary.find(mHash | MSB_BITSET_3RD);
+	Dictionary::const_iterator it = localDictionary.find(MASK_MAYBE_IN_DICT(mHash));
 	if (it != localDictionary.end()) {
 		// 3rd MSB bit of hash tells if we are in dictionary
-		mHash |= MSB_BITSET_3RD;
+        SET_DICT_BIT(mHash);
+
+        if( LOCAL(mHash) ) {
+            free((void *) mStr);
+            CLEAR_LOCAL_BIT(mHash);
+        }
 	}
 }
 
@@ -325,13 +362,15 @@ inline void HString::FromString(const char* aux) {
 	// Compute the hash
 	mHash = HashString(aux);
 	// Check if its in dictionary or not to set appropriate bit
-	Dictionary::const_iterator it = globalDictionary.find(mHash | MSB_BITSET_3RD);
+	Dictionary::const_iterator it = globalDictionary.find(MASK_MAYBE_IN_DICT(mHash));
 	if (it != globalDictionary.end()) {
 		// 3rd MSB bit of hash tells if we are in dictionary
-		mHash |= MSB_BITSET_3RD;
+        SET_DICT_BIT(mHash);
 	} else { // If not in dictionary
-		// Dont make a copy, just point to it
-		mStr = aux;
+        // Make a copy, we can't be sure that the character array pointed to
+        // by aux will stay around for any length of time.
+        mStr = strdup( aux );
+        SET_LOCAL_BIT(mHash);
 		/* We don't maintain mStrLen here because it is computed by explicit function when needed
 			 ComputeObjLen(), which is used in HStringIterator Insert function. If we try to compute
 			 length here, it may not be needed for every case who uses this constructor. mStrLen is
@@ -347,18 +386,20 @@ inline HString::HString(const char* aux) {
 
 inline HString::operator const char *() const {
 
-	if (mHash & MSB_BITSET_3RD)
-		return (globalDictionary[mHash]).c_str(); // No risk since this is private (to be used internally)
+	if (IN_DICT(mHash))
+		return (globalDictionary[MASK_IN_DICT(mHash)]).c_str(); // No risk since this is private (to be used internally)
 	else
 		return mStr;
 }
 
 inline const char* HString::GetStr() const {
 
-	if (mHash & MSB_BITSET_3RD) {
-        WARNINGIF( globalDictionary.find( mHash ) == globalDictionary.end(),
+    FATALIF( IN_DICT(mHash) && LOCAL(mHash), "String marked as both in dictionary and local! hash: %lu", mHash);
+
+	if (IN_DICT(mHash)) {
+        WARNINGIF( globalDictionary.find( MASK_IN_DICT(mHash) ) == globalDictionary.end(),
                 "Entry should be in the dictionary. mHash: %ld", mHash);
-		return (globalDictionary[mHash]).c_str(); // No risk since this is private (to be used internally)
+		return (globalDictionary[MASK_IN_DICT(mHash)]).c_str(); // No risk since this is private (to be used internally)
 	}
 	else {
 		return mStr;
@@ -366,9 +407,7 @@ inline const char* HString::GetStr() const {
 }
 
 inline void HString::operator=(const char *input) {
-
-	mHash = HashString(input);
-	mStr = input;
+    FromString( input );
 }
 
 #ifndef SLOW_WITHOUT_RISK
@@ -377,9 +416,9 @@ inline bool HString::operator==(const HString& input) {
 
 	// First check is for 61 bit hash value matching. Below check could also have
 	// been done as (((mHash ^ input.mHash) << 3) == 0). See which one is faster.
-	if (__builtin_expect((((mHash ^ input.mHash) & ~MSB_BITSET_3RD) == 0), 1)) {
+	if (__builtin_expect((((mHash ^ input.mHash) & DICT_HASH_MASK) == 0), 1)) {
 		// Second check is to see if both strings are in dictionary or not
-		if (__builtin_expect((mHash & input.mHash & MSB_BITSET_3RD), 1)) {
+		if (__builtin_expect(IN_DICT(mHash & input.mHash), 1)) {
 			return true;
 		} else {
 			// This is slow path, has to do string comparision, HString will convert
@@ -395,7 +434,7 @@ inline bool HString::operator==(const HString& input) {
 inline bool HString::operator==(const HString& input) {
 
 	// If any of the strings not in dictionary, just do string comparision
-	if (__builtin_expect((mHash & input.mHash & MSB_BITSET_3RD), 1)) {
+	if (__builtin_expect(IN_DICT(mHash & input.mHash), 1)) {
 		// If both strings are in dictionary, just match their hash values,
 		// because we already ensured that dictionary contains unique entries
 		if (__builtin_expect((mHash == input.mHash), 1)) {
@@ -440,7 +479,7 @@ inline int HString::GetSize () const {
 }
 
 inline unsigned int HString::GetObjLength() const {
-	if (mHash & MSB_BITSET_3RD)
+	if (IN_DICT(mHash))
 		return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
 	else {
 		int x = BYTE_ALIGN(mStrLen);
@@ -449,7 +488,7 @@ inline unsigned int HString::GetObjLength() const {
 }
 
 inline unsigned int HString::ComputeObjLength() {
-	if (mHash & MSB_BITSET_3RD)
+	if (IN_DICT(mHash))
 		return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
 	else {
 		mStrLen = strlen(mStr) + 1;
@@ -459,16 +498,16 @@ inline unsigned int HString::ComputeObjLength() {
 }
 
 inline bool HString::IsInDictionary() const {
-	if (mHash & MSB_BITSET_3RD)
+	if (IN_DICT(mHash))
 		return true;
 	return false;
 }
 
 inline void* HString::OptimizedSerialize(HString& hstr, void* buffer) {
-	if (mHash & MSB_BITSET_3RD) {
+	if (IN_DICT(mHash)) {
 		return (void*)&mHash;
 	} else {
-		*((__uint64_t*)buffer) = mHash;
+		*((__uint64_t*)buffer) = MASK_IN_DICT(mHash);
 		*((__uint64_t*)buffer + 1) = mStrLen;
 		strcpy(((char*)buffer) + 16, mStr);
 		return buffer;
@@ -489,7 +528,7 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
 	*/
     //cerr << "Adding entry to dictionary: string = " << h.mStr << " hash = " << h.mHash << endl;
 	__uint64_t& hashVal = h.GetHashValue();
-	hashVal |= MSB_BITSET_3RD;
+    SET_DICT_BIT(hashVal);
 	Dictionary::const_iterator it = dictionary.find(hashVal);
 	/* It is most likely branch because we know in almost all the cases we will not find the
 		 string in dictionary once establishing the fact in HStringIterator that it is not
@@ -501,6 +540,13 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
 	if (__builtin_expect((it == dictionary.end()), 1)){
  		char* myCopy = strdup(h.GetString());
 		dictionary[hashVal] = myCopy;
+
+        // If the string was stored in local storage before, we need to
+        // deallocate that memory and clear the local storage bit
+        if( LOCAL(hashVal) ) {
+            free( (void *) h.GetString() );
+            CLEAR_LOCAL_BIT(hashVal);
+        }
 	}
 	else {
 		/* It should better be same string. Otherwise collision for different FREQUENT strings.
@@ -513,7 +559,7 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
 			 this we are ensuring uniqueness in dictionary.
 		*/
 		if (strcmp(h.GetString(), (it->second).c_str()) != 0)
-			hashVal &= ~MSB_BITSET_3RD;
+            CLEAR_DICT_BIT(hashVal);
 	}
 }
 
@@ -544,7 +590,41 @@ inline bool HString :: operator <=( const HString & input ) const {
 
 // Hash function for use by GLAs and such.
 inline uint64_t Hash( HString val ) {
-    return val.mHash & ~MSB_BITSET_3RD;
+    return MASK_HASH( val.mHash );
+}
+
+// Destructor
+inline
+HString :: ~HString( void ) {
+    if( LOCAL(mHash) ) {
+        free( (void *) mStr );
+    }
+}
+
+// Copy Constructor (deep copy)
+inline
+HString :: HString( const HString & other ) {
+    mHash = other.mHash;
+    mStrLen = other.mStrLen;
+
+    if( !IN_DICT(mHash) ) {
+        mStr = strdup( other.mStr );
+        SET_LOCAL_BIT(mHash);
+    }
+}
+
+// Assignment operator (shallow copy)
+inline
+HString & HString :: operator = (const HString & other ) {
+    mHash = other.mHash;
+    mStrLen = other.mStrLen;
+    mStr = other.mStr;
+
+    if( LOCAL(mHash) ) {
+        mStr = strdup( other.mStr );
+    }
+
+    return *this;
 }
 
 #endif // _HSTRING_H_

@@ -35,7 +35,7 @@ m4_ifdef(</GLA_NAME/>,</m4_undefine(</GLA_NAME/>)/>)dnl
 m4_ifdef(</GBY_ATTS/>,</m4_undefine(</GBY_ATTS/>)/>)dnl
 m4_define(</INNER_GLA/>, </$3/>)dnl
 m4_define(</GLA_NAME/>, </$1/>)dnl
-m4_define(</GBY_ATTS/>,m4_quote($2))dnl
+m4_define(</GBY_ATTS/>,</$2/>)dnl
 dnl
 m4_define(</USE_FRAGMENTS/>,</NUM_EXEC_ENGINE_THREADS/>)dnl
 dnl
@@ -48,10 +48,13 @@ m4_ifdef(INNER_GLA</_INIT/>, </dnl
 />, </dnl
 <//>m4_redefine(</MY_INIT/>, <//>)<//>dnl
 />)dnl
+dnl
+m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, INNER_GLA</_INPUT/>)))dnl
+m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, INNER_GLA</_OUTPUT/>)))dnl
 
 /* Information for meta GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </GLUE_LISTS(GBY_ATTS, INNER_GLA</_INPUT/>)/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </GLUE_LISTS(GBY_ATTS, INNER_GLA</_OUTPUT/>)/>)
+    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)
+    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
     m4_qdefine(</GLA_NAME</_INIT/>/>, </MY_INIT/>)
     m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
  */
@@ -86,11 +89,13 @@ m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
 />)dnl
 
 dnl # constructor
-  Key_<//>GLA_NAME (TYPED_REF_ARGS(GBY_ATTS)){
-m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
-        this->VAR(_A_) = VAR(_A_);
+  Key_<//>GLA_NAME (TYPED_REF_ARGS(GBY_ATTS)) :
+m4_undefine_full(</_TMP_/>)dnl
+m4_foreach(</_A_/>, </GBY_ATTS/>, </dnl
+        m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
+VAR(_A_)</(/> VAR(_A_) </)/>
 />)dnl
-    }
+    { }
 
     bool operator==(const Key_<//>GLA_NAME& o) const {
         return (true<//>dnl
@@ -140,17 +145,17 @@ m4_ifval(MY_INIT, </dnl
 
 public:
 m4_ifval(MY_INIT, </dnl
-    GLA_NAME<//>(TYPED_ARGS(MY_INIT)) : groupByMap( INIT_SIZE ) {
+    GLA_NAME<//>(TYPED_ARGS(MY_INIT)) : groupByMap( INIT_SIZE )
 <//>m4_foreach(</_A_/>, </MY_INIT/>, </dnl
-        this->VAR(_A_) = VAR(_A_);
+        </, />VAR(_A_) </(/> VAR(_A_) </)/>
 <//>/>)dnl
-    }
+    { }
 />, </dnl
     GLA_NAME</():groupByMap(INIT_SIZE)/> {}
 />)dnl
     ~GLA_NAME</()/> {}
 
-    void AddItem(TYPED_ARGS(GLUE_LISTS(GBY_ATTS,INNER_GLA</_INPUT/>))) {
+    void AddItem(TYPED_ARGS(MY_INPUT)) {
         // check if _key is already in the map; if yes, add _value; else, add a new
         // entry (_key, _value)
         Key_<//>GLA_NAME key(ARGS(GBY_ATTS));
@@ -248,7 +253,7 @@ m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
         return rez;
     }
 
-    bool GetNextResult(GLA_NAME<//>_Iterator* it,  TYPED_REF_ARGS(GLUE_LISTS(GBY_ATTS, INNER_GLA</_OUTPUT/>))) {
+    bool GetNextResult(GLA_NAME<//>_Iterator* it,  TYPED_REF_ARGS(MY_OUTPUT)) {
         MapType::iterator& theIterator = it->it;
         MapType::iterator& endIt = it->end;
 />,</dnl use multi interface
@@ -265,7 +270,7 @@ m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
         }
     }
 
-    bool GetNextResult(TYPED_REF_ARGS(GLUE_LISTS(GBY_ATTS, INNER_GLA</_OUTPUT/>))) {
+    bool GetNextResult(TYPED_REF_ARGS(MY_OUTPUT)) {
         MapType::iterator endIt = groupByMap.end();
 />)dnl
 

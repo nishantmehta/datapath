@@ -147,6 +147,7 @@ int HStringIterator :: AtUnwrittenByte () {
 inline
 bool HStringIterator :: IsFrequent (__uint64_t hashVal) {
 
+    hashVal = MASK_IN_DICT(hashVal);
 	totalCNT++;
 
 	std::map<__uint64_t, int>::iterator it = hashFrequencyMap.find(hashVal);

@@ -25,12 +25,12 @@ order by
     o_orderpriority
 limit 10;
 
-RESULT(</dnl
-       1-URGENT|10594
-         2-HIGH|10476
-       3-MEDIUM|10410
+RESULT(
+</1-URGENT|10594
+2-HIGH|10476
+3-MEDIUM|10410
 4-NOT SPECIFIED|10556
-          5-LOW|10487/>)
+5-LOW|10487/>)
 
 RESULT_FILE(TPCH-Q4-result.csv)
 
@@ -52,6 +52,18 @@ FILTER
 BY
     lineitem.l_commitdate < lineitem.l_receiptdate;
 
+dst_lineitem =
+GLA:DistinctGLA
+<
+    [ l_orderkey : INT ]
+>
+FROM
+    sellineitem
+USING
+    lineitem.l_orderkey
+AS
+    l_orderkey : INT;
+
 jol =
 JOIN
     sellineitem BY lineitem.l_orderkey,
@@ -71,11 +83,11 @@ USING
     orders.o_orderpriority,
     1.0
 AS
-    o_orderpriority:HString,
-    order_count:BIGINT;
+    gby_o_orderpriority : HString ,
+    gby_order_count     : BIGINT;
 
-topK =
-GLA:TopKGLA
+orderby =
+GLA:OrderByGLA
 <
     [
         o_orderpriority : HString : ASC
@@ -87,13 +99,19 @@ GLA:TopKGLA
 FROM
     gby
 USING
-    o_orderpriority,
-    order_count;
+    gby_o_orderpriority,
+    gby_order_count
+AS
+    ord_o_orderpriority : HString ,
+    ord_order_count     : BIGINT;
 
 PRINT
-    topK
+    orderby
 USING
-    o_orderpriority,
-    order_count
+    ord_o_orderpriority,
+    ord_order_count
+AS
+    o_orderpriority : HString ,
+    order_count     : BIGINT
 INTO
     "TPCH-Q4-result.csv";
