@@ -98,4 +98,23 @@ m4_define(</m4_qdefine/>,</dnl
 m4_define(</m4_autoincr/>, </dnl
 <//>m4_define(</$1/>, m4_incr(m4_defn(</$1/>)))dnl
 />)
+
+dnl # Macro for defining what libraries a GLA requires to be linked
+m4_define(</LIBS/>, </dnl
+<//>m4_divert_push(8)dnl
+<//>m4_foreach(</_LIB_/>, </$@/>, </dnl
+<//><//>_LIB_
+/>)dnl
+<//>m4_divert_pop(8)dnl
+/>)
+
+dnl # Put the BEGIN_LIBRARY comment in diversion 7 and END_LIBRARY in 9 so that
+dnl # once m4 exits, the libraries in diversion 8 are commented out.
+m4_divert_push(7)dnl
+/* BEGIN_LIBRARIES
+m4_divert_pop(7)dnl
+
+m4_divert_push(9)dnl
+END_LIBRARIES */
+m4_divert_pop(9)dnl
 m4_divert(0)dnl

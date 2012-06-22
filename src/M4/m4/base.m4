@@ -196,4 +196,20 @@ m4_define(</m4_to_lower/>, </dnl
 <//>m4_translit(</$1/>, </ABCDEFGHIJKLMNOPQRSTUVWXYZ/>, </abcdefghijklmnopqrstuvwxyz/>)<//>dnl
 />)
 
+# Macros to push and pop diversions
+
+m4_define(</m4_divert_push/>,
+    </m4_ifval(</$1/>,
+        </m4_pushdef(</m4_previous_diversion/>, m4_divnum)<//>m4_divert($1)/>,
+        </m4_warning(</WARNING: m4_divert_push with no argument ignored/>)/>)dnl
+/>)dnl
+
+m4_define(</m4_divert_pop/>,
+    </m4_ifndef(</m4_previous_diversion/>, </m4_fatal(</ERROR: too many calls to m4_divert_pop!/>)/>)/><//>dnl
+<//></m4_ifval(</$1/>,
+        </m4_if($1, m4_divnum,
+            </m4_divert(m4_previous_diversion)<//>m4_popdef(</m4_previous_diversion/>)/>,
+            </m4_warning(</WARNING: m4_divert_pop did not specify the correct diversion to pop!/>)/>)/>)dnl
+/>)dnl
+
 m4_divert(0)<//>dnl

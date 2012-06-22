@@ -45,6 +45,9 @@ options {
 #ifndef STRS
 #define STRS(X) ( string(TXTS(X)) )
 #endif
+#ifndef ADD_CST
+#define ADD_CST(cstStr, cst) ((cstStr) += "    " + (cst))
+#endif
 }
 
 @members {
@@ -585,49 +588,49 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
 }
 | ^(MATCH_DP patt=STRING a=expression[atts, cstStr] { lInfo.Add($a.sExpr, $a.type, $a.isCT); } ) // pattern matcher
     {
-      // for a pattern matcher, we have to build an expression
-      // of the form: PatternMather ctObj(pattern)
-      // then on use do ctObj.IsMatch(expr)
-      $type = "bool";
+        // for a pattern matcher, we have to build an expression
+        // of the form: PatternMather ctObj(pattern)
+        // then on use do ctObj.IsMatch(expr)
+        $type = "bool";
 
-      $isCT = lInfo.IsListConstant();
+        $isCT = lInfo.IsListConstant();
 
-      lInfo.Prepare( $cstStr );
-      std::vector<string> eVals = lInfo.Generate();
-      // new constant
-      int ctNo = ExprListInfo::NextVar();
-      // add def of matcher object
-      ostringstream match;
-      match << "PatternMatcher ct" << ctNo << "( string("
-            <<  TXTN($patt) << ") );" << endl;
+        lInfo.Prepare( $cstStr );
+        std::vector<string> eVals = lInfo.Generate();
+        // new constant
+        int ctNo = ExprListInfo::NextVar();
+        // add def of matcher object
+        ostringstream match;
+        match << "PatternMatcher ct" << ctNo << "( string("
+              <<  TXTN($patt) << ") );" << endl;
 
-      $cstStr+=match.str();
-      // now the expression
-      ostringstream expr;
-      expr << "ct" << ctNo << ".IsMatch(" << eVals[0] << ")";
-      $sExpr+=expr.str();
+        ADD_CST($cstStr, match.str());
+        // now the expression
+        ostringstream expr;
+        expr << "ct" << ctNo << ".IsMatch(" << eVals[0] << ")";
+        $sExpr+=expr.str();
    }
 | ^(CASE_DP (a=expression[atts, cstStr] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // cases
    {
-      // just like a function. For now we only support the 3-argument case
-      $isCT = lInfo.IsListConstant();
+        // just like a function. For now we only support the 3-argument case
+        $isCT = lInfo.IsListConstant();
 
-      lInfo.Prepare( $cstStr );
-      std::vector<string> eVals = lInfo.Generate();
-      FATALIF(eVals.size()!=3, "We only support CASE(test, true_expr, false_expr) for now");
-      $sExpr = $sExpr+"("+eVals[0]+") ? ("+eVals[1]+") : ("+eVals[2]+")";
+        lInfo.Prepare( $cstStr );
+        std::vector<string> eVals = lInfo.Generate();
+        FATALIF(eVals.size()!=3, "We only support CASE(test, true_expr, false_expr) for now");
+        $sExpr = $sExpr+"("+eVals[0]+") ? ("+eVals[1]+") : ("+eVals[2]+")";
    }
 | att=ATT  // Attribute
 {
-    string longName = (char*)$att.text->chars;
-    SlotID slot = am.GetAttributeSlot(longName.c_str());
-    FATALIF( !slot.IsValid(), "Attribute does not exist, how did this happen?");
-    atts.Append(slot);
-    // Add the attribute long name string to the expression
-    $sExpr = longName;
-    // Find the correct function to get attr type
-    $type = dTM.GetBaseType(am.GetAttributeType(longName.c_str()));
-    $isCT = false;
+        string longName = (char*)$att.text->chars;
+        SlotID slot = am.GetAttributeSlot(longName.c_str());
+        FATALIF( !slot.IsValid(), "Attribute does not exist, how did this happen?");
+        atts.Append(slot);
+        // Add the attribute long name string to the expression
+        $sExpr = longName;
+        // Find the correct function to get attr type
+        $type = dTM.GetBaseType(am.GetAttributeType(longName.c_str()));
+        $isCT = false;
 }
 | INT
 {

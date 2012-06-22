@@ -31,12 +31,11 @@ dnl # Usage
 dnl # $1 = GLA_NAME   name of the class generated
 dnl # $2 = DST_ATTS   list of distinct attributes
 m4_define(</DistinctGLA/>,</dnl
-m4_divert(-1)
 m4_ifdef(</GLA_NAME/>,</m4_undef(</GLA_NAME/>)/>)dnl
 m4_ifdef(</DST_ATTS/>,</m4_undef(</GBY_ATTS/>)/>)dnl
 m4_define(</GLA_NAME/>, </$1/>)dnl
 m4_define(</DST_ATTS/>,m4_quote($2))dnl
-
+dnl
 m4_ifndef(</USE_FRAGMENTS/>, </dnl
 <//>m4_define(</USE_FRAGMENTS/>, </NUM_EXEC_ENGINE_THREADS/>)dnl
 />)dnl
@@ -81,11 +80,13 @@ m4_foreach(</_A_/>,</DST_ATTS/>,</dnl
 
 
 dnl # constructor
-  Key_<//>GLA_NAME (TYPED_REF_ARGS(DST_ATTS)){
-m4_foreach(</_A_/>,</DST_ATTS/>,</dnl
-    this->VAR(_A_) = VAR(_A_);
+  Key_<//>GLA_NAME (TYPED_REF_ARGS(DST_ATTS)) :
+m4_undefine_full(</_TMP_/>)dnl
+m4_foreach(</_A_/>, </DST_ATTS/>, </dnl
+        m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
+VAR(_A_)</(/> VAR(_A_) </)/>
 />)dnl
-    }
+    { }
 
     bool operator==(const Key_<//>GLA_NAME& o) const {
         return (true dnl

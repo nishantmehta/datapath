@@ -38,6 +38,7 @@ dnl
 extern "C"
 int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
 
+    // TODO: Make this configurable
     const char DELIM = '|';
 
     // get the work description
@@ -45,12 +46,12 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
     myWork.swap (workDescription);
     Chunk &input = myWork.get_chunkToPrint ();
 
-    M4_DECLARE_QUERYIDS(</M4_Print_List/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_Print_List/>,</M4_Attribute_Queries/>)dnl
 
-    M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
-    M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
 
-    M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)dnl
 
     // for each query, define a stream variable
 <//>m4_foreach(</_Q_/>, </M4_Print_List/>, </dnl
@@ -61,12 +62,12 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
 
     FOR_EACH_TUPLE(</input/>){
         QueryIDSet qry;
-        GET_QUERIES(qry);
+<//><//>GET_QUERIES(qry)
 
         // extract values of attributes from streams
-        M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
+<//><//>M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
 
-    dnl qry.Print();
+dnl     qry.Print();
 <//>m4_foreach(</_Q_/>, </M4_Print_List/>, </dnl
         // do M4_QUERY_NAME(_Q_)
         if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
@@ -76,9 +77,9 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
 
 <//><//>m4_foreach(</_A_/>, M4_PRINT_LIST(_Q_),</dnl
             curr+=ToString(M4_VAL_SUBST(_A_),buffer+curr);
-            buffer[curr-1]=DELIM; dnl // ALIN CHANGE TO CONSTANT DEFINING OUTPUT SEPARATOR
-<//><//>/>)dnl
+            buffer[curr-1] = DELIM;
 
+<//><//>/>)dnl
             // now we print the buffer
             buffer[curr-1]='\n';
             buffer[curr]=0; // end of string
@@ -90,5 +91,4 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
 
     // just return some arbitrary value... don't worry about reconstructing the chunk
     return 0;
-
 }

@@ -52,6 +52,7 @@ FILTER
 BY
     lineitem.l_commitdate < lineitem.l_receiptdate;
 
+// TODO: Remove this distinct once we have EXISTS functionality in the join
 dst_lineitem =
 GLA:DistinctGLA
 <
@@ -66,7 +67,7 @@ AS
 
 jol =
 JOIN
-    sellineitem BY lineitem.l_orderkey,
+    dst_lineitem BY l_orderkey,
     selorders BY orders.o_orderkey;
 
 gby =

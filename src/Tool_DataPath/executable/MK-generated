@@ -35,6 +35,7 @@ M4INCLUDES += -I ~/datapath/GLAs
 
 CINCLUDES = -I ../../../Headersdp ${GLA_INC}
 
+LIB_EXTRACT = ../extract_libs.awk
 
 # to preserve the generated cc files we need this
 .PRECIOUS: %.cc
@@ -42,8 +43,14 @@ CINCLUDES = -I ../../../Headersdp ${GLA_INC}
 %.cc: %.m4
 	$(M4) $(M4INCLUDES) $< > $@
 
-%.o: %.cc
+%.o : %.cc
 	$(CC) $(CINCLUDES) $(CCFLAGS) $(OPT) -c -o $@ $^
 
-Generated.so: ${OBJECTS}
-	${CC} ${OPT} -rdynamic -shared  -o Generated.so   ${OBJECTS} ${LIBS} ${STAT_LIBS} 
+%.lib : %.cc
+	${LIB_EXTRACT} $^ > $@
+
+libfile: ${OBJECTS:.o=.lib}
+	sort -u $^ > libfile
+
+Generated.so: ${OBJECTS} libfile
+	${CC} ${OPT} -rdynamic -shared  -o Generated.so   ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)

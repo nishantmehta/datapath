@@ -59,14 +59,14 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // get the waypoint ID from the chunk
     int wayPointID = myWork.get_wayPointID ();
 
-    M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
 
     // get ready the input columns
 <//>dnl SS Find some easy way to write qrys in here, not like JoinMerge way
 <//>dnl M4_ACCESS_COLUMNS(</M4_Attribute_Queries_LHS/>,</input/>)dnl
 <//>m4_foreach( </_A_/>, m4_quote(reval(</m4_args/>M4_Attribute_Queries_LHS)), </dnl
     QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
-    M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)dnl
+<//>M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)dnl
 <//>/>)dnl
 
 <//>dnl SS M4_EXTRACT_BITMAP(</input/>)dnl

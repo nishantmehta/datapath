@@ -13,7 +13,7 @@ dnl #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 dnl #  See the License for the specific language governing permissions and
 dnl #  limitations under the License.
 dnl #
-include(base.m4)
+include(base.m4)dnl
 m4_divert(-1)
 	
 ### Resources.m4 -- contains helper functions used by other

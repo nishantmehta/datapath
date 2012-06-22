@@ -35,4 +35,4 @@ echo "Compiling the code"
 # source /opt/intel/Compiler/11.1/056/bin/iccvars.sh intel64
 
 export OBJECTS="$objects"
-make -k -f ../MK-generated -j ${numParallelJobs}
+make -k -f ../MK-generated -j ${numParallelJobs} Generated.so
