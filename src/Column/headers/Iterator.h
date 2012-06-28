@@ -121,7 +121,7 @@ public:
 	// Get the number of fragments
 	int GetNumFragments();
 
-	// replace with this column
+	//lace with this column
 	void ConvertFromCol(Column& realColumn);
 };
 
@@ -214,6 +214,7 @@ void Iterator :: EnsureWriteSpace () {
 
 inline
 bool Iterator :: IsInvalid () {
+  FATALIF(!isInValid && !myColumn.IsValid(), "Column should be valid");
 
 	return isInValid;
 }

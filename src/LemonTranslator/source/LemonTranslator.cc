@@ -530,8 +530,13 @@ bool LemonTranslator::Run(QueryIDSet queries)
   QueryIDSet tmp = queries.Clone ();
     while (!tmp.IsEmpty())
     {
-        QueryID q = tmp.GetFirst ();
-        WayPointID wp = (nodeToWaypointData[queryToRootMap[q]])->GetId();
+      QueryID q = tmp.GetFirst ();
+      FATALIF(queryToRootMap.find(q) == queryToRootMap.end(), "Query has no top");
+
+        WayPointID wp = nodeToWaypointData[queryToRootMap[q]]->GetId();
+
+    FATALIF(!wp.IsValid(), "No valid top node, what is happening");
+    
         QueryExit exitWP(q, wp);
         set<SlotID> dummy;
         // Call analysis

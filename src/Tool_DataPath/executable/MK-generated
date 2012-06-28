@@ -3,9 +3,9 @@
 # make -f MK-generaged -DOBJECTS="WP1.O ..." 
 # The macro OBJECTS must list the objects needed
 
-STAT_LIBS =  ../../../GLAs/CurveFittingLib/libcfit.a
+# STAT_LIBS =  ../../../GLAs/CurveFittingLib/libcfit.a
 
-LIBS = -lgsl -lgslcblas -lonig
+LIBS = -lonig # -lgsl -lgslcblas -lonig
 
 # pattern matching library to use
 PAT_MATCH=2 # 1: xpression 2:onig
@@ -21,7 +21,7 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG -DDP_REGEX_LIB=${PAT_MATCH}
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
 # COMPILER OPTIMIZATION
-OPT=-O3 -march=native -ffast-math
+# OPT=-O3 -march=native -ffast-math
 
 M4=m4 
 

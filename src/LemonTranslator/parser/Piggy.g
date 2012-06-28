@@ -41,6 +41,8 @@ statement
         ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp attListWTypes ^(LIST $file)? ) )))
   | STORE a=ID INTO b=ID
     -> ^(NEWSTATEMENT ^(WRITER__ $b ID[$a, qry.c_str()] TERMCONN $a))
+    | CREATE crStmt -> crStmt
+  | DROP drStmt  -> drStmt
   ;
 
 /* JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt  */

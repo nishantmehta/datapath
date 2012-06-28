@@ -31,7 +31,10 @@ HStringIterator :: HStringIterator (Column &iterateMe, HString::Dictionary& _upd
 	if (it.GetFirstInvalidByte() == 0)
 		return;
 
-	int objLen = ((HString*) it.GetData())->GetObjLength ();
+
+	it.EnsureHeaderSpace();
+	myValue.Set(it.GetData());
+	int objLen = myValue.GetObjLength ();
 	it.SetObjLen (objLen);
 	it.EnsureFirstObjectSpace(BYTE_ALIGN(objLen));
 
@@ -48,7 +51,8 @@ HStringIterator :: HStringIterator (Column &iterateMe, int fragmentStart, int fr
 	if (it.GetFirstInvalidByte() == 0)
 		return;
 
-	int objLen = ((HString*) it.GetData())->GetObjLength ();
+	myValue.Set(it.GetData());
+	int objLen = myValue.GetObjLength ();
 	it.SetObjLen (objLen);
 	it.EnsureFirstObjectSpace(BYTE_ALIGN(objLen));
 

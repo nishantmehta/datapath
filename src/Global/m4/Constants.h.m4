@@ -18,6 +18,7 @@ dnl
 include(Resources-T.m4)
 dnl before we deactivate the output, put a message that this file is generated
 m4_divert(0)
+COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
@@ -26,14 +27,14 @@ m4_divert(0)
 
 /*
 ==================Central hash table parameters==================
-* - NUM_SLOTS_IN_SEGMENT_BITS: This should not be over 24 bits if the size of a chunk is 2M tuples. 
+* - NUM_SLOTS_IN_SEGMENT_BITS: This should not be over 24 bits if the size of a chunk is 2M tuples.
 *     This size works well and Cleaner produces reasonably sized chunks.
-* - NUM_SEGS: This should be manipulated to use most memory in the system (about 70%). 
-*     Make sure it is set to a sum of few 2^k numbers so that % operator is implemented 
+* - NUM_SEGS: This should be manipulated to use most memory in the system (about 70%).
+*     Make sure it is set to a sum of few 2^k numbers so that % operator is implemented
 *     efficiently by the compiler.
 */
 #define NUM_SLOTS_IN_SEGMENT_BITS 24
-#define NUM_SEGS  2
+#define NUM_SEGS 8
 
 
 
@@ -43,7 +44,7 @@ m4_divert(0)
 * - COMPRESSION_UNIT: To allowed streamed decompression, small units have to be compressed in a streaming fashion.
 */
 #define COLUMN_ITERATOR_STEP (1<<14) /* 16KB */
-#define COMPRESSION_UNIT COLUMN_ITERATOR_STEP 
+#define COMPRESSION_UNIT COLUMN_ITERATOR_STEP
 
 
 
@@ -76,7 +77,7 @@ m4_divert(0)
 ==================Other Settings==================
 */
 
-/* Execution engine heart bit. Expressed in seconds 
+/* Execution engine heart bit. Expressed in seconds
 */
 #define HEARTBEAT_EE 5
 
@@ -88,12 +89,12 @@ m4_divert(0)
 
 /* Number of threads available for the execution engine. This should be # Processors x 1.5
 */
-#define NUM_EXEC_ENGINE_THREADS 12
+#define NUM_EXEC_ENGINE_THREADS 6
 
 
 /* How many disk tokens we allow (this controls the parallelism)
 */
-#define NUM_DISK_TOKENS 12
+#define NUM_DISK_TOKENS 6
 
 
 /* Maximum number of chunks that can be built in parallel by the file scanner.
@@ -119,13 +120,11 @@ m4_divert(0)
 
 /* This is the number of CPU work token requests that the hash table cleaner can have out at one time.
 */
-#define MAX_CLEANER_CPU_WORKERS 12
+#define MAX_CLEANER_CPU_WORKERS 6
 
 
 /* This is the number of disk work tokens that the cleaner can hoard to give to writers
 */
-#define MAX_CLEANER_DISK_REQUESTS 12
-
-
+#define MAX_CLEANER_DISK_REQUESTS 6
 
 #endif //_CONSTANTS_H_

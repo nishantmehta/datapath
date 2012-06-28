@@ -7,7 +7,15 @@ GLA     :   'gla' | 'Gla' | 'GLA';
 PRINT   :   'print' | 'Print' | 'PRINT' ;
 AGGREGATE : 'aggregate' | 'Aggregate' | 'AGGREGATE';
 
+CREATE : 'create' | 'Create' | 'CREATE';
+DROP : 'drop' | 'Drop' | 'DROP';
+
 EQUAL   :   '=' ;
+
+FUNCTION : 'function' | 'Function' | 'FUNCTION';
+RELATION : 'relation' | 'Relation' | 'RELATION';
+OPKEYWORD : 'operator' | 'Operator' | 'OPERATOR';
+DATATYPE : 'datatype' | 'Datatype' | 'DATATYPE';
 
 SEPARATOR : 'separator' | 'Separator' | 'SEPARATOR' ;
 ATTRIBUTES : 'attributes' | 'Attributes' | 'ATTRIBUTES' ;

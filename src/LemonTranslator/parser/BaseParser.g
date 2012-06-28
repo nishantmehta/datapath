@@ -91,6 +91,48 @@ string GenerateTemp(const char* pattern);
 }
 
 
+crStmt
+  : DATATYPE ID (FROM s=STRING)?  lstSyn[(char*)$ID.text->chars] -> ^(CRDATATYPE ID $s) lstSyn
+  | FUNCTION ID LPAREN lstArgsFc RPAREN '->' dType (FROM s=STRING)? -> ^(FUNCTION ID $s dType lstArgsFc)
+  | OPKEYWORD STRING LPAREN lstArgsFc RPAREN '->' dType (FROM s=STRING)? -> ^(OPDEF STRING $s dType lstArgsFc)
+  | RELATION ID LPAREN tpAttList RPAREN -> ^(CRRELATION ID tpAttList)
+  | GLA ID (FROM s=STRING)? LPAREN lstArgsFc RPAREN '->' LPAREN lstRetFc RPAREN -> ^(CRGLA ID $s ^(TPATT lstRetFc) ^(TPATT lstArgsFc))
+  ;
+
+/* dType is just ID for now. We should extend in future to ID<other params> */
+dType : ID;
+
+lstSyn[char* tp]
+  : /* nothing */
+  | EQUAL ID (    COMMA ID)* ->^(CRSYNONIM ID[$tp] ID)+
+  ;
+
+drStmt :
+  ;
+
+fctName
+  : ID -> FCT[(const char*)$ID.text->chars]
+  | STRING -> FCT[(const char*)$STRING.text->chars]
+  ;
+
+lstArgsFc
+  : /* nothing */
+  | dType (     COMMA ! dType)*
+  ;
+
+lstRetFc
+  : dType ( COMMA ! dType)*
+  ;
+
+tpAttList
+  : tpAtt (    COMMA ! tpAtt)*
+  ;
+
+tpAtt
+  : ID dType -> ^(TPATT ID dType)
+  ;
+
+
 ctAttList
     : /* nothing */ ->
     | ctAtt (COMMA! ctAtt )*

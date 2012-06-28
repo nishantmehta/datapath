@@ -155,8 +155,6 @@ private:
 	// the list of local dictionaries
 	static vector<Dictionary*> localDictionaries;
 
-  operator const char *() const;
-
 	/* These are private functions only to be used by HStringIterator */
 
 	/* This will return the object length, i.e. size of all members added
@@ -217,11 +215,35 @@ public:
 		 just serves as a wrapper around the data received from column and is used
 		 only by HStringIterator. This is made public to help the dictionary initialization.
 	*/
-	HString(__uint64_t h, __uint64_t l, const char* aux) : mHash(h), mStrLen(l), mStr(aux) {
+	HString(__uint64_t h, __uint64_t l, const char* aux) {
+    Set(h,l,aux);
+
     }
 
+
+  operator const char *() const;
+
+  /* Functin to be used when HString is placed on top of binary data */
+  void Set(__uint64_t h, __uint64_t l, const char* aux){
+    mHash=h;
+    CLEAR_LOCAL_BIT(mHash);  /* not our storage */    
+    mStrLen=l;
+    mStr=aux;
+  }
+
+  void Set(void* myData){
+    mHash = *((__uint64_t*) myData);
+    CLEAR_LOCAL_BIT(mHash); /* not our storage */    
+    mStrLen = *((__uint64_t*) myData + 1);
+    mStr = (char*)myData +  2*sizeof(__uint64_t);
+  }
+
+  /* function to set state to invalid/NULL */
+  void SetInvalid(){ mHash=DICT_BIT; mStrLen=-1; mStr=NULL; }
+
+
   // default constructor
-  HString(): mHash(DICT_BIT), mStrLen(-1), mStr(NULL) {}
+ HString(){SetInvalid();}
 
   /*
    * Deep copy constructor. If the string is not in the dictionary, local
@@ -271,7 +293,7 @@ public:
 	/* return  a reference to hash value. Returns a reference so that hash value can be
 		 modified if it is found in dictionary (inside AddInDictionary operation)
 	*/
-	__uint64_t& GetHashValue();
+	__uint64_t GetHashValue();
 
 	/* return string length. This will make sense only after you call ComputeObjLen()
 		 otherwise mStrLen is invalid. We dont maintain it unless it is required.
@@ -297,7 +319,7 @@ public:
 
 	void FromString (const char* str);
 
-	void* OptimizedSerialize(HString& hstr, void* buffer);
+	void* OptimizedSerialize(const HString& hstr, void* buffer) const;
 
 	HString Deserialize(void* buffer);
 
@@ -318,6 +340,16 @@ public:
     bool operator <( const HString & input ) const;
     bool operator >=( const HString & input ) const;
     bool operator <=( const HString & input ) const;
+
+    void ConvertToDictionary(void){
+      if( LOCAL(mHash) ) {
+	free((void *) mStr);
+	CLEAR_LOCAL_BIT(mHash);
+      }
+      mStr=NULL;
+      mStrLen=-1;
+      SET_DICT_BIT(mHash);
+    }
 
     // Add a Hash() function to bring it into line with all of the other
     // datatypes. Just returns mHash
@@ -349,13 +381,8 @@ inline void HString::LookUpInLocalDictionary(Dictionary& localDictionary){
 	Dictionary::const_iterator it = localDictionary.find(MASK_MAYBE_IN_DICT(mHash));
 	if (it != localDictionary.end()) {
 		// 3rd MSB bit of hash tells if we are in dictionary
-        SET_DICT_BIT(mHash);
-
-        if( LOCAL(mHash) ) {
-            free((void *) mStr);
-            CLEAR_LOCAL_BIT(mHash);
-        }
-	}
+	  SET_DICT_BIT(mHash);
+     	}
 }
 
 inline void HString::FromString(const char* aux) {
@@ -364,8 +391,8 @@ inline void HString::FromString(const char* aux) {
 	// Check if its in dictionary or not to set appropriate bit
 	Dictionary::const_iterator it = globalDictionary.find(MASK_MAYBE_IN_DICT(mHash));
 	if (it != globalDictionary.end()) {
-		// 3rd MSB bit of hash tells if we are in dictionary
-        SET_DICT_BIT(mHash);
+	  // 3rd MSB bit of hash tells if we are in dictionary
+	  SET_DICT_BIT(mHash);
 	} else { // If not in dictionary
         // Make a copy, we can't be sure that the character array pointed to
         // by aux will stay around for any length of time.
@@ -453,13 +480,13 @@ inline bool HString::operator==(const char* input) {
 	return operator==(HString(input));
 }
 
-inline __uint64_t& HString::GetHashValue() {
-	return mHash;
+inline __uint64_t HString::GetHashValue() {
+  return MASK_IN_DICT(mHash);
 }
 
-inline int ToString(HString& hstr, char* buffer) {
+inline int ToString(const char* hstr, char* buffer) {
     buffer[0] = '"';
-	strcpy(buffer+1, hstr.GetStr());
+	strcpy(buffer+1, hstr);
     int len = strlen( buffer );
     buffer[len] = '"';
     buffer[len+1] = '\0';
@@ -482,6 +509,8 @@ inline unsigned int HString::GetObjLength() const {
 	if (IN_DICT(mHash))
 		return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
 	else {
+	  
+	  FATALIF(mStrLen<0 || mStrLen>1024, "String is too large");
 		int x = BYTE_ALIGN(mStrLen);
 		return sizeof(__uint64_t) * 2 + x;
 	}
@@ -503,7 +532,7 @@ inline bool HString::IsInDictionary() const {
 	return false;
 }
 
-inline void* HString::OptimizedSerialize(HString& hstr, void* buffer) {
+inline void* HString::OptimizedSerialize(const HString& hstr, void* buffer) const {
 	if (IN_DICT(mHash)) {
 		return (void*)&mHash;
 	} else {
@@ -527,7 +556,7 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
 		 bit is unset since we made that check in HStringIterator before calling this function
 	*/
     //cerr << "Adding entry to dictionary: string = " << h.mStr << " hash = " << h.mHash << endl;
-	__uint64_t& hashVal = h.GetHashValue();
+	__uint64_t hashVal = h.GetHashValue();
     SET_DICT_BIT(hashVal);
 	Dictionary::const_iterator it = dictionary.find(hashVal);
 	/* It is most likely branch because we know in almost all the cases we will not find the
@@ -547,6 +576,9 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
             free( (void *) h.GetString() );
             CLEAR_LOCAL_BIT(hashVal);
         }
+
+	h.ConvertToDictionary();
+
 	}
 	else {
 		/* It should better be same string. Otherwise collision for different FREQUENT strings.

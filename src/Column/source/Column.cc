@@ -46,6 +46,7 @@ bool Column :: IsWriteMode () {
 }
 
 char *Column :: GetNewData (int posToStartFrom, int &numBytesRequested) {
+  FATALIF( myData == NULL, "Why is this NULL?");
 
 	// this just goes right through to the storage
 	return myData->GetData (posToStartFrom, numBytesRequested);

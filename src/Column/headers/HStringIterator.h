@@ -30,6 +30,11 @@
 class HStringIterator {
 private:
 
+  // interval value that we can return in GetCurrent()
+  HString myValue;
+
+  char guard[1024]; // buffer between myValue and the rest of the data
+
 	// Just pass the type to follow the interface, but we dont necessarily need it
 	Iterator it;
 
@@ -84,7 +89,7 @@ public:
 	int AtUnwrittenByte ();
 
 	// returns the data object at the current position in the column...
-	HString GetCurrent ();
+	const HString& GetCurrent ();
 
 	// Is the string frequent
 	// The function will also increase the frequency of an item
@@ -128,14 +133,14 @@ HStringIterator& HStringIterator::operator=(const HStringIterator& other) {
 }
 
 inline
-HString HStringIterator :: GetCurrent () {
+const HString& HStringIterator :: GetCurrent () {
+  /* we do this here to ensure that we do not use the garbage at the
+     end and ask for a lot of crap. */
 
-	if (it.IsInvalid ())
-		return HString();
-
-	// we place HString on top of the true structure
-	char* myData = it.GetData();
-	return HString(*(__uint64_t*)myData, *((__uint64_t*)myData + 1), myData+16);
+  int objLen = myValue.GetObjLength();
+  it.EnsureSpace ( objLen, objLen );
+  
+  return myValue;
 }
 
 inline
@@ -210,25 +215,25 @@ void HStringIterator :: Insert (HString &addMe) {
     strcpy(myData + 16, addMe.GetString());
 	FATALIF(addMe.GetStrLength() > 256, "String is too weird size %lld", (long long) addMe.GetStrLength());
   }
+  
+  myValue.Set(myData);
 }
 
 inline
 void HStringIterator :: Advance () {
 
-	if (it.IsInvalid ())
-		return;
-
+  if (it.IsInvalid ())
+    return;
+  
   // advance our position
-  it.SetObjLen (((HString*) it.GetData())->GetObjLength ());
-  it.AdvanceBy (it.GetObjLen());
-  it.EnsureHeaderSpace ();
+  int oObjLen = myValue.GetObjLength ();
+  it.SetObjLen (oObjLen);
+  it.AdvanceBy (oObjLen);
 
-  if (!it.IsWriteOnly())
-    it.SetObjLen (((HString*) it.GetData())->GetObjLength ());
-
-  //fprintf(stderr, "\nSize string = %ld", it.GetObjLen());
-	FATALIF(it.GetObjLen() > 256, "String is too weird size %lld", (long long) it.GetObjLen());
-  it.EnsureSpace (it.GetObjLen(), it.GetObjLen());
+  if (!it.IsWriteOnly()){
+    it.EnsureHeaderSpace ();
+    myValue.Set(it.GetData());
+  }
 }
 
 inline
