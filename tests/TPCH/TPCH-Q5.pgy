@@ -28,12 +28,12 @@ order by
     revenue desc
 limit 10;
 
-RESULT(</dnl
-INDONESIA|55502041.1697
-  VIETNAM|55295086.9967
-    CHINA|53724494.2566
-    INDIA|52035512.0002
-    JAPAN|45410175.6954/>)
+RESULT(
+</"INDONESIA"|55502041.1697
+"VIETNAM"|55295086.9967
+"CHINA"|53724494.2566
+"INDIA"|52035512.0002
+"JAPAN"|45410175.6954/>)
 
 RESULT_FILE(TPCH-Q5-result.csv)
 
@@ -43,13 +43,12 @@ LOAD customer;
 LOAD orders;
 LOAD lineitem;
 LOAD supplier;
-LOAD nation AS nation1;
-LOAD nation AS nation2;
-LOAD region AS region1;
-LOAD region AS region2;
+LOAD nation;
+LOAD region;
 
 // Right hand side of master join
 
+/*
 sel_region_r =
 FILTER
     region1
@@ -58,8 +57,9 @@ BY
 
 join_nation_region_r =
 JOIN
-    nation1 BY nation,n_regionkey,
+    nation1 BY nation.n_regionkey,
     sel_region_r BY region.r_regionkey;
+*/
 
 sel_orders =
 FILTER
@@ -68,27 +68,29 @@ BY
     orders.o_orderdate >= '1994/01/01'
     && orders.o_orderdate < '1995/01/01';
 
+/*
 join_customer_nation =
 JOIN
     customer BY customer.c_nationkey,
-    join_nation_region_r BY nation.r_nationkey;
+    join_nation_region_r BY nation.n_nationkey;
+*/
 
 join_rhs =
 JOIN
     sel_orders BY orders.o_custkey,
-    join_customer_nation BY customer.c_custkey;
+    customer BY customer.c_custkey;
 
 // Left hand side of master join
 
 sel_region_l =
 FILTER
-    region2
+    region
 BY
     region.r_name == 'ASIA';
 
 join_nation_region_l =
 JOIN
-    nation2 BY nation.n_regionkey,
+    nation BY nation.n_regionkey,
     sel_region_l BY region.r_regionkey;
 
 join_supplier_nation =
@@ -124,13 +126,13 @@ USING
     nation.n_name,
     lineitem.l_extendedprice * (1 - lineitem.l_discount)
 AS
-    n_name:HString,
-    revenue:DOUBLE;
+    gby_n_name:HString,
+    gby_revenue:DOUBLE;
 
 // Order by
 
 orderby =
-GLA:TopKGLA
+GLA:OrderByGLA
 <
     [
         revenue : DOUBLE : DESC
@@ -142,15 +144,21 @@ GLA:TopKGLA
 FROM
     gby
 USING
-    revenue,
-    n_name;
+    gby_revenue,
+    gby_n_name
+AS
+    ord_revenue : DOUBLE,
+    ord_n_name  : HString;
 
 // Print
 
 PRINT
     orderby
 USING
-    n_name,
-    revenue
+    ord_n_name,
+    ord_revenue
+AS
+    n_name : HString,
+    revenue : DOUBLE
 INTO
     "TPCH-Q5-result.csv";

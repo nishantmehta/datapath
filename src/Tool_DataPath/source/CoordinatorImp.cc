@@ -139,6 +139,7 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(CoordinatorImp, QueryFinishedProc, QueriesDoneM
 	}
 
     if( CoordinatorImp :: quitWhenDone ) {
+        sleep(2);
         exit(EXIT_SUCCESS);
     }
 

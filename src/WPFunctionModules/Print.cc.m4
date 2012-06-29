@@ -76,8 +76,10 @@ dnl     qry.Print();
             //curr = strlen(buffer);
 
 <//><//>m4_foreach(</_A_/>, M4_PRINT_LIST(_Q_),</dnl
+            buffer[curr++] = '"';
             curr+=ToString(M4_VAL_SUBST(_A_),buffer+curr);
-            buffer[curr-1] = DELIM;
+            buffer[curr-1] = '"';
+            buffer[curr++] = DELIM;
 
 <//><//>/>)dnl
             // now we print the buffer

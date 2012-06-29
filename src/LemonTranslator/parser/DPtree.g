@@ -157,11 +157,12 @@ scanner
     @init { string sName; // scanner name
             string rName; // relatin name
           }
-    :    ^(SCANNER__ a=ID { sName=(char*)$a.text->chars; rName=sName;}
-            (b=ID {rName=(char*)$b.text->chars;})?) {
+    :    ^(SCANNER__ a=ID { rName=(char*)$a.text->chars; sName=rName;}
+            (b=ID {sName=(char*)$b.text->chars;})?) {
             SlotContainer attribs;
             am.GetAttributesSlots(rName, attribs); // put attributes in attribs
-            WayPointID scanner = WayPointID::GetIdByName(sName.c_str());
+            //WayPointID scanner = WayPointID::GetIdByName(sName.c_str());
+            WayPointID scanner(sName);
             lT->AddScannerWP(scanner, rName, attribs);
         }
     ;

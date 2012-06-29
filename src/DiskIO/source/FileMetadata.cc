@@ -30,10 +30,10 @@
 using namespace std;
 
 FileMetadata::~FileMetadata() {
-	// the flush has to be explicit
-	// put a bigg error emssage if modified at time of destruction
-	FATALIF(modified, "You should have flushed before killing the FileMetadata");
-	
-	free(relName);
+    // the flush has to be explicit
+    // put a bigg error emssage if modified at time of destruction
+    FATALIF(modified, "You should have flushed before killing the FileMetadata");
+
+    free(relName);
 }
 

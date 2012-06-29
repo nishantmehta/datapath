@@ -20,13 +20,18 @@ AS : 'as' | 'As' | 'AS';
 TO : 'to' | 'To' | 'TO';
 INTO : 'into' | 'Into' | 'INTO';
 
-parse[LemonTranslator* trans] : {
+parse[LemonTranslator* trans]
+    : {
       // create new query
       qry = GenerateTemp("Q\%d");
       DP_CheckQuery(true, qry);;
-    } s=statements
-    -> ^(NEWSTATEMENT ^(QUERRY__ ID[qry.c_str()]) ) $s ^(RUN__ ID[qry.c_str()])
+    } s=statements quitstatement?
+    -> ^(NEWSTATEMENT ^(QUERRY__ ID[qry.c_str()]) ) $s ^(RUN__ ID[qry.c_str()]) quitstatement?
 ;
+
+quitstatement
+    : QUIT SEMICOLON -> QUITTOKEN
+    ;
 
 statements
     :(statement SEMICOLON!)+
@@ -41,8 +46,19 @@ statement
         ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp attListWTypes ^(LIST $file)? ) )))
   | STORE a=ID INTO b=ID
     -> ^(NEWSTATEMENT ^(WRITER__ $b ID[$a, qry.c_str()] TERMCONN $a))
-    | CREATE crStmt -> crStmt
-  | DROP drStmt  -> drStmt
+  | CREATE createStatement -> createStatement
+  ;
+
+createStatement
+  : RELATION n=ID LPAREN tpAttList RPAREN -> ^(CRRELATION $n tpAttList)
+  ;
+
+tpAttList
+  : tpAtt ( COMMA! tpAtt)*
+  ;
+
+tpAtt
+  : var=ID COLON dtype=ID -> ^(TPATT $var $dtype)
   ;
 
 /* JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt  */
@@ -54,8 +70,8 @@ actionBody
     -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
   | GLA (PLUS)? gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
     -> ^(GLA (PLUS)? $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA (PLUS)? $ct $gla $rez $exp))
-  | AGGREGATE type=ID (FROM? inp=ID) USING expr=expression AS name=ID
-    -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $type $expr))
+  | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
+    -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
   | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
         -> ^(TEXTLOADER__ ^(ATTFROM $c) ^(SEPARATOR $s)?  ^(FILE__ $f $b) )
   ;

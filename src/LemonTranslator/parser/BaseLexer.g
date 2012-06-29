@@ -22,6 +22,8 @@ ATTRIBUTES : 'attributes' | 'Attributes' | 'ATTRIBUTES' ;
 TEXTLOADER : 'textloader' | 'Textloader' | 'TextLoader' | 'TEXTLOADER' ;
 FILE : 'file' | 'File' | 'FILE' ;
 
+FLUSH : 'flush' | 'Flush' | 'FLUSH';
+QUIT : 'quit' | 'Quit' | 'QUIT';
 
 // matching operator
 // we use an operator since it needs a special treatment
@@ -131,7 +133,5 @@ UNICODE_ESC
 
 fragment
 OP
-	: '+'|'-'|'*'|'/'|'%'|'<'|'>'|'<='|'>='|'=='|'!='|'<<'|'>>'|'!'|'~'|'^' ;
+    : '+'|'-'|'*'|'/'|'%'|'<'|'>'|'<='|'>='|'=='|'!='|'<<'|'>>'|'!'|'~'|'^' ;
 
-	   
-    			
