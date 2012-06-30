@@ -186,7 +186,7 @@ dnl         # freak out and think you're defining some other bizarre type.
             INNER_GLA& ogla = it->second;
 
             MapType::iterator itt = groupByMap.find(okey);
-            if (itt != other.groupByMap.end()) { // found the group
+            if (itt != groupByMap.end()) { // found the group
                 INNER_GLA& gla = itt->second;
                 gla.AddState(ogla);
             } else {

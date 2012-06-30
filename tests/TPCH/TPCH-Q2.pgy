@@ -102,7 +102,6 @@ JOIN
     j2 BY supplier.s_suppkey;
 
 /* DEBUG
-*/
 PRINT
     j4
 USING
@@ -128,10 +127,8 @@ AS
     s_comment : HString
 INTO
     "j4.csv";
-/*
 */
 
-/*
 gby =
 GLA:GroupByGLA
 <
@@ -176,7 +173,6 @@ AS
     gby_s_address     : HString  ,
     gby_s_phone       : HString  ,
     gby_s_comment     : HString;
-*/
 
 /* DEBUG
 PRINT
@@ -205,7 +201,6 @@ INTO
     "gby.csv";
 */
 
-/*
 orderby =
 GLA:OrderByGLA
 <
@@ -265,4 +260,3 @@ AS
     s_comment : HString
 INTO
     "TPCH-Q2-result.csv";
-*/

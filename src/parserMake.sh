@@ -24,9 +24,10 @@ fi
 
 # what are the grammars to compile
 FILES="BaseLexer.g DataPath.g Piggy.g DPtree.g"
-#ANTLR=antlr3
-ANTLR="java -jar /usr/local/lib/antlr-3.3-complete.jar"
+ANTLR=antlr3
+#ANTLR="java -jar /usr/local/lib/antlr-3.3-complete.jar"
 #ANTLR="java -jar /usr/local/lib/antlr-3.4-complete-no-antlrv2.jar"
+#ANTLR="java -jar /home/cdudley/lib/antlr-3.4-complete-no-antlrv2.jar"
 
 cd "LemonTranslator/parser/"
 
