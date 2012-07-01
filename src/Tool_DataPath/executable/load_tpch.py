@@ -305,8 +305,11 @@ def loadData():
         tempTableFiles = set()
 
         for f in tableFiles:
-            for i in xrange( 1, args.num_stripes + 1):
-                tempTableFiles.add( f + '.{0}'.format(i) )
+            if f != 'region.tbl' and f != 'nation.tbl':
+                for i in xrange( 1, args.num_stripes + 1):
+                    tempTableFiles.add( f + '.{0}'.format(i) )
+            else:
+                tempTableFiles.add( f )
 
         tableFiles = tempTableFiles
 

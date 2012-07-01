@@ -41,87 +41,87 @@ typedef EfficientMap<QueryID, GlobalGLAPtr> QueryToGlobalGLAPtrMap;
 
 class GlobalGLAState {
 private:
-  // set to true if the state is fully built
-  // when true, no update is accepted
-  bool isFinished;
+    // set to true if the state is fully built
+    // when true, no update is accepted
+    bool isFinished;
 
-  // mutex that protects the global state
-  pthread_mutex_t *myMutex;
+    // mutex that protects the global state
+    pthread_mutex_t *myMutex;
 
-  // condition variable used to signal those who are now blocked waiting for a
-  // segment
-  pthread_cond_t *signalWriters;
+    // condition variable used to signal those who are now blocked waiting for a
+    // segment
+    pthread_cond_t *signalWriters;
 
-  // Keeps track of which segments are currently write locked
-  std::vector<bool> * writeLocked;
+    // Keeps track of which segments are currently write locked
+    std::vector<bool> * writeLocked;
 
-  // tells how many copies of this object are out there
-  int *numCopies;
+    // tells how many copies of this object are out there
+    int *numCopies;
 
-  // the substates
-  int K; // number of substates
+    // the substates
+    int K; // number of substates
 
-  // vector of GLA states
-  std::vector<GLAState> * mapSt; // vector of states
+    // vector of GLA states
+    std::vector<GLAState> * mapSt; // vector of states
 
-  // keeps track of the number of fragments per segment
-  std::vector<int> * fragCount;
+    // keeps track of the number of fragments per segment
+    std::vector<int> * fragCount;
 
 public:
 
-  // this function is called when a part of the state needs updating
-  // this part will be unavailable to other threads
-  // Only available if the state has not yet finished building
-  int CheckOutOne (int *theseAreOK, GLAState& checkMeOut);
+    // this function is called when a part of the state needs updating
+    // this part will be unavailable to other threads
+    // Only available if the state has not yet finished building
+    int CheckOutOne (int *theseAreOK, GLAState& checkMeOut);
 
-  // simply releases a write lock on the segment
-  // Only available if the state has not yet finished building
-  void CheckIn (int whichEntry, GLAState& checkIn);
+    // simply releases a write lock on the segment
+    // Only available if the state has not yet finished building
+    void CheckIn (int whichEntry, GLAState& checkIn);
 
-  // makes a shallow copy of the state
-  void Clone (GlobalGLAState &fromMe);
+    // makes a shallow copy of the state
+    void Clone (GlobalGLAState &fromMe);
 
-  // synonym for clone
-  void copy (GlobalGLAState &other) { Clone(other); }
+    // synonym for clone
+    void copy (GlobalGLAState &other) { Clone(other); }
 
-  // Sets the global state as finished building, disallowing checking in and out
-  // of segments.
-  void Finalize() { isFinished = true; }
+    // Sets the global state as finished building, disallowing checking in and out
+    // of segments.
+    void Finalize() { isFinished = true; }
 
-  // Peeks at a particular state segment.
-  // Only available when the state is marked as finished.
-  GLAState & Peek( int whichEntry );
+    // Peeks at a particular state segment.
+    // Only available when the state is marked as finished.
+    GLAState & Peek( int whichEntry );
 
-  // Populates the vector fCount with the number of fragments that each
-  // segment will produce. Only available when the state is marked as finished
-  void GetFragmentCount( std::vector<int> & fCount );
+    // Populates the vector fCount with the number of fragments that each
+    // segment will produce. Only available when the state is marked as finished
+    void GetFragmentCount( std::vector<int> & fCount );
 
-  // Sets the number of fragments that a given segment has
-  // Only availble when the state is marked as finished
-  void SetFragmentCount( int segment, int fCount );
+    // Sets the number of fragments that a given segment has
+    // Only availble when the state is marked as finished
+    void SetFragmentCount( int segment, int fCount );
 
-  // Checks to see if all of the fragment counts are valid, and thus
-  // GetFragmentCount can be called
-  bool FragmentCountsValid();
+    // Checks to see if all of the fragment counts are valid, and thus
+    // GetFragmentCount can be called
+    bool FragmentCountsValid();
 
-  // creates an empty hash table
-  GlobalGLAState ():isFinished(false), K(0), myMutex(NULL){}
+    // creates an empty hash table
+    GlobalGLAState ():isFinished(false), K(0), myMutex(NULL){}
 
-  // creates a hash table with k fragments
-  GlobalGLAState (int k);
+    // creates a hash table with k fragments
+    GlobalGLAState (int k);
 
-  // Decrements numCopies and deallocates resources if it's the last one.
-  virtual ~GlobalGLAState();
+    // Decrements numCopies and deallocates resources if it's the last one.
+    virtual ~GlobalGLAState();
 
-  int GetNumSegments(void){ return K; }
+    int GetNumSegments(void){ return K; }
 
-  void swap(GlobalGLAState &fromMe);
+    void swap(GlobalGLAState &fromMe);
 
 private:
 
-  // Deallocates all of the internal data structures, used when the
-  // last copy of the state is destroyed.
-  void deallocateInternals();
+    // Deallocates all of the internal data structures, used when the
+    // last copy of the state is destroyed.
+    void deallocateInternals();
 
 };
 
@@ -133,36 +133,36 @@ private:
  */
 class GlobalGLAPtr {
 
-  GlobalGLAState * glaPtr;
+    GlobalGLAState * glaPtr;
 
 public:
 
-  /**
-   * Default constructor, null pointer.
-   */
-  GlobalGLAPtr();
+    /**
+     * Default constructor, null pointer.
+     */
+    GlobalGLAPtr();
 
-  /**
-   * Creates a pointer referencing the specified GlobalGLAState
-   */
-  GlobalGLAPtr( GlobalGLAState & state );
+    /**
+     * Creates a pointer referencing the specified GlobalGLAState
+     */
+    GlobalGLAPtr( GlobalGLAState & state );
 
-  virtual ~GlobalGLAPtr();
+    virtual ~GlobalGLAPtr();
 
-  /**
-   * Swaps the values of this pointer and fromMe.
-   */
-  void swap( GlobalGLAPtr &fromMe );
+    /**
+     * Swaps the values of this pointer and fromMe.
+     */
+    void swap( GlobalGLAPtr &fromMe );
 
-  /**
-   * Copies the data from the given pointer without destroying it
-   */
-  void copy( GlobalGLAPtr &fromMe );
+    /**
+     * Copies the data from the given pointer without destroying it
+     */
+    void copy( GlobalGLAPtr &fromMe );
 
-  /**
-   * Returns the pointer to the GlobalGLAState that this pointer references.
-   */
-  GlobalGLAState * get_glaPtr();
+    /**
+     * Returns the pointer to the GlobalGLAState that this pointer references.
+     */
+    GlobalGLAState * get_glaPtr();
 };
 
 #endif //  _GLOBAL_GLA_STATE_H_
