@@ -198,7 +198,7 @@ m4_ifval(USE_FRAGMENTS,</dnl
              return 1; // one fragment
          }
          while( it != distinctSet.end() ) {
-             while( it != distinctSet.end() && pos < frag * sizeFrag ) {
+             while( it != distinctSet.end() && pos < (frag + 1) * sizeFrag ) {
                  ++it;
                  pos++;
              }

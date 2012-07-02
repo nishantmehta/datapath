@@ -214,15 +214,17 @@ m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
         int frag=0;
         int pos=0;
         MapType::iterator it = groupByMap.begin();
+        theIterators.clear();
         theIterators.push_back( it );
         // special case when size<num_fragments
         if (sizeFrag == 0){
-            theIterators.push_back( groupByMap.end() );
+            it = groupByMap.end();
+            theIterators.push_back( it );
             return 1; // one fragment
         }
 
         while(it!=groupByMap.end()){
-            while(it!=groupByMap.end() && pos<frag*sizeFrag){
+            while(it!=groupByMap.end() && pos<( frag + 1 )*sizeFrag){
                 ++it;
                 pos++;
             }

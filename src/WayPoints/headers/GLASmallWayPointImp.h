@@ -43,6 +43,7 @@ class GLASmallWayPointImp : public GLAWayPointImp {
 
     // States that were merged, need to finalize them
     QueryToGLAStateMap mergedStates;
+
     // the queryExits merged
     QueryExitContainer mergedQueries;
 

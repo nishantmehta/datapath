@@ -40,7 +40,10 @@ LIB_EXTRACT = ../extract_libs.awk
 # to preserve the generated cc files we need this
 .PRECIOUS: %.cc
 
-%.cc: %.m4
+DataTypes.m4:
+	ln -s ../DataTypes.m4
+
+%.cc: %.m4 DataTypes.m4
 	$(M4) $(M4INCLUDES) $< > $@
 
 %.o : %.cc

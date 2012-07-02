@@ -17,7 +17,7 @@ LOAD lineitem;
 linedist = GLA:DistinctGLA< [val1:BIGINT, val2:INT] >
     FROM lineitem
     USING lineitem.l_orderkey, lineitem.l_linenumber
-    AS orderkey:BIGINT, linenumber:INT; 
+    AS orderkey:BIGINT, linenumber:INT;
 
 counter = GLA:CountGLA linedist USING 0 AS count:BIGINT;
 
