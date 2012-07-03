@@ -39,7 +39,7 @@ public:
   PatternMatcher(string regexp);
 
   // match function
-  bool IsMatch (HString& str);
+  bool IsMatch (const HString& str);
 
   // destructor
   ~PatternMatcher(void);
@@ -57,7 +57,7 @@ PatternMatcher :: PatternMatcher (string regexp) {
 
   pthread_mutex_lock(&mutex);
   int r = onig_new(&reg, pattern, pattern + strlen((char* )pattern),
-	       ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, &einfo);
+          ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, &einfo);
 
   if (r != ONIG_NORMAL) {
     char s[ONIG_MAX_ERROR_MESSAGE_LEN];
@@ -68,7 +68,7 @@ PatternMatcher :: PatternMatcher (string regexp) {
 }
 
 inline
-bool PatternMatcher :: IsMatch (HString& str) {
+bool PatternMatcher :: IsMatch (const HString& str) {
   const char* target = (const char*) str;
   // we can now safely get the size
   int size = strlen(target); // str.GetStrSize();

@@ -210,12 +210,12 @@ public:
     */
   HString(const char* aux);
 
-	/* Use only this ctor when populating data received from column, dont compute
-		 hash then, just beleive hash and string pair is correct. Hence this ctor
-		 just serves as a wrapper around the data received from column and is used
-		 only by HStringIterator. This is made public to help the dictionary initialization.
-	*/
-	HString(__uint64_t h, __uint64_t l, const char* aux) {
+  /* Use only this ctor when populating data received from column, dont compute
+     hash then, just beleive hash and string pair is correct. Hence this ctor
+     just serves as a wrapper around the data received from column and is used
+     only by HStringIterator. This is made public to help the dictionary initialization.
+   */
+  HString(__uint64_t h, __uint64_t l, const char* aux) {
     Set(h,l,aux);
 
     }
@@ -319,7 +319,7 @@ public:
 
     void FromString (const char* str);
 
-	void* OptimizedSerialize(const HString& hstr, void* buffer) const;
+    void* OptimizedSerialize(const HString& hstr, void* buffer) const;
 
     HString Deserialize(void* buffer);
 
@@ -370,10 +370,10 @@ inline void FromString (HString& obj, const char* str) {
 }
 
 inline void HString::LookUpInLocalDictionary(Dictionary& localDictionary){
-	Dictionary::const_iterator it = localDictionary.find(MASK_MAYBE_IN_DICT(mHash));
-	if (it != localDictionary.end()) {
-		// 3rd MSB bit of hash tells if we are in dictionary
-	    ConvertToDictionary();
+    Dictionary::const_iterator it = localDictionary.find(MASK_MAYBE_IN_DICT(mHash));
+    if (it != localDictionary.end()) {
+        // 3rd MSB bit of hash tells if we are in dictionary
+        ConvertToDictionary();
      }
 }
 
@@ -479,8 +479,8 @@ inline __uint64_t HString::GetHashValue() {
     return MASK_IN_DICT(mHash);
 }
 
-inline int ToString(const char* hstr, char* buffer) {
-	strcpy(buffer, hstr);
+inline int ToString(const HString & hstr, char* buffer) {
+    strcpy(buffer, hstr);
     int len = strlen( buffer );
     return len + 1;
 }
@@ -498,14 +498,14 @@ inline int HString::GetSize () const {
 }
 
 inline unsigned int HString::GetObjLength() const {
-	if (IN_DICT(mHash))
-		return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
-	else {
+    if (IN_DICT(mHash))
+        return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
+    else {
 
-	  FATALIF(mStrLen<0 || mStrLen>1024, "String is too large");
-		int x = BYTE_ALIGN(mStrLen);
-		return sizeof(__uint64_t) * 2 + x;
-	}
+        FATALIF(mStrLen<0 || mStrLen>1024, "String is too large");
+        int x = BYTE_ALIGN(mStrLen);
+        return sizeof(__uint64_t) * 2 + x;
+    }
 }
 
 inline unsigned int HString::ComputeObjLength() {
@@ -548,7 +548,7 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
          bit is unset since we made that check in HStringIterator before calling this function
     */
     //cerr << "Adding entry to dictionary: string = " << h.mStr << " hash = " << h.mHash << endl;
-	__uint64_t hashVal = h.GetHashValue();
+    __uint64_t hashVal = h.GetHashValue();
     SET_DICT_BIT(hashVal);
     Dictionary::const_iterator it = dictionary.find(hashVal);
     /* It is most likely branch because we know in almost all the cases we will not find the

@@ -299,6 +299,8 @@ dnl # definition of constants used in expressions
             GLA_STATE(_Q_)->AddItem<//>GLA_EXPRESSION(_Q_);
         }
 <//>/>)dnl
+
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }
 
     // tell GLAs that need toknow about the ChunkBoundary

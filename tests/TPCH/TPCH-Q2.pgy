@@ -96,10 +96,21 @@ JOIN
     partsupp BY partsupp.ps_partkey,
     selpart BY part.p_partkey;
 
+PRINT
+    j3
+USING
+    partsupp.ps_partkey
+AS
+    ps_partkey : INT
+INTO
+    "j3.csv";
+
+/*
 j4 =
 JOIN
     j3 BY partsupp.ps_suppkey,
     j2 BY supplier.s_suppkey;
+*/
 
 /* DEBUG
 PRINT
@@ -129,6 +140,7 @@ INTO
     "j4.csv";
 */
 
+/*
 gby =
 GLA:GroupByGLA
 <
@@ -173,6 +185,7 @@ AS
     gby_s_address     : HString  ,
     gby_s_phone       : HString  ,
     gby_s_comment     : HString;
+*/
 
 /* DEBUG
 PRINT
@@ -201,6 +214,7 @@ INTO
     "gby.csv";
 */
 
+/*
 orderby =
 GLA:OrderByGLA
 <
@@ -260,3 +274,4 @@ AS
     s_comment : HString
 INTO
     "TPCH-Q2-result.csv";
+*/

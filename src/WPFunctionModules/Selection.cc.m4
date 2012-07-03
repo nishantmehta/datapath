@@ -89,6 +89,7 @@ dnl # definition of constants used in expressions
 <//>/>)dnl
 
 <//><//>SET_QUERIES(qry)
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>, queriesToRun)
     }
 
     // finally, if there were any results, put the data back in the chunk

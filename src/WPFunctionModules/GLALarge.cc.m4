@@ -94,14 +94,14 @@ dnl # definition of constants used in expressions
 <//><//>/>, <//>)dnl
 <//>/>)dnl
 
-  FOR_EACH_TUPLE(</input/>){
-    QueryIDSet qry;
+    FOR_EACH_TUPLE(</input/>){
+        QueryIDSet qry;
         GET_QUERIES(qry);
 
-<//>M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
+<//><//>M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
-    // do M4_QUERY_NAME(_Q_)
-      if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
+        // do M4_QUERY_NAME(_Q_)
+        if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
             uint64_t seg;
             seg  = GLA_TYPE(_Q_) :: Map<//>GLA_EXPRESSION(_Q_);
             // Hash it again just to ensure randomness while still ensuring
@@ -112,6 +112,8 @@ dnl # definition of constants used in expressions
             GLA_STATE(_Q_)<//>_local[seg].AddItem<//>GLA_EXPRESSION(_Q_);
         }
 <//>/>)dnl
+
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }
 
   // Now merge the local segments into the global state.

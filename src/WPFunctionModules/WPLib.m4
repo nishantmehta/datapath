@@ -236,7 +236,20 @@ m4_define(</M4_ACCESS_ATTRIBUTES_TUPLE/>, </dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         // extracting M4_ATT_AQ(_A_)
         const M4_ATT_TYPE(M4_ATT_AQ(_A_))& M4_ATT_AQ(_A_) =  M4_ATT_AQ(_A_)<//>_Column.GetCurrent();     
-           M4_ATT_AQ(_A_)<//>_Column.Advance();
+<//>/>)dnl
+<//>/>)dnl
+/>)dnl
+
+dnl $1 = M4_Attribute_Queries
+dnl $2 = QueryIDSet variable
+m4_define(</M4_ADVANCE_ATTRIBUTES_TUPLE/>, </dnl
+        // extract values of attributes from streams
+
+<//>m4_foreach(</_A_/>, </$1/>, </dnl
+<//>dnl access only valid attributes
+<//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
+        // advancing M4_ATT_AQ(_A_)
+        M4_ATT_AQ(_A_)<//>_Column.Advance();
 <//>/>)dnl
 <//>/>)dnl
 />)dnl

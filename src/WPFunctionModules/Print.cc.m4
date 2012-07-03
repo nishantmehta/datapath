@@ -89,6 +89,8 @@ dnl     qry.Print();
         }
 
 <//>/>)dnl
+
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }
 
     // just return some arbitrary value... don't worry about reconstructing the chunk
