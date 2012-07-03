@@ -1,0 +1,44 @@
+/*
+
+select 
+    d_year, s_city, p_brand,
+    sum(lo_revenue - lo_supplycost) as profit
+from 
+    DATES, CUSTOMER, SUPPLIER, PART, LINEORDER
+where 
+    lo_custkey = c_custkey
+    and lo_suppkey = s_suppkey
+    and lo_partkey = p_partkey
+    and lo_orderdate = d_datekey
+    and s_nation = 'UNITED STATES'
+    and (d_year = 1997 or d_year = 1998)
+    and p_category = 'MFGR#14'
+group by 
+    d_year, s_city, p_brand
+order by 
+    d_year, s_city, p_brand;
+
+*/
+
+LOAD date;
+LOAD customer;
+LOAD supplier;
+LOAD part;
+LOAD lineorder;
+
+df = FILTER date BY (date.d_year == 1997 || date.d_year == 1998);
+sf = FILTER supplier BY supplier.s_nation == 'UNITED STATES';
+pf = FILTER part BY (part.p_category == 'MFGR#14');
+
+loc = JOIN lineorder BY lineorder.lo_custkey, customer BY customer.c_custkey;
+locs = JOIN loc BY lineorder.lo_suppkey, sf BY supplier.s_suppkey;
+locsp = JOIN locs BY lineorder.lo_partkey, pf BY part.p_partkey;
+locspd = JOIN locsp BY lineorder.lo_orderdate, df BY date.d_datekey;
+
+
+gla2 = GLA:GroupByGLA< [year:INT, city:VARCHAR, brand:VARCHAR], GLA:SumGLA> locspd
+    USING date.d_year, supplier.s_city, part.p_brand, 
+    	  (lineorder.lo_revenue - lineorder.lo_supplycost)
+    AS year:INT, city:VARCHAR, brand:VARCHAR, profit:DOUBLE;
+
+PRINT gla2 USING year, city, brand, profit AS year:int, city:string, brand:string, profit:double INTO 'Q4-3.csv';

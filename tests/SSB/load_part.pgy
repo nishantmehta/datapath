@@ -1,0 +1,2 @@
+a = READ 'dbgen/part.tbl' SEPARATOR '|' ATTRIBUTES FROM part;
+STORE a INTO part;

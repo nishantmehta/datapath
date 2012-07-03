@@ -1,0 +1,29 @@
+/** Query
+
+    select 
+    sum(lo_extendedprice*lo_discount) as revenue
+from 
+    lineorder, dates
+where 
+    lo_orderdate = d_datekey
+    and d_year = 1993
+    and lo_discount between 1 and 3
+    and lo_quantity < 25;
+
+*/
+
+LOAD date;
+LOAD lineorder;
+
+df = FILTER date BY date.d_year == 1993;
+
+lof = FILTER lineorder 
+    BY (lineorder.lo_discount >=1 && lineorder.lo_discount<=3 
+       && lineorder.lo_quantity<25);
+
+jn = JOIN lof BY lineorder.lo_orderdate, df BY date.d_datekey;
+
+agg = AGGREGATE Sum FROM jn 
+    USING lineorder.lo_extendedprice*lineorder.lo_discount AS sm;
+
+PRINT agg USING sm AS revenue:DOUBLE INTO "Q1-1.csv";

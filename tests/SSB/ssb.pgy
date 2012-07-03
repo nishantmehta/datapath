@@ -1,0 +1,74 @@
+/* Definitions in the SSB benchmark */
+
+create relation lineorder (
+      lo_orderkey	 INT,
+      lo_linenumber	 INT,
+      lo_custkey	 INT,
+      lo_partkey	 INT,
+      lo_suppkey	 INT,
+      lo_orderdate	 INT,
+      lo_orderpriority	 VARCHAR,
+      lo_shippriority	 VARCHAR,
+      lo_quantity	 INT,
+      lo_extendedprice	 INT,
+      lo_ordtotalprice	 INT,
+      lo_discount	 INT,
+      lo_revenue	 INT,
+      lo_supplycost	 INT,
+      lo_tax		 INT,
+      lo_commitdate	 INT,
+      lo_shipmode	 VARCHAR
+);
+
+create relation part (
+       p_partkey     INT,
+       p_name	     VARCHAR,
+       p_mfgr	     VARCHAR,
+       p_category    VARCHAR,
+       p_brand	     VARCHAR,
+       p_color	     VARCHAR,
+       p_type	     VARCHAR,
+       p_size	     INT,
+       p_container   VARCHAR
+);
+
+create relation supplier (
+       s_suppkey	INT,
+       s_name		VARCHAR,
+       s_address	VARCHAR,
+       s_city		VARCHAR,
+       s_nation		VARCHAR,
+       s_region		VARCHAR,
+       s_phone		VARCHAR
+);
+
+create relation customer (
+       c_custkey	 INT,
+       c_name		 VARCHAR,
+       c_address	 VARCHAR,
+       c_city		 VARCHAR,
+       c_nation		 VARCHAR,
+       c_region		 VARCHAR,
+       c_phone		 VARCHAR,
+       c_mktsegment	 VARCHAR
+);
+
+create relation date (
+       d_datekey     INT,
+       d_date	     VARCHAR,
+       d_dayofweek   VARCHAR,
+       d_month	     VARCHAR,
+       d_year	     INT,
+       d_yearmonthnum   INT,
+       d_yearmonth	VARCHAR,
+       d_daynuminweek	INT,
+       d_daynuminmonth	INT,
+       d_daynuminyear	INT,
+       d_monthnuminyear	INT,
+       d_weeknuminyear	INT,
+       d_selligseason	VARCHAR,
+       d_lastdayinweekfl INT,
+       d_lastdayinmonthfl	INT,
+       d_holidayfl		INT,
+       d_weekdayfl		INT
+);

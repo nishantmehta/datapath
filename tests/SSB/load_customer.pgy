@@ -1,0 +1,2 @@
+a = READ 'dbgen/customer.tbl' SEPARATOR '|' ATTRIBUTES FROM customer;
+STORE a INTO customer;

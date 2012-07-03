@@ -1,0 +1,2 @@
+a = READ 'dbgen/date.tbl' SEPARATOR '|' ATTRIBUTES FROM date;
+STORE a INTO date;

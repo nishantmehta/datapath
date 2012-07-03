@@ -1,0 +1,2 @@
+a = READ 'dbgen/lineorder.tbl' SEPARATOR '|' ATTRIBUTES FROM lineorder;
+STORE a INTO lineorder;

@@ -1,0 +1,2 @@
+a = READ 'dbgen/supplier.tbl' SEPARATOR '|' ATTRIBUTES FROM supplier;
+STORE a INTO supplier;
