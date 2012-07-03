@@ -1,0 +1,159 @@
+/*
+
+DESCRIPTION(TPC-H Query 1 version 2.14.3)
+
+select
+    l_returnflag,
+    l_linestatus,
+    sum(l_quantity) as sum_qty,
+    sum(l_extendedprice) as sum_base_price,
+    sum(l_extendedprice*(1-l_discount)) as sum_disc_price,
+    sum(l_extendedprice*(1-l_discount)*(1+l_tax)) as sum_charge,
+    avg(l_quantity) as avg_qty,
+    avg(l_extendedprice) as avg_price,
+    avg(l_discount) as avg_disc,
+    count(*) as count_order
+from
+    lineitem
+where
+    l_shipdate <= date '1998-12-01' - interval '90' day
+group by
+    l_returnflag,
+    l_linestatus
+order by
+    l_returnflag,
+    l_linestatus;
+
+RESULT(
+</"A"|"F"|"37734107"|"56586554400.7299"|"53758257134.8651"|"55909065222.8256"|"25.5220058532573"|"38273.1297346216"|"0.0499852958382544"|"1478493"
+"N"|"F"|"991417"|"1487504710.38"|"1413082168.0541"|"1469649223.19436"|"25.516471920523"|"38284.4677608482"|"0.0500934266741932"|"38854"
+"N"|"O"|"74476040"|"111701729697.736"|"106118230307.612"|"110367043872.492"|"25.502226769585"|"38249.1179889068"|"0.0499965860536267"|"2920374"
+"R"|"F"|"37719753"|"56568041380.9045"|"53741292684.6038"|"55889619119.8297"|"25.5057936126908"|"38250.8546261027"|"0.0500094058299836"|"1478870"/>)
+
+RESULT_FILE(TPCH-Q1-seg-result.csv)
+
+*/
+
+LOAD lineitem;
+
+sel =
+    FILTER lineitem
+BY
+    lineitem.l_shipdate <= DATE('1998/12/01') - 90;
+
+gl =
+    GLA:Segmented
+    <
+        [ val1:HString, val2:HString ],
+        GLA:GroupByGLA
+        <
+            [retturnflag:HString, linestatus:HString],
+            GLA:Multiplexer
+            <
+                GLA:SumGLA,
+                GLA:SumGLA,
+                GLA:AverageGLA,
+                GLA:AverageGLA,
+                GLA:AverageGLA
+            >
+        >
+    >
+FROM
+    sel
+USING
+    lineitem.l_returnflag,
+    lineitem.l_linestatus,
+    lineitem.l_returnflag,
+    lineitem.l_linestatus,
+    lineitem.l_extendedprice * (1 - lineitem.l_discount),
+    lineitem.l_extendedprice * (1 - lineitem.l_discount) * (1 + lineitem.l_tax),
+    lineitem.l_quantity,
+    lineitem.l_extendedprice,
+    lineitem.l_discount
+AS
+    gl_l_returnflag   : HString ,
+    gl_l_linestatus   : HString ,
+    gl_sum_disc_price : DOUBLE  , // SumGLA
+    gl_sum_charge     : DOUBLE  , // SumGLA
+    // AverageGLA
+    gl_count_order    : BIGINT  ,
+    gl_sum_qty        : DOUBLE  ,
+    gl_avg_qty        : DOUBLE  ,
+    // AverageGLA
+    gl_avg2_count     : BIGINT  , // Unused
+    gl_sum_base_price : DOUBLE  ,
+    gl_avg_price      : DOUBLE  ,
+    // AverageGLA  ,
+    gl_avg3_count     : BIGINT  , // Unused
+    gl_avg3_sum       : DOUBLE  , // Unused
+    gl_avg_disc       : DOUBLE;
+
+orderby =
+    GLA:OrderByGLA
+    <
+        [
+            l_returnflag   : HString : ASC ,
+            l_linestatus   : HString : ASC
+        ],
+        [
+            sum_qty        : DOUBLE  ,
+            sum_base_price : DOUBLE  ,
+            sum_disc_price : DOUBLE  ,
+            sum_charge     : DOUBLE  ,
+            avg_qty        : DOUBLE  ,
+            avg_price      : DOUBLE  ,
+            avg_disc       : DOUBLE  ,
+            count_order    : BIGINT
+        ]
+    > (10)
+FROM
+    gl
+USING
+    gl_l_returnflag   , // rank
+    gl_l_linestatus   , // rank
+    gl_sum_qty        ,
+    gl_sum_base_price ,
+    gl_sum_disc_price ,
+    gl_sum_charge     ,
+    gl_avg_qty        ,
+    gl_avg_price      ,
+    gl_avg_disc       ,
+    gl_count_order
+AS
+    or_l_returnflag   : HString ,
+    or_l_linestatus   : HString ,
+    or_sum_qty        : DOUBLE  ,
+    or_sum_base_price : DOUBLE  ,
+    or_sum_disc_price : DOUBLE  ,
+    or_sum_charge     : DOUBLE  ,
+    or_avg_qty        : DOUBLE  ,
+    or_avg_price      : DOUBLE  ,
+    or_avg_disc       : DOUBLE  ,
+    or_count_order    : BIGINT;
+
+PRINT
+    orderby
+USING
+    or_l_returnflag   ,
+    or_l_linestatus   ,
+    or_sum_qty        ,
+    or_sum_base_price ,
+    or_sum_disc_price ,
+    or_sum_charge     ,
+    or_avg_qty        ,
+    or_avg_price      ,
+    or_avg_disc       ,
+    or_count_order
+AS
+    l_returnflag   : HString ,
+    l_linestatus   : HString ,
+    sum_qty        : DOUBLE  ,
+    sum_base_price : DOUBLE  ,
+    sum_disc_price : DOUBLE  ,
+    sum_charge     : DOUBLE  ,
+    avg_qty        : DOUBLE  ,
+    avg_price      : DOUBLE  ,
+    avg_disc       : DOUBLE  ,
+    count_order    : BIGINT
+INTO
+    "TPCH-Q1-seg-result.csv";

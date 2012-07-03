@@ -116,16 +116,16 @@ void GLAWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
     CPUWorkToken myToken;
     myToken.swap (returnVal);
 
-    if( PostFinalizePossible( myToken ) ) {
-        return;
-    }
-    else if( FinalizePossible( myToken ) ) {
+    if( PostProcessingPossible( myToken ) ) {
         return;
     }
     else if( PreFinalizePossible( myToken ) ) {
         return;
     }
-    else if( PostProcessingPossible( myToken ) ) {
+    else if( FinalizePossible( myToken ) ) {
+        return;
+    }
+    else if( PostFinalizePossible( myToken ) ) {
         return;
     }
     else {// nothing to do

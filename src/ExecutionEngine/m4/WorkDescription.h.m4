@@ -15,10 +15,10 @@ dnl #  limitations under the License.
 dnl #
 
 include(DataFunctions.m4)
-	
+
 #ifndef WORK_DESCRIPTION_H
 #define WORK_DESCRIPTION_H
-	
+
 #include "Data.h"
 #include "GLAData.h"
 #include "Chunk.h"
@@ -28,10 +28,10 @@ include(DataFunctions.m4)
 #include "JoinWayPointID.h"
 #include "ExecEngineData.h"
 #include "GlobalGLAState.h"
-	
+
 // this is the base class for the hierarchy of types that one can send to a CPU
 // worker to describe the task that the worker is supposed to complete.  In more
-// detail, a CPU worker will always execute a function of type WorkFunc 
+// detail, a CPU worker will always execute a function of type WorkFunc
 // (see WorkerMessages.h.m4)... functions of type WorkFunc accept data of type
 // WorkDescription.  Sooo, if a specific waypoint wants a function executed, it
 // sends a specific WorkFunc to a worker, along with a specific WorkDescription
@@ -39,7 +39,7 @@ include(DataFunctions.m4)
 
 M4_CREATE_BASE_DATA_TYPE(WorkDescription, Data,
 <//>, <//>)
-	
+
 // this is the work description for a selection operation... all it has is the
 // data object that contains the chunk to process
 M4_CREATE_DATA_TYPE(SelectionWorkDescription, WorkDescription,
@@ -56,7 +56,7 @@ M4_CREATE_DATA_TYPE(PrintWorkDescription, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer), (streams, QueryToFileMap), (chunkToPrint, Chunk)/>)
 
-// this is a work descrption for a table scan... will likely go away when we move 
+// this is a work descrption for a table scan... will likely go away when we move
 // past the toy version.  Right now, what this has is a list of all of the query
 // exits that should appear in the chunk, as well as what chunk ID we should produce
 M4_CREATE_DATA_TYPE(TableScanWorkDescription, WorkDescription,
@@ -68,7 +68,7 @@ M4_CREATE_DATA_TYPE(TableScanWorkDescription, WorkDescription,
 M4_CREATE_DATA_TYPE(AggregateOneChunk, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer), (aggFuncs, AggStorageMap), (chunkToProcess, Chunk)/>)
- 
+
 // this one finishes up the aggregation process for a specific set of query-exits
 M4_CREATE_DATA_TYPE(FinishAggregate, WorkDescription,
 <//>,
@@ -99,12 +99,12 @@ M4_CREATE_DATA_TYPE(JoinMergeWorkDescription, WorkDescription,
 // work description for the hash table cleaner
 M4_CREATE_DATA_TYPE(HashCleanerWorkDescription, WorkDescription,
 </(whichSegment, int)/>,
-</(centralHashTable, HashTable), (diskTokenQueue, DiskWorkTokenQueue), 
+</(centralHashTable, HashTable), (diskTokenQueue, DiskWorkTokenQueue),
   (dyingWayPointsToSend, JoinWayPointIDList), (dyingWayPointsToHold, JoinWayPointIDList),
   (theseQueriesAreDone, QueryExitContainer), (equivalences, JoinWayPointIDEquivalences)/>)
 
 
-// Text loader instructions. 
+// Text loader instructions.
 // Arguments:
 //   loclDictionary: the local dictionary used by this thread
 //   stream: the FILE descriptor used by this thread
@@ -123,7 +123,7 @@ M4_CREATE_DATA_TYPE(WriterWorkDescription, WorkDescription,
 
 /** work for GLAProcessChunkWorkFunc:
 
-    glaStates: a map and must have an element for each value in whichQueryExits 
+    glaStates: a map and must have an element for each value in whichQueryExits
                if the state exists. Missing entries result in creation of the state.
 */
 M4_CREATE_DATA_TYPE(GLAProcessChunkWD, WorkDescription,
@@ -131,17 +131,23 @@ M4_CREATE_DATA_TYPE(GLAProcessChunkWD, WorkDescription,
 </(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap), (chunkToProcess, Chunk)/>)
 
 /*** work description for GLAMergeStatesWorkFunc
-		 glaStates contains a list of states for each query
+     glaStates contains a list of states for each query
 */
 M4_CREATE_DATA_TYPE(GLAMergeStatesWD, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLASContMap)/>)
 
+/*** work description for GLAPreFinalizeWorkFunc
+     glaStates contains a map from queryID to GLAState
+*/
+M4_CREATE_DATA_TYPE(GLAPreFinalizeWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap)/>)
 
 /*** work description for the finalize function
-     
+
      fragInfo specifies the fragment number to use for each query that supports fragments
-     
+
 */
 M4_CREATE_DATA_TYPE(GLAFinalizeWD, WorkDescription,
 </(fragmentNo, int)/>,
@@ -150,7 +156,7 @@ M4_CREATE_DATA_TYPE(GLAFinalizeWD, WorkDescription,
 
 
 /** work for GLALargeProcessChunkWorkFunc:
- 
+
     glaStates: a map and must have an element for each value in whichQueryExits
                if the state exists.
 

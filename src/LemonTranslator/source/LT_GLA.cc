@@ -25,10 +25,12 @@ bool LT_GLA::GetConfig(WayPointConfigureData& where){
     //    WorkFunc tempFunc = NULL;
     GLAProcessChunkWorkFunc GLAProcessChunkWF (NULL);
     GLAMergeStatesWorkFunc GLAMergeWF (NULL);
+    GLAPreFinalizeWorkFunc GLAPreFinalizeWF(NULL);
     GLAFinalizeWorkFunc GLAFinalizeWF (NULL);
     WorkFuncContainer myGLAWorkFuncs;
     myGLAWorkFuncs.Insert (GLAProcessChunkWF);
     myGLAWorkFuncs.Insert (GLAMergeWF);
+    myGLAWorkFuncs.Insert (GLAPreFinalizeWF);
     myGLAWorkFuncs.Insert (GLAFinalizeWF);
 
     // this is the set of query exits that end at it, and flow through it

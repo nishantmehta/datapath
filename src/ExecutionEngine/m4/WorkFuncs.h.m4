@@ -64,6 +64,7 @@ M4_CREATE_DATA_TYPE(TextLoaderWorkFunc, WorkFuncWrapper, <//>, <//>)
 
 /** WorkFuncs for GLA*/
 M4_CREATE_DATA_TYPE(GLAProcessChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GLAPreFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAMergeStatesWorkFunc, WorkFuncWrapper, <//>, <//>)
 

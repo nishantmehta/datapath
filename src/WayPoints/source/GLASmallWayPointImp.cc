@@ -47,58 +47,14 @@ void GLASmallWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &config
         if (!myQueryToGLAStates.IsThere(q)){
             myQueryToGLAStates.Insert(q, cont);
         }
+
+        q = iter.query;
+        QueryExit temp = iter;
+
+        queryIdentityMap.Insert(q, iter);
+        q = iter.query;
+        queriesProcessing.Union(q);
     } END_FOREACH
-}
-
-bool GLASmallWayPointImp::FinalizePossible( CPUWorkToken& token ) {
-    PDEBUG ("GLASmallWayPointImp :: FinalizePossible()");
-    if( !MergeDone() )
-        return false;
-
-    int fragmentNo;
-    lastFragmentId = queryFragmentMap.FindFirstSet(lastFragmentId);
-    if (lastFragmentId == -1){
-        lastFragmentId = 0; // start from the beginning next time
-        return false; // we did not find any fragment
-    } else {
-        fragmentNo = lastFragmentId;
-    }
-
-    //whichOnes will contains only one query
-
-    Bitstring qryOut = queryFragmentMap.GetBits(fragmentNo);
-    queryFragmentMap.Clear(fragmentNo); // queries out
-
-    QueryExitContainer whichOnes;
-
-    // scan mergedQueries and extract the exits that are in qryOut
-    FOREACH_TWL(el, mergedQueries){
-        QueryExit qe=el;
-        if (qe.query.Overlaps(qryOut))
-            whichOnes.Insert(qe);
-    }END_FOREACH;
-
-    QueryExitContainer whichOnes1;
-    whichOnes1.copy (whichOnes);
-
-    //TODO: No need to send map, just send only one states corresponding to whichOnes
-    QueryToGLAStateMap tempMergedStates;
-    tempMergedStates.copy(mergedStates);
-
-    // this cleans up mergedStates
-    GLAFinalizeWD workDesc (fragmentNo, whichOnes1, tempMergedStates);
-
-    // we now create a history list data object...
-    GLAHistory hist (GetID (), fragmentNo);
-    HistoryList lineage;
-    lineage.Insert(hist);
-
-    WayPointID myID = GetID();
-    WorkFunc myFunc = GetWorkFunction( GLAFinalizeWorkFunc::type );
-
-    myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
-
-    return true;
 }
 
 bool GLASmallWayPointImp::PostProcessingPossible( CPUWorkToken& token ) {
@@ -174,6 +130,97 @@ bool GLASmallWayPointImp::PostProcessingPossible( CPUWorkToken& token ) {
 
 }
 
+bool GLASmallWayPointImp :: PreFinalizePossible( CPUWorkToken& token ) {
+    PDEBUG ("GLASmallWayPointImp :: FinalizePossible()");
+
+    if( !MergeDone() || queriesCounting.IsEmpty() )
+        return false;
+
+    QueryIDSet qryOut = queriesCounting;
+
+    QueryExitContainer whichOnes;
+
+    FOREACH_TWL(el, mergedQueries) {
+        QueryExit qe = el;
+        if( qe.query.Overlaps(qryOut)) {
+            // Get the queries that we are fragment counting and make sure we
+            // don't try to count them twice.
+            queriesCounting.Difference(qe.query);
+            whichOnes.Insert(qe);
+        }
+    }END_FOREACH;
+
+    QueryToGLAStateMap tempMergedStates;
+    tempMergedStates.copy(mergedStates);
+
+    QueryExitContainer whichOnes1;
+    whichOnes1.copy(whichOnes);
+
+    GLAPreFinalizeWD workDesc (whichOnes1, tempMergedStates);
+
+    GLAHistory hist (GetID (), 0);
+    HistoryList lineage;
+    lineage.Insert(hist);
+
+    WayPointID myID = GetID();
+    WorkFunc myFunc = GetWorkFunction( GLAPreFinalizeWorkFunc::type );
+
+    myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
+
+    return true;
+}
+
+bool GLASmallWayPointImp::FinalizePossible( CPUWorkToken& token ) {
+    PDEBUG ("GLASmallWayPointImp :: FinalizePossible()");
+    if( queriesFinalizing.IsEmpty() || !queriesCounting.IsEmpty() || !MergeDone() )
+        return false;
+
+    int fragmentNo;
+    lastFragmentId = queryFragmentMap.FindFirstSet(lastFragmentId);
+    if (lastFragmentId == -1){
+        lastFragmentId = 0; // start from the beginning next time
+        return false; // we did not find any fragment
+    } else {
+        fragmentNo = lastFragmentId;
+    }
+
+    //whichOnes will contains only one query
+
+    Bitstring qryOut = queryFragmentMap.GetBits(fragmentNo);
+    queryFragmentMap.Clear(fragmentNo); // queries out
+
+    QueryExitContainer whichOnes;
+
+    // scan mergedQueries and extract the exits that are in qryOut
+    FOREACH_TWL(el, mergedQueries){
+        QueryExit qe=el;
+        if (qe.query.Overlaps(qryOut))
+            whichOnes.Insert(qe);
+    }END_FOREACH;
+
+    QueryExitContainer whichOnes1;
+    whichOnes1.copy (whichOnes);
+
+    //TODO: No need to send map, just send only one states corresponding to whichOnes
+    QueryToGLAStateMap tempMergedStates;
+    tempMergedStates.copy(mergedStates);
+
+    // this cleans up mergedStates
+    GLAFinalizeWD workDesc (fragmentNo, whichOnes1, tempMergedStates);
+
+    // we now create a history list data object...
+    GLAHistory hist (GetID (), fragmentNo);
+    HistoryList lineage;
+    lineage.Insert(hist);
+
+    WayPointID myID = GetID();
+    WorkFunc myFunc = GetWorkFunction( GLAFinalizeWorkFunc::type );
+
+    myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
+
+    return true;
+}
+
 bool GLASmallWayPointImp::MergeDone() {
     PDEBUG ("GLASmallWayPointImp :: MergeDone()");
     //check if we have every qid in mergedStates
@@ -228,15 +275,11 @@ void GLASmallWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, 
             tempGlaStates.Remove(q, foo, mystate);
             mergedStates.Insert(foo, mystate);
 
-            //TODO: Replace with some QueryID => QueryExit map
-            FOREACH_TWL(qe, whichOnes){
-                if(qe.query == q){
-                    QueryExit qExit = qe;
-                    mergedQueries.Insert(qExit);
-                    break;
-                }
-            } END_FOREACH;
+            QueryExit qe = queryIdentityMap.Find(q);
+            mergedQueries.Insert(qe);
 
+            queriesMerging.Difference(q);
+            queriesCounting.Union(q);
         }
         else {
             //remove state from map and append to the GLAStateContainer as we are not done yet
@@ -247,15 +290,20 @@ void GLASmallWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, 
             //            cout<<"cont Length after: "<<cont.Length()<<endl;
         }
     }
+}
 
-    if(MergeDone()){
-        FOREACH_EM(qid, frags, rez.get_fragInfo()){
-            // mark the new fragments we have to produce
-            queryFragmentMap.ORAll(qid, frags);
-        }END_FOREACH;
+void GLASmallWayPointImp :: PreFinalizeComplete( QueryExitContainer & whichOnes, HistoryList & history, ExecEngineData& data) {
+    PDEBUG("GLASmallWayPointImp :: PreFinalizeComplete()");
+    GLAStatesFrRez rez;
+    rez.swap(data);
 
-        fragmentsLeft.SuckUp(rez.get_fragInfo());
-    }
+    FOREACH_EM(qid, frags, rez.get_fragInfo()) {
+        queryFragmentMap.ORAll( qid, frags );
+
+        queriesFinalizing.Union(qid);
+    } END_FOREACH;
+
+    fragmentsLeft.SuckUp(rez.get_fragInfo());
 }
 
 void GLASmallWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
@@ -313,6 +361,9 @@ bool GLASmallWayPointImp :: ReceivedQueryDoneMsg( QueryExitContainer& whichOnes 
         //initialize mergeInProgress for each query and set it to 0
         Swapify<int> val(0);
         mergeInProgress.Insert(qID, val);
+
+        queriesProcessing.Difference(qID);
+        queriesMerging.Union(qID);
     }
 
     // ask for a worker, if we have not already asked

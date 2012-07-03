@@ -200,17 +200,20 @@ m4_case(INNER_REZTYPE, single, </dnl
 
         for( int i = 0; i < USE_FRAGMENTS; ++i ) {
             INNER_GLA * statePtr = globalStates.Peek( i );
-m4_if( INNER_REZTYPE, fragment, </dnl
-            int numFrags = statePtr->GetNumFragments();
 
-            for( int j = 0; j < numFrags; ++j ) {
-                ++myFrags;
-                myIterators.push_back( GLA_NAME</_Iterator/>( i, j ) );
-            }
+            if( statePtr != NULL ) {
+m4_if( INNER_REZTYPE, fragment, </dnl
+                int numFrags = statePtr->GetNumFragments();
+
+                for( int j = 0; j < numFrags; ++j ) {
+                    ++myFrags;
+                    myIterators.push_back( GLA_NAME</_Iterator/>( i, j ) );
+                }
 />, </dnl
-            ++myFrags;
-            myIterators.push_back( GLA_NAME</_Iterator/>(i, 0) );
+                ++myFrags;
+                myIterators.push_back( GLA_NAME</_Iterator/>(i, 0) );
 />)dnl
+            }
         }
 
         return myFrags;

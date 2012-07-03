@@ -60,6 +60,16 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     // last fragment we generated to ensure a circular list behavior
     off_t lastFragmentId;
 
+    // Some QueryIDSets to keep track of which queries are in which state.
+    QueryIDSet queriesProcessing;
+    QueryIDSet queriesMerging;
+    QueryIDSet queriesCounting;
+    QueryIDSet queriesFinalizing;
+
+    // Map of QueryID to QueryExit
+    typedef EfficientMap<QueryID, QueryExit> QueryIDToExitMap;
+    QueryIDToExitMap queryIdentityMap;
+
     // Helper method
     bool MergeDone();
 
@@ -67,10 +77,12 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     void GotChunkToProcess( CPUWorkToken & token, QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& lineage);
 
     bool PostProcessingPossible( CPUWorkToken& token );
+    bool PreFinalizePossible( CPUWorkToken& token );
     bool FinalizePossible( CPUWorkToken& token );
 
     void ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
     void PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    void PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     void FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );

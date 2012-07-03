@@ -83,18 +83,6 @@ int GLAMergeStatesWorkFunc_<//>M4_WPName
                 // localGLA eaten up. delete
                 delete localGLA;
             }END_FOREACH;
-dnl # if the GLA has fragments, add them to fragments map
-dnl # otherwise insert default number of fragments for every query.
-            QueryID foo = M4_QUERY_NAME(_Q_);
-            Swapify<int> val(1);
-
-<//><//>m4_if(GLA_KIND(_Q_),fragment,</
-            //This is special GLA with fragments enable
-            Swapify<int> valFrag(mainGLA->GetNumFragments());
-            val.swap(valFrag);
-<//><//>/>)
-            fragments.Insert(foo, val);
-
 dnl # result must be in mainState object at the end
         }
 <//><//>/>, <//>)dnl
@@ -108,6 +96,53 @@ dnl # result must be in mainState object at the end
     return 1; // for merge
 }
 
+extern "C"
+int GLAPreFinalizeWorkFunc_<//>M4_WPName
+(WorkDescription &workDescription, ExecEngineData &result) {
+    GLAPreFinalizeWD myWork;
+    myWork.swap(workDescription);
+
+    QueryToGLAStateMap& queryGLAStates = myWork.get_glaStates();
+    QueryExitContainer& queries = myWork.get_whichQueryExits();
+
+    QueryIDToInt fragments; // fragments for the GLAs that need it
+
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)dnl
+
+    FOREACH_TWL(iter, queries){
+        FATALIF(!queryGLAStates.IsThere(iter.query), "Why did we get a query in the list but no stateContainer for it");
+        GLAState& curState = queryGLAStates.Find(iter.query);
+
+<//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
+<//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
+        if (iter.query == M4_QUERY_NAME(_Q_)){
+            GLAPtr localState;
+            localState.swap(curState);
+            GLA_TYPE(_Q_)* localGLA = (GLA_TYPE(_Q_)*) localState.get_glaPtr();
+            localState.swap(curState);
+dnl # if the GLA has fragments, add them to fragments map
+dnl # otherwise insert default number of fragments for every query.
+            QueryID foo = M4_QUERY_NAME(_Q_);
+            Swapify<int> val(1);
+
+<//><//>m4_if(GLA_KIND(_Q_),fragment,</
+            //This is special GLA with fragments enable
+            Swapify<int> valFrag(localGLA->GetNumFragments());
+            val.swap(valFrag);
+<//><//>/>)
+            fragments.Insert(foo, val);
+
+dnl # result must be in mainState object at the end
+        }
+<//><//>/>, <//>)dnl
+<//>/>)dnl
+    } END_FOREACH;
+
+    GLAStatesFrRez rez(queryGLAStates, fragments);
+    rez.swap(result);
+
+    return 2; // for merge
+}
 
 extern "C"
 int GLAFinalizeWorkFunc_<//>M4_WPName
