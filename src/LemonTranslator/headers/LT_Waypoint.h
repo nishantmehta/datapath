@@ -176,7 +176,7 @@ public:
 		return false;
 	}
 
-	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts /* right hand side attributes */){
+	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts /* right hand side attributes */, LemonTranslator::JoinType type){
 		return false;
 	}
 

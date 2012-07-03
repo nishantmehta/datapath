@@ -32,6 +32,9 @@ private:
 	QueryToSlotSet LHS_copy; 
 	QueryToSlotSet RHS_copy; 
 
+	QueryIDSet ExistsTarget; // set of queries for which we run an exists predicate
+	QueryIDSet NotExistsTarget; // same for notExists
+
 	// id of cleaner so we can write config messages
 	WayPointID cleanerID;
 
@@ -50,7 +53,7 @@ public:
 
 	virtual void DeleteQuery(QueryID query);
 
-	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts);
+	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type);
 
 	// Consider this as LHS
 	virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);

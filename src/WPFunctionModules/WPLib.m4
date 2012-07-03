@@ -235,15 +235,8 @@ m4_define(</M4_ACCESS_ATTRIBUTES_TUPLE/>, </dnl
 <//>dnl access only valid attributes
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         // extracting M4_ATT_AQ(_A_)
-        M4_ATT_TYPE(M4_ATT_AQ(_A_)) M4_ATT_AQ(_A_);
-        if (M4_ATT_AQ(_A_)<//>_Qrys.Overlaps($2)){
-            M4_ATT_AQ(_A_) =  M4_ATT_AQ(_A_)<//>_Column.GetCurrent();
-<//>dnl we need to special case this since the HString has problems if Advance() goes over
-<//><//>m4_if(M4_ATT_TYPE(M4_ATT_AQ(_A_)),</VARCHAR/>,</dnl
-        if (!queries.AtEndOfColumn ()) // advance only if not last
-/>)dnl
-            M4_ATT_AQ(_A_)<//>_Column.Advance();
-        }dnl
+        const M4_ATT_TYPE(M4_ATT_AQ(_A_))& M4_ATT_AQ(_A_) =  M4_ATT_AQ(_A_)<//>_Column.GetCurrent();     
+           M4_ATT_AQ(_A_)<//>_Column.Advance();
 <//>/>)dnl
 <//>/>)dnl
 />)dnl

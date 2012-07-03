@@ -14,11 +14,13 @@ LOAD : 'load' | 'Load' | 'LOAD' ;
 READ : 'read' | 'Read' | 'READ' ;
 USING : 'using' | 'Using' | 'USING';
 FROM : 'from' | 'From' | 'FROM' ;
- BY : 'by' | 'By' | 'BY' ;
+BY : 'by' | 'By' | 'BY' ;
 STORE : 'store' | 'Store' | 'STORE';
 AS : 'as' | 'As' | 'AS';
 TO : 'to' | 'To' | 'TO';
 INTO : 'into' | 'Into' | 'INTO';
+IN : 'in' | 'In' | 'IN';
+NOT_K : 'not' | 'Not' | 'NOT';
 
 parse[LemonTranslator* trans]
     : {
@@ -61,14 +63,19 @@ tpAtt
   : var=ID COLON dtype=ID -> ^(TPATT $var $dtype)
   ;
 
-/* JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt  */
+inStmt
+    : IN -> JOIN_IN 
+    | NOT_K IN -> JOIN_NOTIN
+    ;
 
 actionBody
   : JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt
     ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN ^(ATTS $l2)))
   | FILTER a=ID BY exp=expressionList
     -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
-  | GLA (PLUS)? gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
+    | FILTER r1=ID USING l1=attEListAlt inStmt r2=ID LPAREN l2=attEListAlt RPAREN
+    ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
+    | GLA (PLUS)? gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
     -> ^(GLA (PLUS)? $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA (PLUS)? $ct $gla $rez $exp))
   | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
     -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))

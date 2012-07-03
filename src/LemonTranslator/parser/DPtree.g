@@ -387,10 +387,16 @@ bypassRule :
     }
   ;
 
+joinType returns [LemonTranslator::JoinType type]
+: /* none, normal */ {$type = LemonTranslator::Join_EQ;}
+| JOIN_IN { $type = LemonTranslator::Join_IN; }
+| JOIN_NOTIN { $type = LemonTranslator::Join_NOTIN; }
+;
+
 joinRule
     @init {SlotContainer atts; /* the set of attributes */ }
-    : ^(JOIN attributeList[atts]) {
-lT->AddJoin(wp, qry, atts);
+    : ^(JOIN joinType attributeList[atts]) {
+lT->AddJoin(wp, qry, atts, $joinType.type);
 }
   ;
 

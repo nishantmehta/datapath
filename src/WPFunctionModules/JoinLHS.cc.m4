@@ -38,6 +38,8 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // M4_Atrribute_Queries_RHS_cop = M4_Atrribute_Queries_RHS_copy
     // M4_Hash_RHS_ATT = M4_Hash_RHS_ATTR
     // M4_Queries_Attribute_Comparisio = M4_Queries_Attribute_Comparision
+    // M4_ExistsTarget_ = M4_ExistsTarget
+    // M4_NotExistsTarget_ = M4_NotExistsTarget
 
     double start_time = global_clock.GetTime();
 
@@ -105,7 +107,10 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     int stillShallow = 1;
 
     // the bitstring that will be exracted from the hash table
-    Bitstring64 *bitstringRHS = 0;
+    QueryIDSet *bitstringRHS = 0;
+
+    QueryIDSet existsTarget(M4_ExistsTarget, true);
+    QueryIDSet notExistsTarget(M4_NotExistsTarget, true);
 
     // these are all of the attribute values that come from the hash table...
     // for each att we need a pointer as well as a dummy value that the pointer will be set to by default
@@ -130,8 +135,12 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
 <//><//>dnl SS M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries_LHS/>,queriesToRun)
 
         // see which queries match up
-        Bitstring curBits = myInBStringIter.GetCurrent ();
+        QueryIDSet curBits = myInBStringIter.GetCurrent ();
         curBits.Intersect (queriesToRun);
+
+	    QueryIDSet exists; // keeps track of the queries for which a match is found
+	    QueryIDSet oldBitstringLHS; // last value of bistringLHS
+
 
         // if the input query is not empty
         if (!curBits.IsEmpty ()) {
@@ -158,13 +167,12 @@ dnl         //hashValue = Hash(M4_ATT_DATA(_A_).GetCurrent(), hashValue);
             while (1) {
 
                 // this is the bitstring that will go in the output
-                Bitstring bitstringLHS;
-                bitstringLHS.Empty ();
+                QueryIDSet bitstringLHS;
 
                 // for safety (in case we look at a bitstring that spans multiple
                 // entries that is not done being written by a concurrent writer)
                 // empty out the inital bitstring
-                ((Bitstring *) serializeHere)->Empty ();
+                ((QueryIDSet *) serializeHere)->Empty ();
 
                 // give safe "shadow" values to all of the RHS attributes
 <//><//>m4_foreach(</_A_/>, m4_quote(reval(</m4_args/>M4_Hash_RHS_ATTR)),</dnl
@@ -188,7 +196,7 @@ dnl         //hashValue = Hash(M4_ATT_DATA(_A_).GetCurrent(), hashValue);
                 }
 
                 // remember the bitstring
-                bitstringRHS = (Bitstring *) serializeHere;
+                bitstringRHS = (QueryIDSet *) serializeHere;
                 lenSoFar += lastLen;
 
                 // next look for other hashed attributes
@@ -208,7 +216,7 @@ dnl                 # _A_<//>RHS = ((M4_ATT_TYPE(_A_) *) (serializeHere + lenSoF
 
                 // see if we have any query matches
                 bitstringRHS->Intersect (curBits);
-                Bitstring qBits;
+                QueryIDSet qBits;
                 //printf("TPLLLLL: cust_acctbal = %f    orders_custkey = %d   cust_custkey = %d\n", *customer_c_acctbalRHS, orders_o_custkey_Column.GetCurrent(), *customer_c_custkeyRHS);
 
 <//>m4_foreach( </_A_/>, </M4_Queries_Attribute_Comparision/>,</dnl
@@ -230,6 +238,8 @@ dnl                 # _A_<//>RHS = ((M4_ATT_TYPE(_A_) *) (serializeHere + lenSoF
 
                 // if any of them hit...
                 if (!bitstringLHS.IsEmpty ()) {
+
+		  exists.Union(bitstringLHS);
 
                     numHits++;
 
@@ -266,12 +276,36 @@ dnl                 # SS Query check is missing
                     M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Advance();
 
 <//>/>)dnl
-                    // finally, set the bitmap
-                    myOutBStringIter.Insert (bitstringLHS);
-                    myOutBStringIter.Advance ();
+
+                    // finally, set the bitmap. We are one element behind
+		    if (!oldBitstringLHS.IsEmpty()){
+		         myOutBStringIter.Insert (oldBitstringLHS);
+                    	 myOutBStringIter.Advance ();
+		    }
+		    oldBitstringLHS=bitstringLHS;
                 }
             }
         }
+
+	// compute the true exist queries
+	QueryIDSet tmp = existsTarget;
+	tmp.Intersect(exists);
+	tmp.Intersect(curBits); // not needed but I'm paranoid
+
+	// compute the true not exits queries
+	QueryIDSet tmp2 = curBits;
+	tmp2.Intersect(notExistsTarget);
+	tmp2.Difference(exists);
+	
+	// now put everything in bitstringLHS
+	oldBitstringLHS.Union(tmp);
+	oldBitstringLHS.Union(tmp2);
+
+	if (!oldBitstringLHS.IsEmpty()){
+	         myOutBStringIter.Insert (oldBitstringLHS);
+               	 myOutBStringIter.Advance ();
+	    }
+
 
         // at this point, we are done trying to join this tuple... any join results have been
         // written to the output columns.  Note that we don't have to advance in the output data
@@ -285,11 +319,11 @@ dnl         # SS Query check is missing
             M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Insert (tmp_<//>M4_ATT_AQ(_AQ_));
             M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Advance();
 <//>/>)dnl
-
-            Bitstring bitstringLHS;
-            bitstringLHS.Empty ();
-            myOutBStringIter.Insert (bitstringLHS);
-            myOutBStringIter.Advance ();
+ 
+	    if (oldBitstringLHS.IsEmpty()){ // no not exist and no join match
+ 	       myOutBStringIter.Insert (oldBitstringLHS);
+               myOutBStringIter.Advance ();
+	    }
         }
 
         // lastly, we need to advance in the INPUT tuples

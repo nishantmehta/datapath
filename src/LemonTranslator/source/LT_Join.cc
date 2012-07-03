@@ -275,10 +275,21 @@ void LT_Join::ClearAllDataStructure() {
     RHS_copy.clear();
 }
 
-bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts) {
+bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type) {
     PDEBUG("LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts)");
     CheckQueryAndUpdate(query, RHS_atts, newQueryToSlotSetMap);
     CheckQueryAndUpdate(query, RHS_atts, RHS);
+
+    switch (type){
+    case LemonTranslator::Join_IN:
+      ExistsTarget.Union(query);
+      break;
+      
+    case LemonTranslator::Join_NOTIN:
+      NotExistsTarget.Union(query);
+      break;
+    }
+
     queriesCovered.Union(query);
 #ifdef DEBUG
     PrintAllQueryAndAttributes(RHS);
@@ -405,7 +416,19 @@ bool LT_Join::PropagateUp(QueryToSlotSet& result)
 
     //result up = LHS down + RHS down;
     CheckQueryAndUpdate(downAttributes, result);
-    CheckQueryAndUpdate(RHS_terminating, result);
+    QueryIDSet exclude=ExistsTarget;
+    exclude.Union(NotExistsTarget);
+    
+    // Exists/IN queries cannot talk about RHS attributes
+    for (QueryToSlotSet::const_iterator iter = RHS_terminating.begin();
+	 iter != RHS_terminating.end();
+	 ++iter) {
+        QueryID query = iter->first;
+        SlotSet atts = iter->second;
+        if (!exclude.Overlaps(query))
+	  CheckQueryAndUpdate(query, atts, result, false);
+    }
+
 #ifdef DEBUG
     printf("result queries and attributes in LT_Join::PropagateUp");
     PrintAllQueryAndAttributes(result);
@@ -717,8 +740,8 @@ void LT_Join::WriteM4File(ostream& out) {
         out << ")";
     }
     out << ")";
-    out << "/>";
-    // -----------------------------------------------------------------------------------
+    out << "/>," << ExistsTarget.GetInt64() << "," << NotExistsTarget.GetInt64(); 
+    // ----------------------------------------------------------------------------------
     out << ")";
     // -----------------------------------------------------------------------------------
     out << "\n\n";

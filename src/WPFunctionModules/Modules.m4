@@ -200,6 +200,8 @@ m4_define(</M4_JOIN_LHS_MODULE/>, </dnl
 <//>m4_define(</M4_LHS_Hash/>, </$5/>)
 <//>m4_define(</M4_Hash_RHS_ATTR/>, </$6/>)
 <//>m4_define(</M4_Queries_Attribute_Comparision/>, </$7/>)
+<//>m4_define(</M4_ExistsTarget/>, </$8/>)
+<//>m4_define(</M4_NotExistsTarget/>, </$9/>)
 <//>m4_divert(0)
 <//>m4_include(JoinLHS.cc.m4)
 <//>m4_divert(-1)
@@ -210,6 +212,8 @@ m4_define(</M4_JOIN_LHS_MODULE/>, </dnl
 <//>m4_undefine(</M4_LHS_Hash/>)
 <//>m4_undefine(</M4_Hash_RHS_ATTR/>)
 <//>m4_undefine(</M4_Queries_Attribute_Comparision/>)
+<//>m4_undefine(</M4_ExistsTarget/>)
+<//>m4_undefine(</M4_NotExistsTarget/>)
 />)
 
 dnl Definition of the Join Module
@@ -222,8 +226,10 @@ dnl  $6 = M4_Attribute_Queries_RHS
 dnl  $7 = M4_Atrribute_Queries_RHS_copy
 dnl  $8 = M4_Hash_RHS_ATTR
 dnl  $9 = M4_Queries_Attribute_Comparision
+dnl  $10 = M4_ExistsTarget
+dnl  $11 = M4_NotExistsTarget
 m4_define(</M4_JOIN_MODULE/>, </dnl
-<//>M4_JOIN_LHS_MODULE($1, $3, $4, $7, $2, $8, $9)
+<//>M4_JOIN_LHS_MODULE($1, $3, $4, $7, $2, $8, $9, $10, $11)
 <//>M4_JOIN_RHS_MODULE($1, $6, $5)
 dnl add JOIN_MERGE as well in future
 />)

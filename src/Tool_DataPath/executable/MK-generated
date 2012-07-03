@@ -21,7 +21,7 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG -DDP_REGEX_LIB=${PAT_MATCH}
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
 # COMPILER OPTIMIZATION
-# OPT=-O3 -march=native -ffast-math
+OPT=-O3 -march=native -ffast-math
 
 M4=m4 
 

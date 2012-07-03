@@ -36,6 +36,8 @@ public:
 #include "LemonTranslatorPrivate.h"
 
 public:
+  enum JoinType { Join_EQ, Join_IN, Join_NOTIN };
+
 	LemonTranslator(void);
 
 	// return a text error message
@@ -120,7 +122,8 @@ public:
 	bool AddBypass(WayPointID wp, QueryID query);
 
 	// Join
-	bool AddJoin(WayPointID wp, QueryID query, SlotContainer& RHS_atts /* right hand side attributes */);
+	bool AddJoin(WayPointID wp, QueryID query, SlotContainer& RHS_atts /* right hand side attributes */,
+	     JoinType type = Join_EQ);
 
 	// Print. Need a list of these
 	bool AddPrint(WayPointID wp, QueryID query, SlotContainer& atts,

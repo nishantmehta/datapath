@@ -36,6 +36,8 @@ tokens {
   FILE__;
   TEXTLOADER__;
   ATTC;
+  JOIN_IN; /* type of join */
+  JOIN_NOTIN;
 }
 
 

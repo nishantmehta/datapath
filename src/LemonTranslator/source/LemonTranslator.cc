@@ -470,14 +470,15 @@ bool LemonTranslator::AddBypass(WayPointID wpID, QueryID query)
 
 // Join
 bool LemonTranslator::AddJoin(WayPointID wpID, QueryID query,
-        SlotContainer& RHS_atts /* right hand side attributes */)
+			      SlotContainer& RHS_atts /* right hand side attributes */,
+			      JoinType type)
 {
     PDEBUG("LemonTranslator::AddJoin(WayPointID wpID = %s, QueryID query = %s, SlotContainer& RHS_atts = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(RHS_atts)).c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddJoin");
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, RHS_atts, attr, WP) == false) return false;
-    return WP->AddJoin(query, attr);
+    return WP->AddJoin(query, attr, type);
 }
 
 
