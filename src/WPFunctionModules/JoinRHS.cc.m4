@@ -152,6 +152,8 @@ dnl         Bitstring myInBString(QueryIDSet(m4_first(_QC_), true));
             }
 <//><//>/>)dnl
         }
+
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)), queriesToRun)
 <//>/>)dnl
     }
 

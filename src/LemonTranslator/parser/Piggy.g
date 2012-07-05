@@ -21,6 +21,9 @@ TO : 'to' | 'To' | 'TO';
 INTO : 'into' | 'Into' | 'INTO';
 IN : 'in' | 'In' | 'IN';
 NOT_K : 'not' | 'Not' | 'NOT';
+FOREACH : 'foreach' | 'Foreach' | 'FOREACH';
+GENERATE : 'generate' | 'Generate' | 'GENERATE';
+
 
 parse[LemonTranslator* trans]
     : {
@@ -81,7 +84,15 @@ actionBody
     -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
   | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
         -> ^(TEXTLOADER__ ^(ATTFROM $c) ^(SEPARATOR $s)?  ^(FILE__ $f $b) )
+    | FOREACH a=ID GENERATE generateList 
+        -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] generateList )
   ;
+
+generateItem
+    : e=expression AS a=ID COLON t=ID -> ^(SYNTHESIZE__ $a $t $e) ;
+
+generateList 
+    : generateItem (COMMA! generateItem)* ;
 
 glaDef
   : COLON ID def=glaTemplateDef?  -> ID ^(GLATEMPLATE $def)?

@@ -218,7 +218,7 @@ synthRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
         }
-    : ^(SYNTHESIZE a=ID t=ID expr[atts, cstStr]) {
+    : ^(SYNTHESIZE__ a=ID t=ID expr[atts, cstStr]) {
       SlotID sID = am.AddSynthesizedAttribute(qry, (const char*)$a.text->chars,
                                                 (const char*)$t.text->chars);
       lT->AddSynthesized(wp,qry, sID, atts, $expr.sExpr, cstStr);
