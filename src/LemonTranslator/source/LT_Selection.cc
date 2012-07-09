@@ -184,14 +184,11 @@ void LT_Selection::WriteM4File(ostream& out) {
 			 it != filters.end();){
 		QueryID query = it->first;
 		out << "( " << GetQueryName(query) << ", "
-				<< it->second << " ,</" << initializers[query] << "/>,  ";
+				<< it->second << " ,</" << initializers[query] << "/>,  </(";
 
 		// go through the synthesized attributes
 		SlotSet& sAtts = synthesized[query];
 		for (SlotSet::iterator its = sAtts.begin(); its != sAtts.end(); ){
-            if( its == sAtts.begin())
-                out << "</";
-
 			// get detailed attribute info and add to argument
 			SlotID slot = *its;
 			SynthInfo& synthInfo = synthInfoMap[slot];
@@ -201,9 +198,8 @@ void LT_Selection::WriteM4File(ostream& out) {
 			// do we need a comma?
 			if (its!=sAtts.end())
 				out << ", ";
-            else
-                out << "/>";
 		}
+		out << ")/>";
 
 		// close up the list
 		out << " )";

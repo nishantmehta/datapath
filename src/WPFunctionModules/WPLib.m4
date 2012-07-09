@@ -490,11 +490,19 @@ m4_define(</M4_COMPUTE_AGGREGATE/>,</dnl
 dnl # variation of the above to be used with pure lists guarded by ()
 m4_define(</M4_SYNTH_LIST/>,</reval(</m4_args/>m4_fourth($1))/>)
 
+dnl # extract variable name
+m4_define(</M4_SYNTH_VAR/>, </m4_first($1)/>)
+
+dnl # extract variable expression
+m4_define(</M4_SYNTH_EXPR/>, </m4_second($1)/>)
+
 dnl macro to declare local variables for synthesized
 dnl $1 = Query Description
 m4_define(</M4_DECLARE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
+<//><//>m4_ifval(_A_,</dnl
         M4_ATT_TYPE(m4_first(_A_)) m4_first(_A_);
+<//>/>)dnl
 <//>/>)dnl
 />)dnl
 
@@ -502,7 +510,9 @@ dnl macro to compute the synthesized attributes
 dnl $1 = Query Description
 m4_define(</M4_COMPUTE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
+<//><//>m4_ifval(_A_,</dnl
             m4_first(_A_) = m4_second(_A_);
+<//>/>)dnl
 <//>/>)dnl
 />)dnl
 
@@ -510,10 +520,10 @@ dnl macro to create sysntesized columns
 dnl $1 = Query Description
 m4_define(</M4_CREATE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
-<//>m4_ifdef( ATT_TYPE_<//>m4_first(_A_), </dnl
-    MMappedStorage storage_<//>m4_first(_A_);
-    Column col_<//>m4_first(_A_)(storage_<//>m4_first(_A_));
-    M4_COL_TYPE(m4_first(_A_)) colI_<//>m4_first(_A_)(col_<//>m4_first(_A_));
+<//>m4_ifval(_A_,</dnl
+    MMappedStorage storage_<//>M4_SYNTH_VAR(_A_);
+    Column col_<//>M4_SYNTH_VAR(_A_)(storage_<//>M4_SYNTH_VAR(_A_));
+    M4_COL_TYPE(M4_SYNTH_VAR(_A_)) colI_<//>M4_SYNTH_VAR(_A_)(col_<//>M4_SYNTH_VAR(_A_));
 <//>/>)dnl
 <//>/>)dnl
 />)dnl
@@ -524,8 +534,10 @@ dnl $2 = output chunk
 dnl $3 = queries active
 m4_define(</M4_CLOSE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
+<//><//>m4_ifval(_A_,</dnl
         colI_<//>m4_first(_A_)<//>.Done(col_<//>m4_first(_A_));
         </$2/>.SwapColumn(col_<//>m4_first(_A_), M4_ATT_SLOT(m4_first(_A_)));
+<//>/>)dnl
 <//>/>)dnl
 />)dnl
 
@@ -533,8 +545,10 @@ dnl macro to write local variables for synthesized to columns
 dnl $1 = Query Description
 m4_define(</M4_WRITE_SYNTHESIZED/>,</dnl
 <//>m4_foreach(</_A_/>, m4_quote(M4_SYNTH_LIST(</$1/>)), </dnl
+<//><//>m4_ifval(_A_,</dnl
         colI_<//>m4_first(_A_).Insert(m4_first(_A_));
         colI_<//>m4_first(_A_).Advance();
+<//>/>)dnl
 <//>/>)dnl
 />)dnl
 
