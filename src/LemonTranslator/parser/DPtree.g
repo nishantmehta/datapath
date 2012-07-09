@@ -272,7 +272,7 @@ glaDef returns [string name, string defs]
 
 glaTemplate[string& name, string& defs]
 @init { string args; }
-    : /* simpleGLA */ { defs+="#include \""; defs+=name; defs+=".h\"\n"; }
+    : /* simpleGLA */ { defs+="m4_include("; defs+=name; defs+=")\n"; }
     | ^(GLATEMPLATE  ({args+=",";} glaTemplArg[args, defs] )* )
         {
          // form the template instantiation code and change name to temp
