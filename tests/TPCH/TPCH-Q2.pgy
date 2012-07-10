@@ -81,10 +81,32 @@ FILTER
 BY
     region.r_name == 'EUROPE';
 
+/* DEBUG
+PRINT
+    selregion
+USING
+    region.r_name
+AS
+    r_name : HString
+INTO
+    "selregion.csv";
+*/
+
 j1 =
 JOIN
     nation BY nation.n_regionkey,
     selregion BY region.r_regionkey;
+
+/* DEBUG
+PRINT
+    j1
+USING
+    nation.n_nationkey
+AS
+    n_nationkey : INT
+INTO
+    "j1.csv";
+*/
 
 j2 =
 JOIN
@@ -96,6 +118,7 @@ JOIN
     partsupp BY partsupp.ps_partkey,
     selpart BY part.p_partkey;
 
+/* DEBUG
 PRINT
     j3
 USING
@@ -104,13 +127,12 @@ AS
     ps_partkey : INT
 INTO
     "j3.csv";
+*/
 
-/*
 j4 =
 JOIN
     j3 BY partsupp.ps_suppkey,
     j2 BY supplier.s_suppkey;
-*/
 
 /* DEBUG
 PRINT
@@ -140,7 +162,6 @@ INTO
     "j4.csv";
 */
 
-/*
 gby =
 GLA:GroupByGLA
 <
@@ -185,7 +206,6 @@ AS
     gby_s_address     : HString  ,
     gby_s_phone       : HString  ,
     gby_s_comment     : HString;
-*/
 
 /* DEBUG
 PRINT
@@ -214,7 +234,6 @@ INTO
     "gby.csv";
 */
 
-/*
 orderby =
 GLA:OrderByGLA
 <
@@ -274,4 +293,3 @@ AS
     s_comment : HString
 INTO
     "TPCH-Q2-result.csv";
-*/

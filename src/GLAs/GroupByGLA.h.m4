@@ -49,8 +49,8 @@ m4_ifdef(INNER_GLA</_INIT/>, </dnl
 <//>m4_redefine(</MY_INIT/>, <//>)<//>dnl
 />)dnl
 dnl
-m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, INNER_GLA</_INPUT/>)))dnl
-m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, INNER_GLA</_OUTPUT/>)))dnl
+m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</_INPUT/>))))dnl
+m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</_OUTPUT/>))))dnl
 
 /* Information for meta GLAs
     m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)

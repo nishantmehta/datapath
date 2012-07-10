@@ -221,7 +221,9 @@ public:
     }
 
 
+#if 0
   operator const char *() const;
+#endif
 
   /* Functin to be used when HString is placed on top of binary data */
   void Set(__uint64_t h, __uint64_t l, const char* aux){
@@ -287,8 +289,8 @@ public:
          situation if hash collides for 2 different strings. If any of two string is not
          in dictionary, we do string comparision.
 */
-  bool operator==(const HString& input);
-  bool operator==(const char* input);
+  bool operator==(const HString& input) const;
+  bool operator==(const char* input) const;
 
     /* return  a reference to hash value. Returns a reference so that hash value can be
          modified if it is found in dictionary (inside AddInDictionary operation)
@@ -348,6 +350,14 @@ public:
     // Method to safely inform the HString that it's value as been placed
     // in the dictionary.
     void ConvertToDictionary(void);
+
+    // BEGIN DEBUG
+    void print(void) const {
+        cerr << this->GetStr() << "|" << MASK_HASH(mHash) << " LOCAL: "
+            << (LOCAL(mHash) ? "true" : "false")
+            << " DICT: " << (IN_DICT(mHash) ? "true" : "false") << endl;
+    }
+    // END DEBUG
 };
 
 typedef  HString VARCHAR;
@@ -404,6 +414,7 @@ inline HString::HString(const char* aux) {
     FromString(aux);
 }
 
+#if 0
 inline HString::operator const char *() const {
 
     if (IN_DICT(mHash))
@@ -411,6 +422,7 @@ inline HString::operator const char *() const {
     else
         return mStr;
 }
+#endif
 
 inline const char* HString::GetStr() const {
 
@@ -432,7 +444,7 @@ inline void HString::operator=(const char *input) {
 
 #ifndef SLOW_WITHOUT_RISK
 /* Please read the description from header above*/
-inline bool HString::operator==(const HString& input) {
+inline bool HString::operator==(const HString& input) const {
 
     // First check is for 61 bit hash value matching. Below check could also have
     // been done as (((mHash ^ input.mHash) << 3) == 0). See which one is faster.
@@ -443,7 +455,7 @@ inline bool HString::operator==(const HString& input) {
         } else {
             // This is slow path, has to do string comparision, HString will convert
             // itself into const char* since const char* is overloaded
-            bool retVal = (strcmp(*this, input) == 0);
+            bool retVal = (strcmp(this->GetStr(), input.GetStr()) == 0);
             return retVal;
         }
     }
@@ -453,7 +465,7 @@ inline bool HString::operator==(const HString& input) {
 
 #else
 /* Please read the description from header above*/
-inline bool HString::operator==(const HString& input) {
+inline bool HString::operator==(const HString& input) const {
 
     // If any of the strings not in dictionary, just do string comparision
     if (__builtin_expect(IN_DICT(mHash & input.mHash), 1)) {
@@ -465,13 +477,13 @@ inline bool HString::operator==(const HString& input) {
     } else {
         // This is slow path, has to do string comparision, HString will convert
         // itself into const char* since const char* is overloaded
-        return (strcmp(*this, input) == 0);
+        return (strcmp(this->GetStr(), input.GetStr()) == 0);
     }
     return false;
 }
 #endif
 
-inline bool HString::operator==(const char* input) {
+inline bool HString::operator==(const char* input) const {
     return operator==(HString(input));
 }
 
@@ -480,7 +492,7 @@ inline __uint64_t HString::GetHashValue() {
 }
 
 inline int ToString(const HString & hstr, char* buffer) {
-    strcpy(buffer, hstr);
+    strcpy(buffer, hstr.GetStr());
     int len = strlen( buffer );
     return len + 1;
 }
@@ -589,19 +601,19 @@ inline void HString::AddEntryInDictionary(HString& h, Dictionary& dictionary) {
  */
 
 inline bool HString :: operator >( const HString& input ) const {
-    return (strcmp(*this, input) > 0);
+    return (strcmp(this->GetStr(), input.GetStr()) > 0);
 }
 
 inline bool HString :: operator <( const HString & input ) const {
-    return (strcmp(*this, input) < 0);
+    return (strcmp(this->GetStr(), input.GetStr()) < 0);
 }
 
 inline bool HString :: operator >=( const HString & input ) const {
-    return (strcmp(*this, input) >= 0);
+    return (strcmp(this->GetStr(), input.GetStr()) >= 0);
 }
 
 inline bool HString :: operator <=( const HString & input ) const {
-    return (strcmp(*this, input) <= 0);
+    return (strcmp(this->GetStr(), input.GetStr()) <= 0);
 }
 
 // Hash function for use by GLAs and such.

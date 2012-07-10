@@ -69,7 +69,7 @@ PatternMatcher :: PatternMatcher (string regexp) {
 
 inline
 bool PatternMatcher :: IsMatch (const HString& str) {
-  const char* target = (const char*) str;
+  const char* target = str.GetStr();
   // we can now safely get the size
   int size = strlen(target); // str.GetStrSize();
 

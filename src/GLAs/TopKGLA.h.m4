@@ -17,6 +17,14 @@ dnl # Macros that have to be defined
 dnl # TOPK_NAME: name of the resulting GLA
 dnl # TOPK_TUPLE: list of elements of the tuple (var, type)...
 
+m4_define(</TopKGLA/>, </dnl
+m4_redefine(</TOPK_NAME/>, </$1/>)dnl
+m4_redefine(</TOPK_TUPLE/>, </$2/>)dnl
+dnl
+m4_redefine(</MY_INPUT/>, </(_rank, FLOAT), />m4_defn(</TOPK_TUPLE/>))dnl
+m4_redefine(</MY_OUTPUT/>, </(_rank, FLOAT), />m4_defn(</TOPK_TUPLE/>))dnl
+m4_redefine(</MY_REZTYPE/>, </multi/>)dnl
+m4_redefine(</MY_INIT/>, </(_limit, BIGINT)/>)dnl
 #include "DataTypes.h"
 #include <algorithm>
 #include <functional>
@@ -26,149 +34,156 @@ dnl # TOPK_TUPLE: list of elements of the tuple (var, type)...
 
 using namespace std;
 
+/* Information for meta GLAs
+    m4_qdefine(</TOPK_NAME</_INPUT/>/>, </MY_INPUT/>)
+    m4_qdefine(</TOPK_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
+    m4_qdefine(</TOPK_NAME</_INIT/>/>, </MY_INIT/>)
+    m4_qdefine(</</GLA_REZTYPE_/>TOPK_NAME/>, </MY_REZTYPE/>)
+ */
 
 struct TOPK_NAME<//>_Tuple {
-	FLOAT topKScore;
+    FLOAT topKScore;
 m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
-	TYPE(_A_) VAR(_A_);
+    TYPE(_A_) VAR(_A_);
 />)dnl
 
-	TOPK_NAME<//>_Tuple() {
-		topKScore = 0;
-	}
+    TOPK_NAME<//>_Tuple() {
+        topKScore = 0;
+    }
 
     // Use the initialization list to construct the members to ensure that
     // deep copies are made
-	TOPK_NAME<//>_Tuple(FLOAT _rank, TYPED_REF_ARGS(TOPK_TUPLE)) :
+    TOPK_NAME<//>_Tuple(FLOAT _rank, TYPED_REF_ARGS(TOPK_TUPLE)) :
         topKScore( _rank )
 m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
-	    </, />VAR(_A_) </(/> VAR(_A_) </)/>
+        </, />VAR(_A_) </(/> VAR(_A_) </)/>
 />)dnl
-	{ }
+    { }
 
-	TOPK_NAME<//>_Tuple& operator=(const TOPK_NAME<//>_Tuple& _other) {
-		topKScore = _other.topKScore;
+    TOPK_NAME<//>_Tuple& operator=(const TOPK_NAME<//>_Tuple& _other) {
+        topKScore = _other.topKScore;
 m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
-	  VAR(_A_) = _other.VAR(_A_);
+      VAR(_A_) = _other.VAR(_A_);
 />)dnl
-		return *this;
-	}
+        return *this;
+    }
 };
 
 // Auxiliary function to compare tuples
 inline bool GreaterThenTopK(TOPK_NAME<//>_Tuple& t1, TOPK_NAME<//>_Tuple& t2) {
-	return (t1.topKScore > t2.topKScore);
+    return (t1.topKScore > t2.topKScore);
 }
 
 /** This class implements the computation of Top-k tuples. Input and
-	*	output tuple have to be defined to be the same: Tuple.
+    *    output tuple have to be defined to be the same: Tuple.
 
-	* The heap is maintained upside down (smallest value on top) so that
-	* we can prune most insertions. If a new tuple does not compete with
-	* the smallest value, we do no insertion. This pruning is crucial in
-	* order to speed up inserition. If K is small w.r.t the size of the
-	* data (and the data is not adversarially sorted), the effort to
-	* compute Top-k is very close to O(N) with a small constant. In
-	* practical terms, Top-k computation is about as cheap as
-	* evaluating a condition or an expression.
+    * The heap is maintained upside down (smallest value on top) so that
+    * we can prune most insertions. If a new tuple does not compete with
+    * the smallest value, we do no insertion. This pruning is crucial in
+    * order to speed up inserition. If K is small w.r.t the size of the
+    * data (and the data is not adversarially sorted), the effort to
+    * compute Top-k is very close to O(N) with a small constant. In
+    * practical terms, Top-k computation is about as cheap as
+    * evaluating a condition or an expression.
 
-	* InTuple: Tuple
-	* OutTuple: Tuple
+    * InTuple: Tuple
+    * OutTuple: Tuple
 
-	* Assumptions: the input tuple has as member a numeric value called
-	* "topKScore". What we mean by numeric is that is supports
-	* conversion to double and has > comparison.
+    * Assumptions: the input tuple has as member a numeric value called
+    * "topKScore". What we mean by numeric is that is supports
+    * conversion to double and has > comparison.
 **/
 class TOPK_NAME{
 private:
-	// types
-	typedef vector<TOPK_NAME<//>_Tuple> TupleVector;
+    // types
+    typedef vector<TOPK_NAME<//>_Tuple> TupleVector;
 
-  long long int count; // number of tuples covered
+    long long int count; // number of tuples covered
 
-	// k as in top-k
-	int K;
+    // k as in top-k
+    int K;
 
-	// worst tuple in the heap
-	double worst;
+    // worst tuple in the heap
+    double worst;
 
-  TupleVector tuples;
-  int pos; // position of the output iterator
+    TupleVector tuples;
+    int pos; // position of the output iterator
 
-	// function to force sorting so that GetNext gets the tuples in order
-	void Sort() {sort_heap(tuples.begin(), tuples.end(), GreaterThenTopK);}
+    // function to force sorting so that GetNext gets the tuples in order
+    void Sort() {sort_heap(tuples.begin(), tuples.end(), GreaterThenTopK);}
 
-	// internal function
-	void AddTupleInternal(TOPK_NAME<//>_Tuple& t);
-	
+    // internal function
+    void AddTupleInternal(TOPK_NAME<//>_Tuple& t);
+
 public:
-	// constructor & destructor
-	TOPK_NAME<//>(int k) { count=0; K=k; pos = -1; worst = -1.0e+30; }
-	~TOPK_NAME<//>() {}
+    // constructor & destructor
+    TOPK_NAME<//>(int k) { count=0; K=k; pos = -1; worst = -1.0e+30; }
+    ~TOPK_NAME<//>() {}
 
-	// function to add an intem
-	void AddItem(FLOAT _rank, TYPED_ARGS(TOPK_TUPLE));
+    // function to add an intem
+    void AddItem(FLOAT _rank, TYPED_ARGS(TOPK_TUPLE));
 
-	// take the state from ohter and incorporate it into this object
-	// this is a + operator on TOPK_NAME
-	void AddState(TOPK_NAME& other);
+    // take the state from ohter and incorporate it into this object
+    // this is a + operator on TOPK_NAME
+    void AddState(TOPK_NAME& other);
 
-	// finalize the state and prepare for result extraction
-	void Finalize() { 
-       Sort(); pos = 0; 
+    // finalize the state and prepare for result extraction
+    void Finalize() {
+       Sort(); pos = 0;
        cout << "Total number of tuples in Topk=" << count << endl;
-  }
+    }
 
-	// iterator through the content in order (can be destructive)
-	bool GetNextResult(FLOAT& _rank, TYPED_REF_ARGS(TOPK_TUPLE)) {
-		if (pos == tuples.size())
-			return false;
-		else {
-			TOPK_NAME<//>_Tuple& tuple = tuples[pos++];
+    // iterator through the content in order (can be destructive)
+    bool GetNextResult(FLOAT& _rank, TYPED_REF_ARGS(TOPK_TUPLE)) {
+        if (pos == tuples.size())
+            return false;
+        else {
+            TOPK_NAME<//>_Tuple& tuple = tuples[pos++];
 m4_foreach(</_A_/>,</TOPK_TUPLE/>,</dnl
-			VAR(_A_) = tuple.VAR(_A_);
+            VAR(_A_) = tuple.VAR(_A_);
 />)dnl
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
 };
 
 void TOPK_NAME::AddItem(FLOAT _rank, TYPED_ARGS(TOPK_TUPLE)) {
-  count++;
-	if (_rank<worst) // fast path
-		 		return;
+    count++;
+    if (_rank<worst) // fast path
+                 return;
 
-	TOPK_NAME<//>_Tuple tuple(_rank, ARGS(TOPK_TUPLE));
+    TOPK_NAME<//>_Tuple tuple(_rank, ARGS(TOPK_TUPLE));
 
-	AddTupleInternal(tuple);
+    AddTupleInternal(tuple);
 }
 
 void TOPK_NAME::AddTupleInternal(TOPK_NAME<//>_Tuple& tuple){
-	if (tuples.size() < K) {
-		  tuples.push_back(tuple);
+    if (tuples.size() < K) {
+        tuples.push_back(tuple);
 
-			// when we have exactly K elements in the vector, organize it as a heap
-			if (tuples.size() == K) {
-			  make_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
-				worst = tuples.front().topKScore; 	
-		}
-	}
-	else {
-			pop_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
-			tuples.pop_back();
-			tuples.push_back(tuple) ;
-			push_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
-			worst = tuples.front().topKScore; 	
-	}
+        // when we have exactly K elements in the vector, organize it as a heap
+        if (tuples.size() == K) {
+            make_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
+            worst = tuples.front().topKScore;
+        }
+    }
+    else {
+        pop_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
+        tuples.pop_back();
+        tuples.push_back(tuple) ;
+        push_heap(tuples.begin(), tuples.end(), GreaterThenTopK);
+        worst = tuples.front().topKScore;
+    }
 }
 
 void TOPK_NAME::AddState(TOPK_NAME& other) {
-	count+=other.count;
-  // go over all the contents of other and insert it into ourselves
-	for(int i = 0; i < other.tuples.size(); i++) {
-	  if (other.tuples[i].topKScore >= worst)
-				AddTupleInternal(other.tuples[i]);			
-	}
+    count+=other.count;
+    // go over all the contents of other and insert it into ourselves
+    for(int i = 0; i < other.tuples.size(); i++) {
+      if (other.tuples[i].topKScore >= worst)
+          AddTupleInternal(other.tuples[i]);
+    }
 }
 
+/>)dnl

@@ -21,6 +21,8 @@ dnl # macro to glue two argument lists into one safely
 dnl # $1: first list
 dnl # $2: second list
 m4_define(</GLUE_LISTS/>,</dnl
+m4_if(</$2/>, <//>, </$1/>, </dnl
+m4_if(</$1/>, <//>, </$2/>, </dnl
 m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl
 m4_ifval(</$1/>,</dnl
 m4_foreach(</_A_/>,</$1/>,</dnl
@@ -38,6 +40,8 @@ m4_append(</__TEMP__/>, _A_<//>, </</, />/>)dnl
 />)dnl
 />)dnl
 m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
+/>)dnl
+/>)dnl
 />)dnl
 
 dnl # macro to list arguments with types

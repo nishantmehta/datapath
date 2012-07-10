@@ -40,7 +40,7 @@ m4_foreach(</_A_/>,</__TEMP__/>,</dnl
 dnl
 m4_define(</TOPK_RANK/>, m4_quote(TOPK_RANK))dnl
 dnl
-m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</$2/>, </TOPK_TUPLE/>)))dnl
+m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</$2/>, m4_quote(TOPK_TUPLE))))dnl
 m4_redefine(</MY_OUTPUT/>, m4_defn(</MY_INPUT/>))dnl
 m4_redefine(</MY_REZTYPE/>, </multi/>)dnl
 dnl
