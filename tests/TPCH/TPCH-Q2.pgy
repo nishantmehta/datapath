@@ -101,9 +101,13 @@ JOIN
 PRINT
     j1
 USING
-    nation.n_nationkey
+    nation.n_nationkey,
+    nation.n_name,
+    region.r_name
 AS
-    n_nationkey : INT
+    n_nationkey : INT,
+    n_name : HString,
+    r_name : HString
 INTO
     "j1.csv";
 */

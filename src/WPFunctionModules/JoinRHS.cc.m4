@@ -94,6 +94,7 @@ dnl     M4_ACCESS_ATTRIBUTES_TUPLE(</M4_Attribute_Queries_RHS/>,qry)
         M4_ACCESS_ATTRIBUTES_TUPLE(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)),queriesToRun)
 
          if (qry.IsEmpty()){
+<//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)), queriesToRun)
              continue;
          }
 
