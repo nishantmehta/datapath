@@ -212,4 +212,13 @@ m4_define(</m4_divert_pop/>,
             </m4_warning(</WARNING: m4_divert_pop did not specify the correct diversion to pop!/>)/>)/>)dnl
 />)dnl
 
+# For loop macro.
+m4_define(</m4_forloop/>, </dnl
+m4_pushdef(</$1/>, </$2/>)_$0($@)m4_popdef(</$1/>)dnl
+/>)dnl
+
+m4_define(</_m4_forloop/>, </dnl
+$4<//>m4_if($1, </$3/>, <//>, </m4_define(</$1/>, m4_incr($1))$0($@)/>)dnl
+/>)dnl
+
 m4_divert(0)<//>dnl
