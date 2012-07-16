@@ -27,36 +27,36 @@ string LT_Waypoint::GetWPName(){
 // Update (query, attributes) pair in destination if not bypassed
 // return true if query is new
 bool LT_Waypoint::CheckQueryAndUpdate(QueryID query,
-																			 SlotSet& atts,
-																			 QueryToSlotSet& destination,
-																			 bool skipByPassQueries)
+        SlotSet& atts,
+        QueryToSlotSet& destination,
+        bool skipByPassQueries)
 {
-	bool isNew=false;
-	//if (!skipByPassQueries && !query.IsSubsetOf(bypassQueries)) // subset not working good
-	if (!skipByPassQueries)
-	{
-		QueryToSlotSet::const_iterator it = destination.find(query);
-		if (it == destination.end()){// new query
-			destination[query] = atts;
-			isNew = true;
-		}
-		else {
-			SlotSet newatts;
-			set_union(atts.begin(), atts.end(), (it->second).begin(), (it->second).end(), inserter(newatts, newatts.begin()));
-			destination[query] = newatts; // override query entry with new set of attributes
-		}
+    bool isNew=false;
+    //if (!skipByPassQueries && !query.IsSubsetOf(bypassQueries)) // subset not working good
+    if (!skipByPassQueries)
+    {
+        QueryToSlotSet::const_iterator it = destination.find(query);
+        if (it == destination.end()){// new query
+            destination[query] = atts;
+            isNew = true;
+        }
+        else {
+            SlotSet newatts;
+            set_union(atts.begin(), atts.end(), (it->second).begin(), (it->second).end(), inserter(newatts, newatts.begin()));
+            destination[query] = newatts; // override query entry with new set of attributes
+        }
     }
     return isNew;
 }
 
 // Iterate on each source and update (query, attributes) pair in destination
 void LT_Waypoint::CheckQueryAndUpdate(QueryToSlotSet& source,
-                                                                             QueryToSlotSet& destination,
-                                                                             bool skipByPassQueries)
+        QueryToSlotSet& destination,
+        bool skipByPassQueries)
 {
     for (QueryToSlotSet::const_iterator iter = source.begin();
-                                                                            iter != source.end();
-                                                                            ++iter) {
+            iter != source.end();
+            ++iter) {
         QueryID query = iter->first;
         SlotSet atts = iter->second;
         CheckQueryAndUpdate(query, atts, destination, skipByPassQueries);

@@ -35,8 +35,9 @@ inline void FromString(DOUBLE& x, char* text){
     x=atof(text);
 }
 
-inline int ToString(DOUBLE x, char* text){
+inline int ToString(const DOUBLE& x, char* text){
     // add 1 for the \0
+    printf("Hi there.\n");
     return 1+sprintf(text,"%1.15g", x);
 }
 

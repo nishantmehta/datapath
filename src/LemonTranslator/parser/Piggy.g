@@ -104,7 +104,7 @@ glaTemplateDef
 
 glaTemplArg
   : LSQ attCList RSQ -> ^(LIST attCList)
-  | attWType /* single typed argument */
+  | attC /* single typed argument */
   | ctAtt
   | GLA glaDef
   ;

@@ -22,38 +22,39 @@
 class LT_Print : public LT_Waypoint {
 private:
 
-	// query to string expr to be printed
-	typedef map<QueryID, string> QueryToPrintString;
+    // query to string expr to be printed
+    typedef map<QueryID, string> QueryToPrintString;
 
-	QueryToPrintString print;
-	QueryToPrintString initializers;
-	QueryToPrintString colNames; // names of columns in header
-	QueryToPrintString colTypes; // types for columns
+    QueryToPrintString print;
+    QueryToPrintString initializers;
+    QueryToPrintString colNames; // names of columns in header
+    QueryToPrintString colTypes; // types for columns
     QueryToPrintString fileOut;     // name of file to print query reqsults
 
+    QueryToPrintString definitions;
 
 public:
 
-	LT_Print(WayPointID id): LT_Waypoint(id)
-	{}
+    LT_Print(WayPointID id): LT_Waypoint(id)
+    {}
 
-	virtual WaypointType GetType() {return PrintWaypoint;}
+    virtual WaypointType GetType() {return PrintWaypoint;}
 
-	virtual void ClearAllDataStructure();
+    virtual void ClearAllDataStructure();
 
-	virtual void DeleteQuery(QueryID query);
+    virtual void DeleteQuery(QueryID query);
 
-	virtual bool AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name = "tmp", string type="string", string file="");
+    virtual bool AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name = "tmp", string type="string", string file="", string defs = "");
 
-	virtual bool PropagateDownTerminating(QueryID query, const SlotSet& atts/*blank*/, SlotSet& result, QueryExit qe);
+    virtual bool PropagateDownTerminating(QueryID query, const SlotSet& atts/*blank*/, SlotSet& result, QueryExit qe);
 
-	virtual bool PropagateUp(QueryToSlotSet& result);
+    virtual bool PropagateUp(QueryToSlotSet& result);
 
-	virtual void ReceiveAttributesTerminating(QueryToSlotSet& atts);
+    virtual void ReceiveAttributesTerminating(QueryToSlotSet& atts);
 
-	virtual void WriteM4File(ostream& out);
+    virtual void WriteM4File(ostream& out);
 
-	virtual bool GetConfig(WayPointConfigureData& where);
+    virtual bool GetConfig(WayPointConfigureData& where);
 };
 
 #endif // _LT_PRINT_H_

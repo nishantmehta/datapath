@@ -37,6 +37,8 @@ MATCH_DP : 'match' | 'Match' | 'MATCH';
 
 CASE_DP :   'case' | 'Case' | 'CASE';
 
+UDF : 'udf' | 'Udf' | 'UDF';
+
 /* general stuff */
 
 BOOL_T : 'true' | 'false' ;

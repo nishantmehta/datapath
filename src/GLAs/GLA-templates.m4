@@ -84,9 +84,9 @@ dnl # macro to scan a file and extract info
 dnl # $1=name of file without extension
 m4_define(</SCAN_GLA_FILE/>, </dnl
 m4_ifval($1,</dnl
-m4_divert(-1)
+m4_divert_push(-1)
 m4_include(</$1.h/>)dnl
-m4_divert(0)dnl
+m4_divert_pop(-1)dnl
 />)dnl
 />)dnl
 

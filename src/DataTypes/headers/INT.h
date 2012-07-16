@@ -37,7 +37,7 @@ inline void FromString(INT& x, char* text){
     x=atoi(text);
 }
 
-inline int ToString(INT x, char* text){
+inline int ToString(const INT& x, char* text){
     // add 1 for the \0
     return 1+sprintf(text,"%d", x);
 }

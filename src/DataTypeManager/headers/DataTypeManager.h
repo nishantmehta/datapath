@@ -130,9 +130,16 @@ struct FuncInfo {
     }
 };
 
-
-
 class DataTypeManager {
+
+    struct FuncTemplateInfo {
+        string retType;
+        string file;
+
+        FuncTemplateInfo( string retType, string file ) : retType(retType), file(file) {}
+
+        FuncTemplateInfo() {}
+    };
 
     typedef map<string, TypeInfo*> TypeToInfoMap;
     TypeToInfoMap mType;
@@ -143,6 +150,9 @@ class DataTypeManager {
     typedef map<string, set<FuncInfo*> > FuncToInfoMap;
     FuncToInfoMap mFunc;
 
+    typedef map<string, FuncTemplateInfo> FuncTempToInfoMap;
+    FuncTempToInfoMap mTempFunc;
+
     // Synonym to base type
     map<string, string> mSynonymToBase;
 
@@ -151,6 +161,9 @@ class DataTypeManager {
     // Helper functions
     void AddFunc (string type, string fName, vector<string>& args, string returnType, Associativity assoc, int priority, bool pure);
     bool IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs);
+
+    void AddFuncTemplate( string fName, string retType, string file );
+    bool TemplateExists( string fName, string& retType );
 
     // Prefix for conversion functions. For example, if the conversion prefix was "_TO_", then
     // any function named "_TO_T" that take a single argument will be assumed to convert
@@ -290,6 +303,8 @@ void DataTypeManager::Clear()
     }
 
     mFunc.clear();
+
+    mTempFunc.clear();
 }
 
 inline
@@ -803,6 +818,41 @@ bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>
 }
 
 inline
+void DataTypeManager :: AddFuncTemplate( string fName, string retType, string file ) {
+    FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
+
+    retType = GetBaseType( retType );
+
+    if( it != mTempFunc.end() ) {
+        FuncTemplateInfo & fInfo = it->second;
+
+        if( fInfo.retType != retType || fInfo.file != file ) {
+            cout << "\nError adding templated function " << fName
+                << ", function exists with different definition.";
+        }
+
+        return;
+    }
+    else {
+        mTempFunc[fName] = FuncTemplateInfo( retType, file );
+    }
+}
+
+inline
+bool DataTypeManager :: TemplateExists( string fName, string& retType ) {
+    FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
+
+    if( it != mTempFunc.end() ) {
+        FuncTemplateInfo & fInfo = it->second;
+
+        retType = fInfo.retType;
+    }
+    else {
+        return false;
+    }
+}
+
+inline
 void DataTypeManager :: AddUnaryOperator(string op, string typearg, string rettype, int priority, bool pure) {
 
     vector<string> vec;
@@ -856,7 +906,12 @@ bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& 
 
     vector<string> vec(types);
     string type;
-    return IsCorrectFunc (type, fName, vec, rettype, NoAssoc, -1, pure, actualArgs);
+    bool ret = IsCorrectFunc (type, fName, vec, rettype, NoAssoc, -1, pure, actualArgs);
+
+    if( !ret ) {
+        pure = true;
+        return TemplateExists( fName, rettype );
+    }
 }
 
 inline

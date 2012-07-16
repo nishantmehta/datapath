@@ -39,6 +39,8 @@ tokens {
   JOIN_IN; /* type of join */
   JOIN_NOTIN;
   SYNTHESIZE__;
+  FUNCTEMPLATE;
+  TYPE_;
 }
 
 
@@ -277,9 +279,26 @@ primary_expression
     | LPAREN! expression RPAREN!
     ;
 
-
 function
-    :    ID LPAREN expressionList RPAREN -> ^(FUNCTION ID expressionList)
+    :    name=ID LPAREN expressionList RPAREN -> ^(FUNCTION $name expressionList)
+    |    UDF COLON name=ID functionTemplate LPAREN expressionList RPAREN retType=functionRetType ->^(FUNCTION $name $retType functionTemplate expressionList)
+    ;
+
+fragment functionRetType
+    : /* nothing */
+    | '->' ID -> ^(TYPE_ ID)
+    ;
+
+functionTemplate
+    : /* nothing */
+    | '<' a=functionTemplateArg (COMMA b=functionTemplateArg)* '>' ->
+        ^(FUNCTEMPLATE $a $b*)
+    ;
+
+functionTemplateArg
+    : LSQ attCList RSQ -> ^(LIST attCList)
+    | attC
+    | ctAtt
     ;
 
 expressionList

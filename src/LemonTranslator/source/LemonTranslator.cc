@@ -378,7 +378,7 @@ bool LemonTranslator::AddTerminatingEdge(WayPointID start, WayPointID end)
 }
 
 // Selection, Join
-bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer& atts, string expr, string initializer)
+bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer& atts, string expr, string initializer, string defs)
 {
     PDEBUG("LemonTranslator::AddFilter(WayPointID wpID = %s, QueryID queryID = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)",
          wpID.getName().c_str(), queryID.ToString().c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
@@ -386,11 +386,11 @@ bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer&
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddFilter(queryID, attr, expr, initializer);
+    return WP->AddFilter(queryID, attr, expr, initializer, defs);
 }
 
 bool LemonTranslator::AddSynthesized(WayPointID wpID, QueryID queryID, SlotID att,
-                                                                         SlotContainer& atts, string expr, string initializer)
+        SlotContainer& atts, string expr, string initializer, string defs)
 {
     //PDEBUG("LemonTranslator::AddSynthesized(WayPointID wpID = %s, QueryID queryID = %s, SlotID attr = %s)", wpID.getName().c_str(), queryID.ToString().c_str(), (GetAllAttrAsString(attr)).c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddSynthesized");
@@ -407,30 +407,31 @@ bool LemonTranslator::AddSynthesized(WayPointID wpID, QueryID queryID, SlotID at
     }
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddSynthesized(queryID, att, attr, expr, initializer);
+    return WP->AddSynthesized(queryID, att, attr, expr, initializer, defs);
 }
 
 // Aggregate. Need a list of these
 bool LemonTranslator::AddAggregate(WayPointID wpID, QueryID query,
         SlotID aggAttrib,  /* attribute corresponding to aggregate */
         string aggregateType, /* type, just pass along */
-        SlotContainer& atts, string expr, string initializer)
+        SlotContainer& atts, string expr, string initializer,
+        string defs)
 {
     PDEBUG("LemonTranslator::AddAggregate(WayPointID wpID = %s, QueryID query = %s, SlotID aggAttrib = %s, string aggregateType = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(aggAttrib)).c_str(), aggregateType.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddAggregate");
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddAggregate(query, aggAttrib, aggregateType, attr, expr, initializer);
+    return WP->AddAggregate(query, aggAttrib, aggregateType, attr, expr, initializer, defs);
 }
 
 //GLA, one per query basis
 bool LemonTranslator::AddGLA(WayPointID wpID, QueryID query,
-                                                         SlotContainer& resultAtts, /*list of attributes produced as the result */
-                                                         string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
-                                                         string glaDef,
-                                                         string constructorExp, /*expression in GLA constructor */
-                                                         SlotContainer& atts, string expr, string initializer)
+        SlotContainer& resultAtts, /*list of attributes produced as the result */
+        string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
+        string glaDef,
+        string constructorExp, /*expression in GLA constructor */
+        SlotContainer& atts, string expr, string initializer)
 {
     PDEBUG("LemonTranslator::AddGLA(WayPointID wpID = %s, QueryID query = %s, SlotContainer resultAtts = %s, string glaName = %s, string constructorExp = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(resultAtts)).c_str(), glaName.c_str(), constructorExp.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddAggregate");
@@ -470,8 +471,8 @@ bool LemonTranslator::AddBypass(WayPointID wpID, QueryID query)
 
 // Join
 bool LemonTranslator::AddJoin(WayPointID wpID, QueryID query,
-			      SlotContainer& RHS_atts /* right hand side attributes */,
-			      JoinType type)
+        SlotContainer& RHS_atts /* right hand side attributes */,
+        JoinType type)
 {
     PDEBUG("LemonTranslator::AddJoin(WayPointID wpID = %s, QueryID query = %s, SlotContainer& RHS_atts = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(RHS_atts)).c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddJoin");
@@ -484,8 +485,9 @@ bool LemonTranslator::AddJoin(WayPointID wpID, QueryID query,
 
 // Print
 bool LemonTranslator::AddPrint(WayPointID wpID, QueryID query,
-                               SlotContainer& atts, string expr /* what to print */,
-                               string initializer, string name, string type, string file)
+        SlotContainer& atts, string expr /* what to print */,
+        string initializer, string name, string type, string file,
+        string defs)
 {
     PDEBUG("LemonTranslator::AddPrint(WayPointID wpID = %s, QueryID query = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddPrint");
@@ -493,7 +495,7 @@ bool LemonTranslator::AddPrint(WayPointID wpID, QueryID query,
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
     queryToRootMap[query] = IDToNode[wpID];
-    return WP->AddPrint(query, attr, expr, initializer, name, type, file);
+    return WP->AddPrint(query, attr, expr, initializer, name, type, file, defs);
 }
 
 // Add writing capabilities to a scanner
@@ -537,7 +539,7 @@ bool LemonTranslator::Run(QueryIDSet queries)
         WayPointID wp = nodeToWaypointData[queryToRootMap[q]]->GetId();
 
     FATALIF(!wp.IsValid(), "No valid top node, what is happening");
-    
+
         QueryExit exitWP(q, wp);
         set<SlotID> dummy;
         // Call analysis

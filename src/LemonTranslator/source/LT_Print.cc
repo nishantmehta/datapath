@@ -21,22 +21,22 @@
 
 bool LT_Print::GetConfig(WayPointConfigureData& where){
 
-	// get the ID
-	WayPointID printIDOne = GetId ();
+    // get the ID
+    WayPointID printIDOne = GetId ();
 
-	// first, get the function we will send to it
-	WorkFunc tempFunc = NULL;
-	PrintWorkFunc myPrintOneWorkFunc (tempFunc);
-	WorkFuncContainer myPrintOneWorkFuncs;
-	myPrintOneWorkFuncs.Insert (myPrintOneWorkFunc);
+    // first, get the function we will send to it
+    WorkFunc tempFunc = NULL;
+    PrintWorkFunc myPrintOneWorkFunc (tempFunc);
+    WorkFuncContainer myPrintOneWorkFuncs;
+    myPrintOneWorkFuncs.Insert (myPrintOneWorkFunc);
 
 
-	// this is the set of query exits that end at it, and flow through it
-	QueryExitContainer myPrintOneEndingQueryExits;
-	QueryExitContainer myPrintOneFlowThroughQueryExits;
-	GetQueryExits (myPrintOneFlowThroughQueryExits, myPrintOneEndingQueryExits);
+    // this is the set of query exits that end at it, and flow through it
+    QueryExitContainer myPrintOneEndingQueryExits;
+    QueryExitContainer myPrintOneFlowThroughQueryExits;
+    GetQueryExits (myPrintOneFlowThroughQueryExits, myPrintOneEndingQueryExits);
 
-	PDEBUG("Printing query exits for PRINT WP ID = %s", printIDOne.getName().c_str());
+    PDEBUG("Printing query exits for PRINT WP ID = %s", printIDOne.getName().c_str());
 #ifdef DEBUG
         cout << "\nFlow through query exits\n" << flush;
         myPrintOneFlowThroughQueryExits.MoveToStart();
@@ -55,10 +55,10 @@ bool LT_Print::GetConfig(WayPointConfigureData& where){
 
         QueryToFileInfoMap info;
         FOREACH_STL(el, colNames){
-	        QueryID query = el.first;
-	        string header = el.second;
-	        header += "\n"+colTypes[query]+"\n";
-	        string fileName = "RESULTS/";
+            QueryID query = el.first;
+            string header = el.second;
+            header += "\n"+colTypes[query]+"\n";
+            string fileName = "RESULTS/";
             if( fileOut[query] == "" )
             {
                 fileName+=GetQueryName(query)+".csv";
@@ -72,17 +72,17 @@ bool LT_Print::GetConfig(WayPointConfigureData& where){
             else {
                 fileName+=fileOut[query];
             }
-	        pair<string,string> inf(fileName, header);
-	        FileInfoObj fInfo(inf);
-	        info.Insert(query, fInfo);
+            pair<string,string> inf(fileName, header);
+            FileInfoObj fInfo(inf);
+            info.Insert(query, fInfo);
         }END_FOREACH;
 
-	// here is the waypoint configuration data
+    // here is the waypoint configuration data
         PrintConfigureData printOneConfigure (printIDOne, myPrintOneWorkFuncs, myPrintOneEndingQueryExits, myPrintOneFlowThroughQueryExits, info);
 
-	where.swap (printOneConfigure);
+    where.swap (printOneConfigure);
 
-	return true;
+    return true;
 }
 
 void LT_Print::ReceiveAttributesTerminating(QueryToSlotSet& atts)
@@ -100,34 +100,35 @@ void LT_Print::ReceiveAttributesTerminating(QueryToSlotSet& atts)
 
 void LT_Print::DeleteQuery(QueryID query)
 {
-	DeleteQueryCommon(query);
-	print.erase(query);
+    DeleteQueryCommon(query);
+    print.erase(query);
 }
 
 void LT_Print::ClearAllDataStructure() {
-	ClearAll();
-	print.clear();
+    ClearAll();
+    print.clear();
 }
-bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name, string type, string file)
+bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name, string type, string file, string defs)
 {
 
-	cout << "Adding query " << GetQueryName(query) << endl;
-	bool isNew = CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
+    cout << "Adding query " << GetQueryName(query) << endl;
+    bool isNew = CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
 
-	print[query] += ","+expr;
-	initializers[query] += initializer;
+    print[query] += ","+expr;
+    initializers[query] += initializer;
+    definitions[query] += defs;
 
-	if (isNew){
-		colNames[query] = name;
-		colTypes[query] = type;
+    if (isNew){
+        colNames[query] = name;
+        colTypes[query] = type;
         fileOut[query] = file;
-	} else {
-		colNames[query] += ","+name;
-		colTypes[query] += ","+type;
-	}
+    } else {
+        colNames[query] += ","+name;
+        colTypes[query] += ","+type;
+    }
 
-	queriesCovered.Union(query);
-	return true;
+    queriesCovered.Union(query);
+    return true;
 }
 
 // Implementation top -> down as follows per query:
@@ -137,12 +138,12 @@ bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initia
 bool LT_Print::PropagateDownTerminating(QueryID query, const SlotSet& atts/*blank*/, SlotSet& result, QueryExit qe)
 {
 
-	CheckQueryAndUpdate(newQueryToSlotSetMap, used);
-	newQueryToSlotSetMap.clear();
-	result.clear();
-	result = used[query];
-	queryExitTerminating.Insert(qe);
-	return true;
+    CheckQueryAndUpdate(newQueryToSlotSetMap, used);
+    newQueryToSlotSetMap.clear();
+    result.clear();
+    result = used[query];
+    queryExitTerminating.Insert(qe);
+    return true;
 }
 
 // Implementation bottom -> up as follows for all queries together:
@@ -153,51 +154,56 @@ bool LT_Print::PropagateDownTerminating(QueryID query, const SlotSet& atts/*blan
 // 5. old used + new = used is good to check correctness if they are subset of down attributes
 bool LT_Print::PropagateUp(QueryToSlotSet& result)
 {
-	CheckQueryAndUpdate(newQueryToSlotSetMap, used);
-	newQueryToSlotSetMap.clear();
-	result.clear();
+    CheckQueryAndUpdate(newQueryToSlotSetMap, used);
+    newQueryToSlotSetMap.clear();
+    result.clear();
 
-	// Correctness
-	// used should be subset of what is coming from below
-	if (!IsSubSet(used, downAttributes))
-	{
-		cout << "Print WP : Attribute mismatch : used is not subset of attributes coming from below\n";
-		return false;
-	}
-	downAttributes.clear();
-	return true;
+    // Correctness
+    // used should be subset of what is coming from below
+    if (!IsSubSet(used, downAttributes))
+    {
+        cout << "Print WP : Attribute mismatch : used is not subset of attributes coming from below\n";
+        return false;
+    }
+    downAttributes.clear();
+    return true;
 }
 
 void LT_Print::WriteM4File(ostream& out) {
-	IDInfo info;
-	GetId().getInfo(info);
-	string wpname = info.getName();
+    IDInfo info;
+    GetId().getInfo(info);
+    string wpname = info.getName();
 
-	// print module call
-	out << "M4_PRINT_MODULE(" << wpname << ", ";
-		out << "\t</";
+    for (QueryToPrintString::iterator it = definitions.begin();
+             it != definitions.end(); ++it){
+        out << it->second;
+    }
 
-	// go through all queries and print the predicates
-	// format "(Query, print), ..."
+    // print module call
+    out << "M4_PRINT_MODULE(" << wpname << ", ";
+        out << "\t</";
 
-	for (QueryToPrintString::iterator it = print.begin();
-			 it != print.end();){
-		out << "( " << GetQueryName(it->first)
-				 << it->second << " )";
-		++it;
-		// do we need a comma?
-		if (it!=print.end())
-			out << ",";
-	}
-	out << "/>,\t"; // end of argument
+    // go through all queries and print the predicates
+    // format "(Query, print), ..."
 
-	// format: (att_name, QueryIDSet_serialized), ..
-	SlotToQuerySet reverse;
-	AttributesToQuerySet(used, reverse);
-	PrintAttToQuerySets(reverse, out);
+    for (QueryToPrintString::iterator it = print.begin();
+             it != print.end();){
+        out << "( " << GetQueryName(it->first)
+                 << it->second << " )";
+        ++it;
+        // do we need a comma?
+        if (it!=print.end())
+            out << ",";
+    }
+    out << "/>,\t"; // end of argument
 
-	// macro call end
-	out << ")" << endl;
+    // format: (att_name, QueryIDSet_serialized), ..
+    SlotToQuerySet reverse;
+    AttributesToQuerySet(used, reverse);
+    PrintAttToQuerySets(reverse, out);
+
+    // macro call end
+    out << ")" << endl;
 
 
 }

@@ -36,7 +36,7 @@ inline void FromString(FLOAT& x, char* text){
     x=atof(text);
 }
 
-inline int ToString(FLOAT x, char* text){
+inline int ToString(const FLOAT& x, char* text){
     // add 1 for the \0
     return 1+sprintf(text,"%f", x);
 }

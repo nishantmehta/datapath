@@ -36,7 +36,7 @@ inline void FromString(BIGINT& x, char* text){
     x=atol(text);
 }
 
-inline int ToString(BIGINT x, char* text){
+inline int ToString(const BIGINT& x, char* text){
     // add 1 for the \0
     return 1+sprintf(text,"%ld", (long int)x);
 }

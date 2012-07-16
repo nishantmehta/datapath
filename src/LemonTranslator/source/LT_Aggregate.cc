@@ -18,23 +18,23 @@
 
 bool LT_Aggregate::GetConfig(WayPointConfigureData& where){
 
-	// get the ID
-	WayPointID aggIDOne = GetId ();
-	
-	// first, get the function we will send to it
-	WorkFunc tempFunc = NULL;
-	AggOneChunkWorkFunc myAggOneWorkFunc (tempFunc);
-	tempFunc = NULL;
-	AggFinishUpWorkFunc myAggOneFinishUpWorkFunc (tempFunc);
-	WorkFuncContainer myAggOneWorkFuncs;
-	myAggOneWorkFuncs.Insert (myAggOneWorkFunc);
-	myAggOneWorkFuncs.Insert (myAggOneFinishUpWorkFunc);
+    // get the ID
+    WayPointID aggIDOne = GetId ();
 
-	// this is the set of query exits that end at it, and flow through it
-	QueryExitContainer myAggOneEndingQueryExits;
-	QueryExitContainer myAggOneFlowThroughQueryExits;
-	GetQueryExits (myAggOneFlowThroughQueryExits, myAggOneEndingQueryExits);
-	PDEBUG("Printing query exits for AGGREGATE WP ID = %s", aggIDOne.getName().c_str());	
+    // first, get the function we will send to it
+    WorkFunc tempFunc = NULL;
+    AggOneChunkWorkFunc myAggOneWorkFunc (tempFunc);
+    tempFunc = NULL;
+    AggFinishUpWorkFunc myAggOneFinishUpWorkFunc (tempFunc);
+    WorkFuncContainer myAggOneWorkFuncs;
+    myAggOneWorkFuncs.Insert (myAggOneWorkFunc);
+    myAggOneWorkFuncs.Insert (myAggOneFinishUpWorkFunc);
+
+    // this is the set of query exits that end at it, and flow through it
+    QueryExitContainer myAggOneEndingQueryExits;
+    QueryExitContainer myAggOneFlowThroughQueryExits;
+    GetQueryExits (myAggOneFlowThroughQueryExits, myAggOneEndingQueryExits);
+    PDEBUG("Printing query exits for AGGREGATE WP ID = %s", aggIDOne.getName().c_str());
 #ifdef DEBUG
         cout << "\nFlow through query exits\n" << flush;
         myAggOneFlowThroughQueryExits.MoveToStart();
@@ -51,52 +51,53 @@ bool LT_Aggregate::GetConfig(WayPointConfigureData& where){
         cout << endl;
 #endif
 
-	
-	// here is the waypoint configuration data
-	AggregateConfigureData aggOneConfigure (aggIDOne, myAggOneWorkFuncs, myAggOneEndingQueryExits, myAggOneFlowThroughQueryExits);
-	
-	// and add it
-	where.swap (aggOneConfigure);
-	
-	return true;
+
+    // here is the waypoint configuration data
+    AggregateConfigureData aggOneConfigure (aggIDOne, myAggOneWorkFuncs, myAggOneEndingQueryExits, myAggOneFlowThroughQueryExits);
+
+    // and add it
+    where.swap (aggOneConfigure);
+
+    return true;
 }
 
 void LT_Aggregate::DeleteQuery(QueryID query)
 {
-	DeleteQueryCommon(query); // common data
-	synthesized.erase(query);
-	aggAttribs.erase(query);
+    DeleteQueryCommon(query); // common data
+    synthesized.erase(query);
+    aggAttribs.erase(query);
 }
 
 void LT_Aggregate::ClearAllDataStructure() {
-	ClearAll(); // common data
-	aggAttribs.clear();
-	aggInfoMap.clear();
-	synthesized.clear();
+    ClearAll(); // common data
+    aggAttribs.clear();
+    aggInfoMap.clear();
+    synthesized.clear();
 }
 
-bool LT_Aggregate::AddAggregate(QueryID query, 
-																SlotID slot, /* attribute corresponding to aggregate */
-																string aggregateType, /* type, just pass along */ 
-																SlotSet& atts, string expr, string initializer)
+bool LT_Aggregate::AddAggregate(QueryID query,
+        SlotID slot, /* attribute corresponding to aggregate */
+        string aggregateType, /* type, just pass along */
+        SlotSet& atts, string expr, string initializer,
+        string defs)
 {
-	aggAttribs[query].insert(slot);
-	AggInfo aggInfo(slot, aggregateType, expr, initializer);
-	aggInfoMap[slot] = aggInfo;
-	CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
-	queriesCovered.Union(query);
-	//synthesized
-	SlotSet attsSet;
-	attsSet.insert(slot);
-	CheckQueryAndUpdate(query, attsSet, synthesized);
+    aggAttribs[query].insert(slot);
+    AggInfo aggInfo(slot, aggregateType, expr, initializer, defs);
+    aggInfoMap[slot] = aggInfo;
+    CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
+    queriesCovered.Union(query);
+    //synthesized
+    SlotSet attsSet;
+    attsSet.insert(slot);
+    CheckQueryAndUpdate(query, attsSet, synthesized);
 
-	
-	if (initializers.find(query) == initializers.end()){
-	  // new filter
-	  initializers[query]=initializer;
-	} else { // add to filer
-	  initializers[query]= initializers[query] + "\n" +  initializer;
-	}
+
+    if (initializers.find(query) == initializers.end()){
+      // new filter
+      initializers[query]=initializer;
+    } else { // add to filer
+      initializers[query]= initializers[query] + "\n" +  initializer;
+    }
 
 }
 
@@ -107,18 +108,18 @@ bool LT_Aggregate::AddAggregate(QueryID query,
 // 3. Correctness : Atts coming from top is subset of synthesized
 bool LT_Aggregate::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe)
 {
-	// atts coming from top should be subset of synthesized.
-	if (!IsSubSet(atts, synthesized[query]))
-	{
-		cout << "AggregateWP : Aggregate error: attributes coming from top and not subset of synthesized ones\n";
-		return false;
-	}
+    // atts coming from top should be subset of synthesized.
+    if (!IsSubSet(atts, synthesized[query]))
+    {
+        cout << "AggregateWP : Aggregate error: attributes coming from top and not subset of synthesized ones\n";
+        return false;
+    }
 
-	CheckQueryAndUpdate(newQueryToSlotSetMap, used);
-	result.clear();
-	result = used[query];
-	queryExit.Insert (qe);
-	return true;
+    CheckQueryAndUpdate(newQueryToSlotSetMap, used);
+    result.clear();
+    result = used[query];
+    queryExit.Insert (qe);
+    return true;
 }
 
 // 1. used = new queries filled after analysis
@@ -126,64 +127,76 @@ bool LT_Aggregate::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& re
 // 3. Correctness : used is subset of what is coming from below
 bool LT_Aggregate::PropagateUp(QueryToSlotSet& result)
 {
-	CheckQueryAndUpdate(newQueryToSlotSetMap, used);
-	newQueryToSlotSetMap.clear();
+    CheckQueryAndUpdate(newQueryToSlotSetMap, used);
+    newQueryToSlotSetMap.clear();
 
-	result.clear();
-	result = synthesized;
+    result.clear();
+    result = synthesized;
 
-	// used should be subset of what is coming from below
-	if (!IsSubSet(used, downAttributes))
-	{
-		cout <<  "AggregateWP : Attribute mismatch : used is not subset of attributes coming from below\n";
-		return false;
-	}
-	return true;
+    // used should be subset of what is coming from below
+    if (!IsSubSet(used, downAttributes))
+    {
+        cout <<  "AggregateWP : Attribute mismatch : used is not subset of attributes coming from below\n";
+        return false;
+    }
+    return true;
 }
 
 void LT_Aggregate::WriteM4File(ostream& out) {
-	IDInfo info;
-	GetId().getInfo(info);
-	string wpname = info.getName();
+    IDInfo info;
+    GetId().getInfo(info);
+    string wpname = info.getName();
 
-	AttributeManager& am = AttributeManager::GetAttributeManager();
+    AttributeManager& am = AttributeManager::GetAttributeManager();
 
-	out << "M4_AGGREGATE_MODULE(" << wpname << ", ";
-	out << "\t</";
+    for (QueryToSlotSet::iterator it = aggAttribs.begin();
+             it != aggAttribs.end(); ++it){
 
-	// go through the query to attribute map
-	for (QueryToSlotSet::iterator it = aggAttribs.begin();
-			 it != aggAttribs.end();){
-		out << "( " << GetQueryName(it->first) << ", </";
-		out << initializers[it->first] << "/>, ";
-		// go through the attributes
-		for (SlotSet::iterator its = (it->second).begin(); its != (it->second).end(); ){
-			// get detailed attribute info and add to argument
-			SlotID slot = *its;
-			AggInfo aggInfo = aggInfoMap[slot];
-			out << "(" <<  am.GetAttributeName(aggInfo.att) <<  "," 
-					<< aggInfo.type <<  "," << aggInfo.expression <<  ")";
-			++its;
-			// do we need a comma?
-			if (its!=(it->second).end())
-				out << ", ";
-		}
-		
-		// close up the list
-		out << ")";
-		++it;
-		// do we need a comma?
-		if (it != aggAttribs.end())
-			out << ",";
-	}
-	out << "/>,\t"; // end of argument
+        for (SlotSet::iterator its = (it->second).begin(); its != (it->second).end(); ++its ){
+            // get detailed attribute info and add to argument
+            SlotID slot = *its;
+            AggInfo aggInfo = aggInfoMap[slot];
 
-	// format: (att_name, QueryIDSet_serialized), ..
-	SlotToQuerySet reverse;
-	AttributesToQuerySet(used, reverse);
-	PrintAttToQuerySets(reverse, out);
+            out << aggInfo.defs;
+        }
+    }
 
-	// macro call end
-	out << ")" << endl;
+    out << "M4_AGGREGATE_MODULE(" << wpname << ", ";
+    out << "\t</";
+
+    // go through the query to attribute map
+    for (QueryToSlotSet::iterator it = aggAttribs.begin();
+             it != aggAttribs.end();){
+        out << "( " << GetQueryName(it->first) << ", </";
+        out << initializers[it->first] << "/>, ";
+        // go through the attributes
+        for (SlotSet::iterator its = (it->second).begin(); its != (it->second).end(); ){
+            // get detailed attribute info and add to argument
+            SlotID slot = *its;
+            AggInfo aggInfo = aggInfoMap[slot];
+            out << "(" <<  am.GetAttributeName(aggInfo.att) <<  ","
+                    << aggInfo.type <<  "," << aggInfo.expression <<  ")";
+            ++its;
+            // do we need a comma?
+            if (its!=(it->second).end())
+                out << ", ";
+        }
+
+        // close up the list
+        out << ")";
+        ++it;
+        // do we need a comma?
+        if (it != aggAttribs.end())
+            out << ",";
+    }
+    out << "/>,\t"; // end of argument
+
+    // format: (att_name, QueryIDSet_serialized), ..
+    SlotToQuerySet reverse;
+    AttributesToQuerySet(used, reverse);
+    PrintAttToQuerySets(reverse, out);
+
+    // macro call end
+    out << ")" << endl;
 
 }

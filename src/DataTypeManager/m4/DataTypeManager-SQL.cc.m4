@@ -97,6 +97,15 @@ void DataTypeManager::Load(void){
     );
   "/>);
 
+  // create relation for the function templates if it doesn't exist
+  SQL_STATEMENTS_NOREZ(</"
+    CREATE TABLE IF NOT EXISTS DataTypeManager_FuncTempInfo (
+            func        TEXT,
+            ret         TEXT,
+            file        TEXT
+    );
+  "/>);
+
   SQL_STATEMENT_TABLE(</"
       SELECT type, file, convTo, noExtract
       FROM DataTypeManager_TypeInfo;
@@ -134,6 +143,14 @@ void DataTypeManager::Load(void){
             string b(base);
             string t(type);
             mSynonymToBase[t] = b;
+    }SQL_END_STATEMENT_TABLE;
+
+    SQL_STATEMENT_TABLE(</"
+        SELECT func, ret, file
+        FROM DataTypeManager_FuncTempInfo;
+    "/>, </(func, text), (ret, text), (file, text)/>) {
+        FuncTemplateInfo fInfo( ret, file );
+        mTempFunc[func] = fInfo;
     }SQL_END_STATEMENT_TABLE;
   // close the database
   SQL_CLOSE_DATABASE;
@@ -249,6 +266,28 @@ void DataTypeManager::Save(void){
       SQL_INSTANTIATE_PARAMETERS(t.c_str(), b.c_str());
         }
   SQL_PARAMETRIC_END;
+
+  // create relation for the function templates if it doesn't exist
+  SQL_STATEMENTS_NOREZ(</"
+    CREATE TABLE IF NOT EXISTS DataTypeManager_FuncTempInfo (
+            func        TEXT,
+            ret         TEXT,
+            file        TEXT
+    );
+  "/>);
+
+    SQL_STATEMENT_PARAMETRIC_NOREZ(</"
+        INSERT INTO DataTypeManager_FuncTempInfo(func, ret, file) VALUES (?1, ?2, ?3);
+    "/>, </text, text, text/>);
+        for(FuncTempToInfoMap::iterator it = mTempFunc.begin(); it != mTempFunc.end(); ++it ) {
+            const char * func = it->first.c_str();
+            const char * ret = it->second.retType.c_str();
+            const char * file = it->second.file.c_str();
+
+            SQL_INSTANTIATE_PARAMETERS(func, ret, file);
+        }
+
+    SQL_PARAMETRIC_END;
 
   // and that is about all
   SQL_CLOSE_DATABASE;

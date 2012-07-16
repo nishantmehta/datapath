@@ -21,51 +21,53 @@
 class LT_Selection : public LT_Waypoint {
 private:
 
-	struct SynthInfo {
-		SlotID att;
-		string expression;
-		string initializer;
+    struct SynthInfo {
+        SlotID att;
+        string expression;
+        string initializer;
+        string defs;
 
-		SynthInfo() {} // ctor for map compatibility		
-		SynthInfo(SlotID _att, string _expression, string _initializer):
-			att(_att), expression(_expression), initializer(_initializer){}
-	};
-	// info for each synthesized attribute
-	typedef map<SlotID, SynthInfo> SynthInfoMap;
-	SynthInfoMap synthInfoMap;
+        SynthInfo() {} // ctor for map compatibility
+        SynthInfo(SlotID _att, string _expression, string _initializer, string _defs):
+            att(_att), expression(_expression), initializer(_initializer),
+            defs(_defs){}
+    };
+    // info for each synthesized attribute
+    typedef map<SlotID, SynthInfo> SynthInfoMap;
+    SynthInfoMap synthInfoMap;
 
-	// query to filtering condition (string)
-	typedef map<QueryID, string> QueryFilterToExpr;
+    // query to filtering condition (string)
+    typedef map<QueryID, string> QueryFilterToExpr;
 
-	QueryFilterToExpr filters;
-	QueryFilterToExpr initializers;
+    QueryFilterToExpr filters;
+    QueryFilterToExpr initializers;
 
-	QueryToSlotSet synthesized;
+    QueryToSlotSet synthesized;
 
 public:
 
-	LT_Selection(WayPointID id): LT_Waypoint(id)
-	{}
+    LT_Selection(WayPointID id): LT_Waypoint(id)
+    {}
 
-	virtual void ClearAllDataStructure();
+    virtual void ClearAllDataStructure();
 
-	virtual WaypointType GetType() {return SelectionWaypoint;}
+    virtual WaypointType GetType() {return SelectionWaypoint;}
 
-	virtual bool AddBypass(QueryID query);
+    virtual bool AddBypass(QueryID query);
 
-	virtual void DeleteQuery(QueryID query);
+    virtual void DeleteQuery(QueryID query);
 
-	virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer);
+    virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer);
 
-	virtual bool AddSynthesized(QueryID query, SlotID att, SlotSet& atts, string expr, string initializer);
+    virtual bool AddSynthesized(QueryID query, SlotID att, SlotSet& atts, string expr, string initializer, string defs);
 
-	virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);
+    virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);
 
-	virtual bool PropagateUp(QueryToSlotSet& result);
+    virtual bool PropagateUp(QueryToSlotSet& result);
 
-	virtual void WriteM4File(ostream& out);
+    virtual void WriteM4File(ostream& out);
 
-	virtual bool GetConfig(WayPointConfigureData& where);
+    virtual bool GetConfig(WayPointConfigureData& where);
 }; // class
 
 #endif // _LT_SELECTION_H_

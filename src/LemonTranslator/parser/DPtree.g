@@ -210,28 +210,31 @@ rules :
 filterRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
+      string defs; /* definitions needed by expressions */
         }
-   : ^(FILTER expr[atts, cstStr]) { lT->AddFilter(wp, qry, atts, $expr.sExpr, cstStr); }
+   : ^(FILTER expr[atts, cstStr, defs]) { lT->AddFilter(wp, qry, atts, $expr.sExpr, cstStr, defs); }
   ;
 
 synthRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
+      string defs; /* definitions needed by expressions */
         }
-    : ^(SYNTHESIZE__ a=ID t=ID expr[atts, cstStr]) {
+    : ^(SYNTHESIZE__ a=ID t=ID expr[atts, cstStr, defs]) {
       SlotID sID = am.AddSynthesizedAttribute(qry, (const char*)$a.text->chars,
                                                 (const char*)$t.text->chars);
-      lT->AddSynthesized(wp,qry, sID, atts, $expr.sExpr, cstStr);
+      lT->AddSynthesized(wp,qry, sID, atts, $expr.sExpr, cstStr, defs);
     }
   ;
 
 aggregateRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
+      string defs; /* definitions needed by expressions */
         }
-    : ^(AGGREGATE name=ID type=ID expr[atts, cstStr]) {
+    : ^(AGGREGATE name=ID type=ID expr[atts, cstStr, defs]) {
             SlotID aggID = am.AddSynthesizedAttribute(qry, (const char*)$name.text->chars, "DOUBLE");
-            lT->AddAggregate(wp,qry, aggID, (const char*)$type.text->chars, atts, $expr.sExpr, cstStr);
+            lT->AddAggregate(wp,qry, aggID, (const char*)$type.text->chars, atts, $expr.sExpr, cstStr, defs);
     }
   ;
 
@@ -241,8 +244,9 @@ printRule
       string names;
       string types;
       string file;
+      string defs; /* definitions needed by expressions */
         }
-    : ^(PRINT expr[atts, cstStr] printAtts[names, types] printFile[file] ){ lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, names, types, file); }
+    : ^(PRINT expr[atts, cstStr, defs] printAtts[names, types] printFile[file] ){ lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, names, types, file, defs); }
   ;
 
 printAtts[string& names, string& types]
@@ -290,7 +294,7 @@ glaTemplate[string& name, string& defs]
 
 glaTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
-    | attWT[args] /* single typed argument */
+    | attC[args] /* single typed argument */
     | GLA glaDef {
       // glue the definitions accumulated
       defs+=$glaDef.defs;
@@ -300,6 +304,44 @@ glaTemplArg[string& args, string& defs]
     | s=STRING { args+=TXTN($s); }
     | i=INT { args+=TXT($i); }
     | f=FLOAT { args+=TXT($f); }
+    ;
+
+funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
+@init{ $name = fName; string args; }
+    : /* nothing */
+        {
+            if( isExternal ) {
+                defs += "#include ";
+                defs += name;
+                defs += ".h\n";
+            }
+        }
+    | ^(FUNCTEMPLATE ({args += ",";} funcTemplateArg[args, defs] )* )
+        {
+            defs += "\nm4_include(</";
+            defs += $name + ".h.m4/>)\n";
+            string namePattern = "FUNC_\%d_" + $name;
+            string tempName = GenerateTemp(namePattern.c_str());
+            defs += $name;
+            defs += "(";
+            defs += tempName;
+            defs += args; // args has comma
+            defs += ")\n";
+            $name = tempName;
+        }
+    ;
+
+funcTemplateArg[string& args, string & defs]
+    : ^(LIST {args += "</";} attC[args] ({args += ",";} attC[args])* {args += "/>";})
+    | attC[args]
+    | s=STRING { args += TXTN($s); }
+    | i=INT { args += TXT($i); }
+    | f=FLOAT { args += TXT($f); }
+    ;
+
+funcRetType returns [string type, bool external]
+    : /* nothing */ {$external = false;}
+    | ^(TYPE_ t=ID) { $type = TXT($t); $external = true; }
     ;
 
 attWT[string& args]
@@ -328,8 +370,9 @@ glaRule
             string ctArgs="("; /* constructor arguments*/
             std::vector<std::string> outTypes;
             bool isLarge = false;
+            string defs; /* the definitions needed by the expressions */
         }
-    : ^(GLA (PLUS {isLarge = true;})? ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes]* (a=expression[atts, cstStr] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+    : ^(GLA (PLUS {isLarge = true;})? ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
             string glaName((const char *) $glaDef.text->chars );
             // Check if operator exists
@@ -363,10 +406,12 @@ glaRule
 
            ctArgs+=")";
 
+           defs += $glaDef.defs;
+
             if( isLarge )
-                lT->AddGLALarge(wp, qry, outAtts, $glaDef.name, $glaDef.defs, ctArgs, atts, sExpr, cstStr);
+                lT->AddGLALarge(wp, qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
             else
-               lT->AddGLA(wp,qry, outAtts, $glaDef.name, $glaDef.defs, ctArgs, atts, sExpr, cstStr);
+               lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
     }
   ;
 
@@ -484,18 +529,18 @@ wpDefinition
     | glaWP
   ;
 
-expr[SlotContainer& atts, string& cstStr] returns [string sExpr] :
-    (a=expression[atts, cstStr] {sExpr+=$a.sExpr;} )
-    (b=expression[atts, cstStr] {sExpr+=", "+$b.sExpr;} ) *
-    | ^('?' a=expression[atts, cstStr] {sExpr+=$a.sExpr;} b=expression[atts, cstStr] {sExpr+="?";sExpr+=$b.sExpr;} c=expression[atts, cstStr] {sExpr+=":";sExpr+=$c.sExpr;})
+expr[SlotContainer& atts, string& cstStr, string& defs] returns [string sExpr] :
+    (a=expression[atts, cstStr, defs] {sExpr+=$a.sExpr;} )
+    (b=expression[atts, cstStr, defs] {sExpr+=", "+$b.sExpr;} ) *
+    | ^('?' a=expression[atts, cstStr, defs] {sExpr+=$a.sExpr;} b=expression[atts, cstStr, defs] {sExpr+="?";sExpr+=$b.sExpr;} c=expression[atts, cstStr, defs] {sExpr+=":";sExpr+=$c.sExpr;})
     ;
 
 // There could be more than one consts, hence we must have cstArray or something alike
-expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string type, bool isCT]
-@init { ExprListInfo lInfo; }
+expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sExpr, string type, bool isCT]
+@init { ExprListInfo lInfo; string rType; string fName; }
   :
-    ^(OPERATOR a=expression[atts, cstStr] { lInfo.Add($a.sExpr, $a.type, $a.isCT); }
-      b=expression[atts, cstStr] { lInfo.Add($b.sExpr, $b.type, $b.isCT); } ) // binary
+    ^(OPERATOR a=expression[atts, cstStr, defs] { lInfo.Add($a.sExpr, $a.type, $a.isCT); }
+      b=expression[atts, cstStr, defs] { lInfo.Add($b.sExpr, $b.type, $b.isCT); } ) // binary
   {
       string funcName((char*)($OPERATOR.text->chars));
       bool funcPure = true;
@@ -526,7 +571,7 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
       $sExpr += eVals[1];
       $sExpr += ")";
     }
-  | ^(UOPERATOR a=expression[atts, cstStr]) // unary
+  | ^(UOPERATOR a=expression[atts, cstStr, defs]) // unary
     {
       lInfo.Add($a.sExpr, $a.type, $a.isCT);
 
@@ -558,31 +603,33 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
       $sExpr += ")";
     }
 
-  | ^(FUNCTION ID  (a=expression[atts, cstStr] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // Function
+  | ^(FUNCTION i=ID {fName = TXT($i);} rt=funcRetType t=funcTemplate[fName, defs, $rt.external]  (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // Function
     {
-      string funcName((char*)($ID.text->chars));
+      string funcName((char*)($i.text->chars));
       bool funcPure = true;
       // This is we get in return
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, funcPure, actArgs)) {
+      if ( !$rt.external && !dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
-      else {
-          // Need to tell the expression info list about the actual types of the
-          // arguments and any special formatting needed using the vector of
-          // ArgFormats.
-          lInfo.Prepare( $cstStr, actArgs );
-      }
+
+      // Need to tell the expression info list about the actual types of the
+      // arguments and any special formatting needed using the vector of
+      // ArgFormats.
+      lInfo.Prepare( $cstStr, actArgs );
 #else
       lInfo.Prepare( $cstStr );
 #endif
       $isCT = lInfo.IsListConstant() && funcPure;
 
+      if( $rt.external )
+        $type = $rt.type;
+
       std::vector<string> eVals = lInfo.Generate();
-      $sExpr = funcName.c_str();
+      $sExpr = $t.name;
       $sExpr += "(";
       for (int i=0; i<eVals.size(); i++){
         if (i>0) {
@@ -593,7 +640,7 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
       }
       $sExpr += ")";
 }
-| ^(MATCH_DP patt=STRING a=expression[atts, cstStr] { lInfo.Add($a.sExpr, $a.type, $a.isCT); } ) // pattern matcher
+| ^(MATCH_DP patt=STRING a=expression[atts, cstStr, defs] { lInfo.Add($a.sExpr, $a.type, $a.isCT); } ) // pattern matcher
     {
         // for a pattern matcher, we have to build an expression
         // of the form: PatternMather ctObj(pattern)
@@ -617,7 +664,7 @@ expression[SlotContainer& atts, string& cstStr] returns [string sExpr, string ty
         expr << "ct" << ctNo << ".IsMatch(" << eVals[0] << ")";
         $sExpr+=expr.str();
    }
-| ^(CASE_DP (a=expression[atts, cstStr] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // cases
+| ^(CASE_DP (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // cases
    {
         // just like a function. For now we only support the 3-argument case
         $isCT = lInfo.IsListConstant();

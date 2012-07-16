@@ -1,0 +1,32 @@
+/*
+
+DESCRIPTION(Uses a templated UDF to find the sum of the absolute values of the suppiers' account balances.)
+
+select
+    sum(abs(s_acctbal))
+from
+    supplier;
+
+RESULT(46008028.4499998)
+RESULT_FILE("supplier-abs.csv")
+
+*/
+
+LOAD supplier;
+
+agg = GLA:SumGLA
+FROM
+    supplier
+USING
+    UDF:AbsoluteValue< x : FLOAT >( supplier.s_acctbal ) -> FLOAT
+AS
+    sum : DOUBLE;
+
+PRINT
+    agg
+USING
+    sum
+AS
+    sum : DOUBLE
+INTO
+    "supplier-abs.csv";

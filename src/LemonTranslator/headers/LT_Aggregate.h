@@ -22,52 +22,53 @@ class LT_Aggregate : public LT_Waypoint {
 
 private:
 
-	struct AggInfo {
-		SlotID att;
-		string type;
-		string expression;
-		string initializer;
+    struct AggInfo {
+        SlotID att;
+        string type;
+        string expression;
+        string initializer;
+        string defs;
 
-		AggInfo() {} // ctor for map compatibility		
-		AggInfo(SlotID _att, string _type, string _expression, string _initializer):
-			att(_att), type(_type), expression(_expression), initializer(_initializer){}
-	};
+        AggInfo() {} // ctor for map compatibility
+        AggInfo(SlotID _att, string _type, string _expression, string _initializer, string _defs):
+            att(_att), type(_type), expression(_expression), initializer(_initializer), defs(_defs){}
+    };
 
-	// set of aggregate attributes for each query
-	QueryToSlotSet aggAttribs; 
-	// info for each attribute
-	typedef map<SlotID, AggInfo> AggInfoMap;
-	AggInfoMap aggInfoMap;
-	// initializers for expressions
-	typedef map<QueryID, string> QueryAggToExpr;
-	QueryAggToExpr initializers;
+    // set of aggregate attributes for each query
+    QueryToSlotSet aggAttribs;
+    // info for each attribute
+    typedef map<SlotID, AggInfo> AggInfoMap;
+    AggInfoMap aggInfoMap;
+    // initializers for expressions
+    typedef map<QueryID, string> QueryAggToExpr;
+    QueryAggToExpr initializers;
 
 
-	QueryToSlotSet synthesized;
+    QueryToSlotSet synthesized;
 
 public:
 
-	LT_Aggregate(WayPointID id): LT_Waypoint(id)
-	{}
+    LT_Aggregate(WayPointID id): LT_Waypoint(id)
+    {}
 
-	virtual WaypointType GetType() {return AggregateWaypoint;}
+    virtual WaypointType GetType() {return AggregateWaypoint;}
 
-	virtual void DeleteQuery(QueryID query);
-	
-	virtual void ClearAllDataStructure();
+    virtual void DeleteQuery(QueryID query);
 
-	virtual bool AddAggregate(QueryID query, 
-										SlotID slot, /* attribute corresponding to aggregate */
-										string aggregateType, /* type, just pass along */ 
-										SlotSet& atts, string expr, string initializer);
+    virtual void ClearAllDataStructure();
 
-	virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);
+    virtual bool AddAggregate(QueryID query,
+            SlotID slot, /* attribute corresponding to aggregate */
+            string aggregateType, /* type, just pass along */
+            SlotSet& atts, string expr, string initializer, string defs);
 
-	virtual bool PropagateUp(QueryToSlotSet& result);
+    virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);
 
-	virtual void WriteM4File(ostream& out);
+    virtual bool PropagateUp(QueryToSlotSet& result);
 
-	virtual bool GetConfig(WayPointConfigureData& where);
+    virtual void WriteM4File(ostream& out);
+
+    virtual bool GetConfig(WayPointConfigureData& where);
 };
 
 #endif // _LT_AGGREGATE_H_

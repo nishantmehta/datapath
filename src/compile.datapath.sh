@@ -51,9 +51,9 @@ GetTwosExponent(){
 # Prepare Constants.h.m4 file
 cp Constants.h.m4 CONSTANTS_M4;
 
-DEFAULT_NUM_SLOTS=24
 DEFAULT_NUM_SEGS=$(GetTwosExponent $(($NUM_OF_THREADS*2)) $(($NUM_OF_THREADS*3)))
 DEFAULT_NUM_OTHER=$(($NUM_OF_THREADS*3/2))
+DEFAULT_NUM_SLOTS=24
 
 # Get User Defined Settings, if any
 if [ ! -e configure ]; then
@@ -93,11 +93,11 @@ if [ $UD_NUM_SEGS -le 0 ]; then
     echo "Using default NUM_SEGS = $DEFAULT_NUM_SEGS"
     sed "/#define NUM_SEGS/c #define NUM_SEGS $DEFAULT_NUM_SEGS" -i CONSTANTS_M4
 else
-    if [ $UD_NUM_SEGS -ge $(($NUM_OF_PROCS*2)) ] && [ $UD_NUM_SEGS -le $(($NUM_OF_PROCS*3)) ]; then
+    if [ $UD_NUM_SEGS -ge $(($NUM_OF_THREADS*2)) ] && [ $UD_NUM_SEGS -le $(($NUM_OF_THREADS*3)) ]; then
     echo "Using NUM_SEGS = $UD_NUM_SEGS"
     sed "/#define NUM_SEGS/c #define NUM_SEGS $UD_NUM_SEGS" -i CONSTANTS_M4
     else
-    echo "Warning: For this system, NUM_SEGS should be between $(($NUM_OF_PROCS*2)) and $(($NUM_OF_PROCS*3)), ideally $DEFAULT_NUM_SEGS"
+    echo "Warning: For this system, NUM_SEGS should be between $(($NUM_OF_THREADS*2)) and $(($NUM_OF_THREADS*3)), ideally $DEFAULT_NUM_SEGS"
     echo "Do you want to continue with NUM_SEGS = $UD_NUM_SEGS? y/n"
     read resp
     if [ "$resp" = "n" -o "$resp" = "N" ]; then
