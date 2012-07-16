@@ -22,9 +22,12 @@ package edu.ufl.cise.datapath;
 
 public final class DataPathConstants
 {
-    public static final String DATAPATH_DB           = "jdbc:sqlite:/home/psalitra/Work/DataPath/praveen/datapath-console/datapath.sqlite";
-    public static final int    STATUS_OK             = 200;
-    public static final int    INTERNAL_SERVER_ERROR = 500;
-    public static final int    NO_TYPE_FOUND         = 2004;
-    public static final int    TYPE_ALREADY_EXISTS   = 2005;
+	public static final String DATAPATH_DB           = "jdbc:sqlite:/home/datapath/datapath/datapath.sqlite";
+	public static final String DATAPATH_GLAS = "/home/datapath/datapath/GLAs/";
+	public static final String DATAPATH_PIGGYS = "/home/datapath/datapath/Piggys/";
+	public static final String DATAPATH_RUN_PIGGY = "/home/datapath/datapath/runPiggy.sh";
+	public static final int    STATUS_OK             = 200;
+	public static final int    INTERNAL_SERVER_ERROR = 500;
+	public static final int    NO_TYPE_FOUND         = 2004;
+	public static final int    TYPE_ALREADY_EXISTS   = 2005;
 }

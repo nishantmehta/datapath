@@ -91,7 +91,7 @@ public class AddGLA extends HttpServlet
             glaName = request.getParameter ("gla_name");
             glaDesc = request.getParameter ("gla_desc");
             glaType = request.getParameter ("gla_type");
-            glaLoc = "/home/psalitra/Work/DataPath/praveen/datapath-console/" + glaName + ".h";
+            glaLoc = DataPathConstants.DATAPATH_GLAS + glaName + ".h";
             preStmt1 = connDB._conn.prepareStatement ("SELECT * FROM GLA_Info WHERE glaName=?");
             preStmt1.setString (1, glaName);
             rs1 = preStmt1.executeQuery ();

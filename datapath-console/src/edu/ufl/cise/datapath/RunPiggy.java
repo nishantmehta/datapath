@@ -1,5 +1,5 @@
 /**
- * AddPiggy.java
+ * RunPiggy.java
  *
  * @author Praveen Salitra (praveen@cise.ufl.edu)
  *
@@ -20,6 +20,7 @@
  */
 package edu.ufl.cise.datapath;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,7 +29,6 @@ import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,23 +36,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.ufl.cise.datapath.exception.DataPathError;
 
 /**
- * Servlet implementation class AddPiggy
+ * Servlet implementation class RunPiggy
  */
-@WebServlet ("/AddPiggy")
-public class AddPiggy extends HttpServlet
+@WebServlet ("/RunPiggy")
+public class RunPiggy extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AddPiggy ()
+    public RunPiggy ()
     {
         super ();
     }
@@ -82,66 +79,28 @@ public class AddPiggy extends HttpServlet
         PreparedStatement preStmt1 = null;
         ResultSet rs1 = null;
         PreparedStatement preStmt2 = null;
-        ResultSet rs2 = null;
-        PreparedStatement preStmt3 = null;
-        String pigName = null, pigDesc = null, pigLoc = null;
-        JSONObject result = new JSONObject ();
+        int pigID;
         try
         {
-            pigName = request.getParameter ("pig_name");
-            pigDesc = request.getParameter ("pig_desc");
-            pigLoc = DataPathConstants.DATAPATH_PIGGYS + pigName + ".pgy";
-            preStmt1 = connDB._conn.prepareStatement ("SELECT * FROM Piggy_Info WHERE pigName=?");
-            preStmt1.setString (1, pigName);
+            pigID = Integer.parseInt (request.getParameter ("pig_id"));
+            preStmt1 = connDB._conn.prepareStatement ("SELECT pigLocation FROM Piggy_Info WHERE pigID=?");
+            preStmt1.setInt (1, pigID);
             rs1 = preStmt1.executeQuery ();
             if (rs1.next ())
             {
-                response.setStatus (DataPathConstants.INTERNAL_SERVER_ERROR);
-                out.print (DataPathError.getErrorJson (DataPathConstants.INTERNAL_SERVER_ERROR, "A piggy with the name "
-                        + pigName
-                        + " already exists in the datapath. Please enter a different name."));
-            } else
-            {
-                preStmt2 = connDB._conn.prepareStatement ("INSERT INTO Piggy_Info VALUES (null, ?, ?, ?)");
-                preStmt2.setString (1, pigName);
-                preStmt2.setString (2, pigDesc);
-                preStmt2.setString (3, pigLoc);
-                preStmt2.executeUpdate ();
-                
-                preStmt3 = connDB._conn.prepareStatement ("SELECT MAX(pigID) FROM Piggy_Info WHERE pigName=?");
-                preStmt3.setString (1, pigName);
-                rs2 = preStmt3.executeQuery ();
-                
-                if (rs2.next ())
-                {
-                    result.put ("pig_id", rs2.getInt (1));
-                    result.put ("piggy", new JSONObject ().put ("" + rs2.getInt (1), new JSONObject ().put ("pig_name", pigName)
-                                                                                                    .put ("pig_desc", pigDesc)));
-                }
-                PrintStream pigFile = new PrintStream (new FileOutputStream (pigLoc));
-                pigFile.flush ();
-                pigFile.close ();
+	            Runtime.getRuntime().exec(DataPathConstants.DATAPATH_RUN_PIGGY + " " + rs1.getString ("pigLocation"));
             }
+            
             response.setStatus (DataPathConstants.STATUS_OK);
-            out.print (result.toString ());
         } catch (SQLException e)
         {
             connDB.rollbackDB ();
             response.setStatus (DataPathConstants.INTERNAL_SERVER_ERROR);
             out.print (DataPathError.getErrorJson (DataPathConstants.INTERNAL_SERVER_ERROR, "SQLite Error: "+ e.getMessage ()));
-        } catch (FileNotFoundException e)
-        {
-            response.setStatus (DataPathConstants.INTERNAL_SERVER_ERROR);
-            out.print (DataPathError.getErrorJson (DataPathConstants.INTERNAL_SERVER_ERROR, "File Error: "+ e.getMessage ()));
-        } catch (JSONException e)
-        {
-            response.setStatus (DataPathConstants.INTERNAL_SERVER_ERROR);
-            out.print (DataPathError.getErrorJson (DataPathConstants.INTERNAL_SERVER_ERROR, "JSON Error: "+ e.getMessage ()));
         } finally
         {
             connDB.closePR (preStmt1, rs1);
-            connDB.closePR (preStmt2, null);
-            connDB.closePRC (preStmt3, rs2);
+            connDB.closePRC (preStmt2, null);
         }
     }
 }

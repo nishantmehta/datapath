@@ -1287,31 +1287,31 @@ var loader = function ($){
 		}
             })
             .appendTo($topbar);
-	$('<span/>').css({'display': 'inline-block', 'width': '50px'}).appendTo($topbar);
+        $('<span/>').css({'display': 'inline-block', 'width': '50px'}).appendTo($topbar);
         $('<button/>').attr('id', 'executePiggy')
-            .text('Execute Piggy')
-            .attr ('title', 'Execute this Piggy')
-            .click(function(){
-                var index = $('#piggy-tabs').tabs('option', 'selected'),
-                $a = $('a:eq('+index+')', $('ul.ui-tabs-nav', $('#piggy-tabs')));
-                if($($a).length > 0){
-                    piggyRef = $($a).attr('href');
-                    if(piggyRef !== -1){
-                        var dbox = this,
-                        logMessage('info', 'Piggy ' + that.dpProject.piggys[piggyRef.substring(5)].pig_name + ' is running');
-                        $.ajax ({
-                            url: defaults.runPiggyServlet,
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {pig_id: piggyRef.substring(5)},
-                            success: function (jsonResult) {
-                                logMessage('info', 'Piggy ' + that.dpProject.piggys[piggyRef.substring(5)].pig_name + ' is running.');
-                            }
-                        })
-                    }
-                }
-            })
-            .appendTo($topbar);
+        .text('Execute Piggy')
+        .attr ('title', 'Execute this Piggy')
+        .click(function(){
+		        var index = $('#piggy-tabs').tabs('option', 'selected'),
+			        $a = $('a:eq('+index+')', $('ul.ui-tabs-nav', $('#piggy-tabs')));
+		        if($($a).length > 0){
+			        piggyRef = $($a).attr('href');
+			        if(piggyRef !== -1){
+				        var dbox = this;
+				        logMessage('info', 'Piggy ' + that.dpProject.piggys[piggyRef.substring(5)].pig_name + ' is running');
+				        $.ajax ({
+						        url: defaults.runPiggyServlet,
+							        type: 'POST',
+							        dataType: 'json',
+							        data: {pig_id: piggyRef.substring(5)},
+							        success: function (jsonResult) {
+							        logMessage('info', 'Piggy ' + that.dpProject.piggys[piggyRef.substring(5)].pig_name + ' is running.');
+						        }
+					        })
+					        }
+		        }
+	        })
+        .appendTo($topbar);
 
 	$('<span/>').css({'display': 'inline-block', 'width': '50px'}).appendTo($topbar);
         $('<button/>').attr('id', 'saveAllPiggy')
