@@ -149,6 +149,11 @@ void LT_Aggregate::WriteM4File(ostream& out) {
 
     AttributeManager& am = AttributeManager::GetAttributeManager();
 
+    // Note: This anonymous namespace is here so that the same GLAs and
+    // functions may be defined in separate files without the linker
+    // complaining. The anonymous namespace restricts the linkage visibility
+    // of everything in it to this file only.
+    out << "namespace {" << endl;
     for (QueryToSlotSet::iterator it = aggAttribs.begin();
              it != aggAttribs.end(); ++it){
 
@@ -160,6 +165,7 @@ void LT_Aggregate::WriteM4File(ostream& out) {
             out << aggInfo.defs;
         }
     }
+    out << "}";
 
     out << "M4_AGGREGATE_MODULE(" << wpname << ", ";
     out << "\t</";

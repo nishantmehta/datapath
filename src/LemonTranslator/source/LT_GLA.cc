@@ -151,12 +151,19 @@ bool LT_GLA::PropagateUp(QueryToSlotSet& result)
 void LT_GLA::WriteM4DataStructures(ostream& out) {
 
     out << "m4_divert(0)" << endl;
+
+    // Note: This anonymous namespace is here so that the same GLAs and
+    // functions may be defined in separate files without the linker
+    // complaining. The anonymous namespace restricts the linkage visibility
+    // of everything in it to this file only.
+    out << "namespace {" << endl;
     FOREACH_EM(key, data, glaAttribs){
         out << " /* Generating datastructures for query "
             << GetQueryName(key) << "*/" << endl;
         GLAInfo glaInfo = glaInfoMap[key];
         out << glaInfo.defs << endl;
     } END_FOREACH;
+    out << "}";
 }
 
 void LT_GLA::WriteM4File(ostream& out) {

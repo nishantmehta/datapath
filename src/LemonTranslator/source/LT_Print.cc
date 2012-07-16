@@ -174,10 +174,16 @@ void LT_Print::WriteM4File(ostream& out) {
     GetId().getInfo(info);
     string wpname = info.getName();
 
+    // Note: This anonymous namespace is here so that the same GLAs and
+    // functions may be defined in separate files without the linker
+    // complaining. The anonymous namespace restricts the linkage visibility
+    // of everything in it to this file only.
+    out << "namespace {" << endl;
     for (QueryToPrintString::iterator it = definitions.begin();
              it != definitions.end(); ++it){
         out << it->second;
     }
+    out << "}";
 
     // print module call
     out << "M4_PRINT_MODULE(" << wpname << ", ";
