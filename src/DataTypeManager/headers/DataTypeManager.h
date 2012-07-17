@@ -141,6 +141,14 @@ class DataTypeManager {
         FuncTemplateInfo() {}
     };
 
+    struct GLATemplateInfo {
+        string file;
+
+        GLATemplateInfo( string file ) : file(file) {}
+
+        GLATemplateInfo() {}
+    };
+
     typedef map<string, TypeInfo*> TypeToInfoMap;
     TypeToInfoMap mType;
 
@@ -153,6 +161,9 @@ class DataTypeManager {
     typedef map<string, FuncTemplateInfo> FuncTempToInfoMap;
     FuncTempToInfoMap mTempFunc;
 
+    typedef map<string, GLATemplateInfo> GLATempToInfoMap;
+    GLATempToInfoMap mTempGLA;
+
     // Synonym to base type
     map<string, string> mSynonymToBase;
 
@@ -163,7 +174,10 @@ class DataTypeManager {
     bool IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs);
 
     void AddFuncTemplate( string fName, string retType, string file );
-    bool TemplateExists( string fName, string& retType );
+    bool FuncTemplateExists( string fName, string& retType, string& file );
+
+    void AddGLATemp( string glaName, string file );
+    bool GLATemplateExists( string glaName, string& file );
 
     // Prefix for conversion functions. For example, if the conversion prefix was "_TO_", then
     // any function named "_TO_T" that take a single argument will be assumed to convert
@@ -243,6 +257,7 @@ class DataTypeManager {
 
     // generic functions. types are specified in order: Have(myType, int, double)
     void AddFunctions(string fName, vector<string>& typeargs, string rettype, bool pure);
+    void AddFunctionTemplate( string fName, string rettype, string file );
     // is this a valid function and if YES what is the return type
     bool IsFunction(string fName, vector<string>& typeargs,
             string& /* out param */ rettype, bool& /* out param */ pure,
@@ -263,6 +278,8 @@ class DataTypeManager {
     void AddGLA(string glaName, vector<string>& typeargs, vector<string>& typeret, string filename );
     bool IsGLA( string glaName, vector<string>& typeargs, vector<string>& typeret,
             vector<ArgFormat>& /* out param */ actualArgs );
+
+    void AddGLATemplate( string glaName, string filename );
 
     // generate the set of includes for a given list of attributes
     // result should contain the #include statements
@@ -839,13 +856,50 @@ void DataTypeManager :: AddFuncTemplate( string fName, string retType, string fi
 }
 
 inline
-bool DataTypeManager :: TemplateExists( string fName, string& retType ) {
+bool DataTypeManager :: FuncTemplateExists( string fName, string& retType, string& file ) {
     FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
 
     if( it != mTempFunc.end() ) {
         FuncTemplateInfo & fInfo = it->second;
 
         retType = fInfo.retType;
+        file = fInfo.file;
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+inline
+void DataTypeManager :: AddGLATemp( string glaName, string file ) {
+    GLATempToInfoMap::iterator it = mTempGLA.find( glaName );
+
+    if( it != mTempGLA.end() ) {
+        GLATemplateInfo & gInfo = it->second;
+
+        if( gInfo.file != file ) {
+            cout << "\nError adding templated GLA " << glaName
+                << ", template exists with different definition.";
+        }
+
+        return;
+    }
+    else {
+        mTempGLA[glaName] = GLATemplateInfo( file );
+    }
+}
+
+inline
+bool DataTypeManager :: GLATemplateExists( string glaName, string& file ) {
+    GLATempToInfoMap::iterator it = mTempGLA.find( glaName );
+
+    if( it != mTempGLA.end() ) {
+        GLATemplateInfo & gInfo = it->second;
+
+        file = gInfo.file;
+        return true;
     }
     else {
         return false;
@@ -901,6 +955,11 @@ void DataTypeManager :: AddFunctions(string fName, vector<string>& types, string
 }
 
 inline
+void DataTypeManager :: AddFunctionTemplate( string fName, string rettype, string file ) {
+    AddFuncTemplate( fName, rettype, file );
+}
+
+inline
 bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& rettype, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
@@ -910,7 +969,8 @@ bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& 
 
     if( !ret ) {
         pure = true;
-        return TemplateExists( fName, rettype );
+        string file;
+        return FuncTemplateExists( fName, rettype, file );
     }
 }
 
@@ -955,8 +1015,8 @@ void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
         AddBaseType( glaName, fileName );
     }
 
-    string fName_add = "AddItem";
-    string fName_ret = "GetResult";
+    string fName_add = "AddItem_" + glaName;
+    string fName_ret = "GetResult_" + glaName;
 
     string ret = "";
 
@@ -965,6 +1025,11 @@ void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
 
     AddFunc( glaName, fName_add, args_vec, ret, NoAssoc, -1, false );
     AddFunc( glaName, fName_ret, ret_vec, ret, NoAssoc, -1, false );
+}
+
+inline
+void DataTypeManager :: AddGLATemplate( string glaName, string filename ) {
+    AddGLATemp( glaName, filename );
 }
 
 inline
@@ -986,16 +1051,20 @@ bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
 
     //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
 
-    string fName_add = "AddItem";
-    string fName_ret = "GetResult";
+    string fName_add = "AddItem_" + glaName;
+    string fName_ret = "GetResult_" + glaName;
 
     bool pure;
 
     // Check the arguments and get any formatting necessary.
     bool correct = IsCorrectFunc( glaName, fName_add, arg_vec, ret, NoAssoc, -1, pure, actualArgs );
 
-    if( !correct )
-        return false;
+    // If we didn't get a match for a concrete GLA, see if a template with this
+    // name exists.
+    if( !correct ) {
+        string file;
+        return GLATemplateExists( glaName, file );
+    }
 
     // We don't want any transformations on the return arguments
     // so check for an EXACT match for the results function.

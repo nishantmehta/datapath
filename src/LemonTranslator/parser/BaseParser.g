@@ -14,7 +14,7 @@ tokens {
   DELWAYPOINT;
   DELQUERY;
   CRDATATYPE;
-  CRSYNONIM;
+  CRSYNONYM;
   FCT;
   TPATT;
   ATTFROM;
@@ -41,6 +41,8 @@ tokens {
   SYNTHESIZE__;
   FUNCTEMPLATE;
   TYPE_;
+  CR_TMPL_FUNC;
+  CR_TMPL_GLA;
 }
 
 
@@ -108,6 +110,9 @@ typeTemplateParam
     | INT
     ;
 
+typeList
+    : type (COMMA! type)*
+    ;
 
 ctAttList
     : /* nothing */ ->

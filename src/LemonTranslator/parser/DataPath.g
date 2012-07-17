@@ -158,7 +158,7 @@ dType : ID;
 
 lstSyn[char* tp]
   : /* nothing */
-  | EQUAL ID (    COMMA ID)* ->^(CRSYNONIM ID[$tp] ID)+
+  | EQUAL ID (    COMMA ID)* ->^(CRSYNONYM ID[$tp] ID)+
   ;
 
 drStmt :

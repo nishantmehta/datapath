@@ -24,7 +24,6 @@ NOT_K : 'not' | 'Not' | 'NOT';
 FOREACH : 'foreach' | 'Foreach' | 'FOREACH';
 GENERATE : 'generate' | 'Generate' | 'GENERATE';
 
-
 parse[LemonTranslator* trans]
     : {
       // create new query
@@ -56,6 +55,18 @@ statement
 
 createStatement
   : RELATION n=ID LPAREN tpAttList RPAREN -> ^(CRRELATION $n tpAttList)
+  | DATATYPE n=ID FROM f=STRING -> ^(CRDATATYPE $n $f)
+  | SYNONYM syn=ID FROM base=ID -> ^(CRSYNONYM $syn $base)
+  | FUNCTION n=ID LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
+    -> ^(FUNCTION $n $f $ret $params)
+  | OPKEYWORD n=STRING FROM f=STRING LPAREN params=typeList RPAREN ARROW ret=type
+    -> ^(OPDEF $n $f $ret $params)
+  | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    -> ^(CRGLA $n $f ^(TPATT $retList) ^(TPATT $params))
+  | TEMPLATE FUNCTION n=ID ARROW ret=type FROM f=STRING
+    -> ^(CR_TMPL_FUNC $n $f $ret)
+  | TEMPLATE GLA n=ID FROM f=STRING
+    -> ^(CR_TMPL_GLA $n $f)
   ;
 
 tpAttList
@@ -67,7 +78,7 @@ tpAtt
   ;
 
 inStmt
-    : IN -> JOIN_IN 
+    : IN -> JOIN_IN
     | NOT_K IN -> JOIN_NOTIN
     ;
 
@@ -84,14 +95,14 @@ actionBody
     -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
   | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
         -> ^(TEXTLOADER__ ^(ATTFROM $c) ^(SEPARATOR $s)?  ^(FILE__ $f $b) )
-    | FOREACH a=ID GENERATE generateList 
+    | FOREACH a=ID GENERATE generateList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] generateList )
   ;
 
 generateItem
     : e=expression AS a=ID COLON t=ID -> ^(SYNTHESIZE__ $a $t $e) ;
 
-generateList 
+generateList
     : generateItem (COMMA! generateItem)* ;
 
 glaDef

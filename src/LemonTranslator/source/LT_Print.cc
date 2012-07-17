@@ -178,12 +178,12 @@ void LT_Print::WriteM4File(ostream& out) {
     // functions may be defined in separate files without the linker
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
-    out << "namespace {" << endl;
+    //out << "namespace {" << endl;
     for (QueryToPrintString::iterator it = definitions.begin();
              it != definitions.end(); ++it){
         out << it->second;
     }
-    out << "}";
+    //out << "}";
 
     // print module call
     out << "M4_PRINT_MODULE(" << wpname << ", ";

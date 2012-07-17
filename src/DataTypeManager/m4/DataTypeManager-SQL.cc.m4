@@ -106,6 +106,14 @@ void DataTypeManager::Load(void){
     );
   "/>);
 
+  // create the relation for the gla templates if it doesn't exist
+  SQL_STATEMENTS_NOREZ(</"
+    CREATE TABLE IF NOT EXISTS DataTypeManager_GLATempInfo (
+            name        TEXT,
+            file        TEXT
+    );
+  "/>);
+
   SQL_STATEMENT_TABLE(</"
       SELECT type, file, convTo, noExtract
       FROM DataTypeManager_TypeInfo;
@@ -152,6 +160,15 @@ void DataTypeManager::Load(void){
         FuncTemplateInfo fInfo( ret, file );
         mTempFunc[func] = fInfo;
     }SQL_END_STATEMENT_TABLE;
+
+    SQL_STATEMENT_TABLE(</"
+        SELECT name, file
+        FROM DataTypeManager_GLATempInfo;
+    "/>, </(name, text), (file, text)/>) {
+        GLATemplateInfo gInfo( file );
+        mTempGLA[name] = gInfo;
+    } SQL_END_STATEMENT_TABLE;
+
   // close the database
   SQL_CLOSE_DATABASE;
 
@@ -285,6 +302,26 @@ void DataTypeManager::Save(void){
             const char * file = it->second.file.c_str();
 
             SQL_INSTANTIATE_PARAMETERS(func, ret, file);
+        }
+
+    SQL_PARAMETRIC_END;
+
+  // create the relation for the gla templates if it doesn't exist
+  SQL_STATEMENTS_NOREZ(</"
+    CREATE TABLE IF NOT EXISTS DataTypeManager_GLATempInfo (
+            name        TEXT,
+            file        TEXT
+    );
+  "/>);
+
+    SQL_STATEMENT_PARAMETRIC_NOREZ(</"
+        INSERT INTO DataTypeManager_GLATempInfo(name, file) VALUES (?1, ?2);
+    "/>, </text, text/>);
+        for( GLATempToInfoMap::iterator it = mTempGLA.begin(); it != mTempGLA.end(); ++it ) {
+            const char * name = it->first.c_str();
+            const char * file = it->second.file.c_str();
+
+            SQL_INSTANTIATE_PARAMETERS(name, file);
         }
 
     SQL_PARAMETRIC_END;

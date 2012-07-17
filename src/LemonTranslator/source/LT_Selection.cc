@@ -181,7 +181,7 @@ void LT_Selection::WriteM4File(ostream& out) {
     // functions may be defined in separate files without the linker
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
-    out << "namespace {" << endl;
+    //out << "namespace {" << endl;
     for (QueryFilterToExpr::iterator it = filters.begin();
              it != filters.end(); ++it){
         QueryID query = it->first;
@@ -192,7 +192,7 @@ void LT_Selection::WriteM4File(ostream& out) {
             out << synthInfo.defs;
         }
     }
-    out << "}";
+    //out << "}";
 
     out << "M4_SELECTION_MODULE(" << wpname << ", ";
     out << "\t</";

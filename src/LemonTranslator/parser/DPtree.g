@@ -90,10 +90,12 @@ complexStatement
   | ^(DELWAYPOINT ID) /* nothing for now, add */
   | ^(DELQUERY ID) { QueryID q=qm.GetQueryID(TXT($ID)); lT->DeleteQuery(q); }
   | ^(CRDATATYPE ID s=STRING) { dTM.AddBaseType(STR($ID), STRS($s)); }
-  | ^(CRSYNONIM tp=ID s=ID) { dTM.AddSynonymType(STR($tp), STR($s)); }
+  | ^(CRSYNONYM tp=ID s=ID) { dTM.AddSynonymType(STR($tp), STR($s)); }
   | ^(FUNCTION ID (s=STRING)? dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, true); /* string ignored for now */ }
   | ^(OPDEF n=STRING (s=STRING)? dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, true); /* string ignored for now */ }
   | ^(CRGLA ID (s=STRING)? ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT); }
+  | ^(CR_TMPL_FUNC name=ID file=STRING retType=dType) { dTM.AddFunctionTemplate( STR($name), $retType.type, STR($file));}
+  | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRN($file)); }
   | relationCR
   | FLUSHTOKEN {dTM.Save(); catalog.SaveCatalog();}
   | runStmt

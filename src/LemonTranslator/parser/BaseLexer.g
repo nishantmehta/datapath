@@ -16,6 +16,8 @@ FUNCTION : 'function' | 'Function' | 'FUNCTION';
 RELATION : 'relation' | 'Relation' | 'RELATION';
 OPKEYWORD : 'operator' | 'Operator' | 'OPERATOR';
 DATATYPE : 'datatype' | 'Datatype' | 'DATATYPE';
+SYNONYM : 'synonym' | 'Synonym' | 'SYNONYM';
+TEMPLATE : 'template' | 'Template' | 'TEMPLATE';
 
 SEPARATOR : 'separator' | 'Separator' | 'SEPARATOR' ;
 ATTRIBUTES : 'attributes' | 'Attributes' | 'ATTRIBUTES' ;
@@ -107,6 +109,8 @@ MINUS : '-';
 TIMES : '*';
 DIVIDE : '/';
 MOD : '%';
+
+ARROW : '->';
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;

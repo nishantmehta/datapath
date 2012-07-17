@@ -24,7 +24,7 @@ dnl # $3 = The datatype of the elements (optional, default is DOUBLE)
 m4_define(</MakeVector/>, </dnl
 m4_redefine(</FUNC_NAME/>, </$1/>)dnl
 m4_redefine(</NUM_ELEM/>, </$2/>)dnl
-m4_redefine(</ELEM_TYPE/>, m4_ifval(</$3/>, </$3/>, </DOUBLE/>))dnl
+m4_redefine(</ELEM_TYPE/>, m4_ifval(</$3/>, VAR($3), </DOUBLE/>))dnl
 m4_redefine(</MAX_INDEX/>, m4_eval(NUM_ELEM - 1))dnl
 dnl
 m4_if( m4_eval(NUM_ELEM < 1), 1, </m4_fatal(Cannot create vector with NUM_ELEM elements!)/>)dnl

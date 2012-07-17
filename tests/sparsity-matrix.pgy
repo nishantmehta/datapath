@@ -1,0 +1,32 @@
+LOAD lineitem;
+
+agg =
+GLA:SparsityMatrixGLA
+<
+    4,
+    DOUBLE
+>
+FROM
+    lineitem
+USING
+    UDF:MakeVector<4, DOUBLE>(lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax) -> VECTOR
+AS
+    x1 : DOUBLE,
+    x2 : DOUBLE,
+    x3 : DOUBLE,
+    x4 : DOUBLE;
+
+PRINT
+    agg
+USING
+    x1,
+    x2,
+    x3,
+    x4
+AS
+    x1 : DOUBLE,
+    x2 : DOUBLE,
+    x3 : DOUBLE,
+    x4 : DOUBLE
+INTO
+    "sparsity-matrix-result.csv";
