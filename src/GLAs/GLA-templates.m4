@@ -103,8 +103,71 @@ m4_define(</m4_autoincr/>, </dnl
 <//>m4_define(</$1/>, m4_incr(m4_defn(</$1/>)))dnl
 />)
 
+dnl # Macros to make it easier to specify meta-information about GLAs.
+
+m4_define(</NAME/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_redefine(</__META_GLA_NAME/>, </$1/>)dnl
+/>)dnl
+
+m4_define(</INPUTS/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 1, </dnl
+<//><//>m4_define(__META_GLA_NAME</_INPUT/>, </$1/>)dnl
+<//>/>, </dnl
+<//><//>m4_define($1</_INPUT/>, </$2/>)dnl
+<//>/>)dnl
+/>)dnl
+
+m4_define(</OUTPUTS/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 1, </dnl
+<//><//>m4_define(__META_GLA_NAME</_OUTPUT/>, </$1/>)dnl
+<//>/>, </dnl
+<//><//>m4_define($1</_OUTPUT/>, </$2/>)dnl
+<//>/>)dnl
+/>)dnl
+
+m4_define(</RESULT_TYPE/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 1, </dnl
+<//><//>m4_define(</GLA_REZTYPE_/>__META_GLA_NAME, </$1/>)dnl
+<//>/>, </dnl
+<//><//>m4_define(</GLA_REZTYPE_/>$1, </$2/>)dnl
+<//>/>)dnl
+/>)dnl
+
+m4_define(</CONSTRUCTOR/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 1, </dnl
+<//><//>m4_define(__META_GLA_NAME</_INIT/>, </$1/>)dnl
+<//>/>, </dnl
+<//><//>m4_define($1</_INIT/>, </$2/>)dnl
+<//>/>)dnl
+/>)dnl
+
+dnl # Macros to make it easier to add options to GLAs
+m4_define(</OPT_CHUNK_BOUNDARY/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 0, </dnl
+<//><//>m4_define(</GLA_CHUNKBOUNDARY_/>__META_GLA_NAME, <//>)dnl
+<//>/>, </dnl
+<//><//>m4_define(</GLA_CHUNKBOUNDARY_/>$1, <//>)dnl
+<//>/>)dnl
+/>)dnl
+
+m4_define(</OPT_ITERABLE/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 0, </dnl
+<//><//>m4_define(</GLA_ITERABLE_/>__META_GLA_NAME, <//>)dnl
+<//>/>, </dnl
+<//><//>m4_define(</GLA_ITERABLE_/>$1, <//>)dnl
+<//>/>)dnl
+/>)dnl
+
 dnl # Macro for defining what libraries a GLA requires to be linked
 m4_define(</LIBS/>, </dnl
+<//></$0($@)/>dnl
 <//>m4_divert_push(8)dnl
 <//>m4_foreach(</_LIB_/>, </$@/>, </dnl
 <//><//>_LIB_

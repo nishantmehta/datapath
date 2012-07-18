@@ -2,7 +2,7 @@ m4_define(</SparsityMatrixGLA/>, </dnl
 m4_divert_push(-1)
 m4_redefine(</GLA_NAME/>, </$1/>)
 m4_redefine(</NUM_ELEM/>, </$2/>)
-m4_redefine(</ELEM_TYPE/>, VAR($3))
+m4_redefine(</ELEM_TYPE/>, m4_ifval($3, VAR($3), </DOUBLE/>))
 m4_redefine(</MAX_INDEX/>, m4_eval(NUM_ELEM - 1))
 
 m4_if( m4_eval(NUM_ELEM < 1), 1, </m4_fatal(Cannot create vector with NUM_ELEM elements!)/>)
@@ -24,9 +24,10 @@ using namespace arma;
 
 /** Information for meta-GLAs
  *
- * m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)
- * m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
- * m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUT)
+ * OUTPUTS(MY_OUTPUT)
+ * RESULT_TYPE(MY_REZTYPE)
  * LIBS(armadillo)
  */
 
