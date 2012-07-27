@@ -7,11 +7,13 @@
 /*
  *  This is an implementation of Logistic Regression based heavily on the
  *  MADlib implementation.
+ *
+ *  This implementation uses the conjugate-gradient method.
  */
 
 /** Information for Meta-GLAs
  *
- *  NAME(</LogisticRegressionGLA/>)
+ *  NAME(</LogisticRegressionCG/>)
  *  INPUTS(</(x, VECTOR), (y, DOUBLE)/>)
  *  OUTPUTS(</(count, DOUBLE)/>)
  *  CONSTRUCTOR(</(width, BIGINT)/>)
@@ -28,9 +30,9 @@ typedef Col<DOUBLE> VECTOR;
 typedef Mat<DOUBLE> MATRIX;
 
 // Declaration
-class LogisticRegressionGLA;
+class LogisticRegressionCG;
 
-class LogisticRegressionGLA_ConstState {
+class LogisticRegressionCG_ConstState {
     // Inter-iteration components
     uint64_t iteration;         // current iteration
     VECTOR coef;                // vector of coefficients
@@ -41,10 +43,10 @@ class LogisticRegressionGLA_ConstState {
     // Constructor arguments
     BIGINT width;
 
-    friend class LogisticRegressionGLA;
+    friend class LogisticRegressionCG;
 
 public:
-    LogisticRegressionGLA_ConstState( const BIGINT& width ) :
+    LogisticRegressionCG_ConstState( const BIGINT& width ) :
         width(width),
         // Inter-iteration components
         iteration       (0),
@@ -57,9 +59,9 @@ public:
 
 };
 
-class LogisticRegressionGLA {
+class LogisticRegressionCG {
     // Inter-iteration components in const state
-    const LogisticRegressionGLA_ConstState & constState;
+    const LogisticRegressionCG_ConstState & constState;
 
     // Intra-iteration components
     uint64_t numRows;           // number of rows processed this iteration
@@ -77,22 +79,23 @@ class LogisticRegressionGLA {
 
 public:
 
-    LogisticRegressionGLA( const LogisticRegressionGLA_ConstState & state ) :
+    LogisticRegressionCG( const LogisticRegressionCG_ConstState & state ) :
+        constState(state),
         // Intra-iteration components
         numRows         (0),
-        gradNew         (width),
-        sparsity        (width, width),
+        gradNew         (state.width),
+        sparsity        (state.width, state.width),
         loglikelihood   (0.0)
     {
-        gradNew.zeroes();
-        sparsity.zeroes();
+        gradNew.zeros();
+        sparsity.zeros();
     }
 
     void AddItem( const VECTOR & x, const DOUBLE & y ) {
         ++numRows;
 
-        DOUBLE xc = dot(x, state.coef);
-        gradNew += sigma(-y * xc) * y * trans(x);
+        DOUBLE xc = dot(x, constState.coef);
+        gradNew += sigma(-y * xc) * y * x;
 
         double a = sigma(xc) * sigma(-xc);
         sparsity += x * trans(x) * a;
@@ -100,7 +103,7 @@ public:
         loglikelihood -= std::log( 1.0 + std::exp(-y * xc) );
     }
 
-    void AddState( const LogisticRegressionGLA & other ) {
+    void AddState( const LogisticRegressionCG & other ) {
         ADD(sparsity);
         ADD(gradNew);
         ADD(numRows);
@@ -112,7 +115,7 @@ public:
         tuplesProduced = 0;
     }
 
-    bool ShouldIterate( LogisticRegressionGLA_ConstState& modibleState ) {
+    bool ShouldIterate( LogisticRegressionCG_ConstState& modibleState ) {
         // References to the modifyable state's members so that we don't have
         // to specifically access the members all the time.
         VECTOR & grad = modibleState.grad;
@@ -185,13 +188,19 @@ public:
     // FIXME: The output should technically be a variety of things, including
     // vectors and other complex types.
     // May need to just produce itself as a state.
-    bool GetNextResult( DOUBLE& count ) {
+    bool GetNextResult( BIGINT& count ) {
+        const VECTOR & grad = constState.grad;
+        const VECTOR & coef = constState.coef;
+        const VECTOR & dir = constState.dir;
+        const DOUBLE & beta = constState.beta;
+        const uint64_t & iteration = constState.iteration;
+
         if( tuplesProduced < 1 ) { // fast track
             ++tuplesProduced;
             count = numRows;
 
             // Produce the diagnostic statistics of the state.
-            VECTOR eigenValues(coef.n_cols);
+            VECTOR eigenValues(coef.n_rows);
             MATRIX eigenVectors(sparsity.n_rows, sparsity.n_cols);
 
             eig_sym(eigenValues, eigenVectors, sparsity);
@@ -201,24 +210,24 @@ public:
             // FIXME: How do you calculate the condition number?
 
             // Set up vectors to hold diagnostics
-            VECTOR stdErr(coef.n_cols);
-            VECTOR waldZStats(coef.n_cols);
-            VECTOR waldPValues(coef.n_cols);
-            VECTOR oddsRatios(coef.n_cols);
+            VECTOR stdErr(coef.n_rows);
+            VECTOR waldZStats(coef.n_rows);
+            VECTOR waldPValues(coef.n_rows);
+            VECTOR oddsRatios(coef.n_rows);
 
-            for( size_t i = 0; i < coef.n_cols; ++i ) {
+            for( size_t i = 0; i < coef.n_rows; ++i ) {
                 stdErr(i) = std::sqrt(diagInvSparse(i));
                 waldZStats(i) = coef(i) / stdErr(i);
                 // Note: may need to add wrapper to the boost cdf function to modify
                 // the domain, as cdf may throw a domain_error if the input value is
                 // infinite instead of returning the correct mathematical result.
-                waldPValues(i) = 2.0 * boost::math::cdf( boost::math::normal_distribution(),
+                waldPValues(i) = 2.0 * boost::math::cdf( boost::math::normal_distribution<>(),
                         - std::abs(waldZStats(i)));
                 oddsRatios(i) = std::exp( coef(i) );
             }
 
             cout << endl;
-            cout << "[LogisticRegressionGLA] Output for iteration " << iteration << ":" << endl;
+            cout << "[LogisticRegressionCG] Output for iteration " << iteration << ":" << endl;
             cout << "Coefficients:" << endl;
             cout << coef << endl;
             cout << "Standard Error:" << endl;
@@ -227,6 +236,8 @@ public:
             cout << waldZStats << endl;
             cout << "P Values:" << endl;
             cout << waldPValues << endl;
+            cout << "Odds Ratios:" << endl;
+            cout << oddsRatios << endl;
 
             return true;
         }

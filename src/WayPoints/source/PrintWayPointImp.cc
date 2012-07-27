@@ -48,7 +48,7 @@ void PrintWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 		tempExit.Print ();
 		cout << " to start.\n";
 #endif  // DEBUG
-		
+
 		// Open the fine and write the header for the query
 		pair<string,string>& info = queriesInfo.Find(tempExit.query).GetData();
 		string& fName = info.first;
@@ -67,7 +67,7 @@ void PrintWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 		WayPointID myID = GetID (), myIDCopy = GetID ();
 
 		// create the actual notification fiest
-		StartProducingMsg startProducing (myID, tempExit);		
+		StartProducingMsg startProducing (myID, tempExit);
 
 		// now wrap it up in a hopping upstream message
 		HoppingUpstreamMsg myMessage (myIDCopy, tempExitCopy, startProducing);
@@ -75,10 +75,10 @@ void PrintWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 	}
 }
 
-void PrintWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &history, 
+void PrintWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &history,
 																				int result, ExecEngineData& data) {
 	PDEBUG ("PrintWayPointImp :: DoneProducing()");
-	
+
 	// send an ack message back down through the graph to let them know we are done
 	SendAckMsg (whichOnes, history);
 }
@@ -92,7 +92,7 @@ void PrintWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
 		// do the cast via a swap
 		QueryDoneMsg temp;
 		temp.swap (message.get_msg ());
-		
+
 		// send a message to the coordinator that we are done
 		QueryExitContainer whichOnesC;
 		whichOnesC.copy(temp.get_whichOnes());
@@ -107,7 +107,7 @@ void PrintWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
 			if (qe.exit == GetID()){
 				QueryExit tmp = qe;
 				endingOnes.Append(tmp);
-				
+
 				// close the files
 				QueryID tmp2 = qe.query;
 				QueryID dummy;
@@ -116,7 +116,7 @@ void PrintWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
 				fclose(fileObj.GetData());
 			}
 		}END_FOREACH;
-		
+
 		// this was the source of a big bug!  The cleaner gets its query done
 		// messages from the various joins as they finish
 		//
@@ -125,7 +125,7 @@ void PrintWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
 		//QueryDoneMsg allDone (GetID (), endingOnes);
 		//DirectMsg toCleaner (cleaner, allDone);
 		//SendDirectMsg (toCleaner);
-		
+
 	} else {
 		FATAL ("Why did I get some hopping downstream message that was not a query done message?\n");
 	}
@@ -138,7 +138,7 @@ void PrintWayPointImp :: ProcessHoppingDataMsg (HoppingDataMsg &data) {
 	// request a work token to actually run the print
 	GenericWorkToken returnVal;
 	if (!RequestTokenImmediate (CPUWorkToken::type, returnVal)) {
-		
+
 		// if we do not get one, then we will just return a drop message to the sender
 		SendDropMsg (data.get_dest (), data.get_lineage ());
 		return;
@@ -148,20 +148,20 @@ void PrintWayPointImp :: ProcessHoppingDataMsg (HoppingDataMsg &data) {
 	CPUWorkToken myToken;
 	myToken.swap (returnVal);
 
-	// extract the chunk we need to print 
+	// extract the chunk we need to print
 	ChunkContainer temp;
 	data.get_data ().swap (temp);
 
 	// fileDescriptors of all queries involved
 	QueryToFileMap streamsOut;
-	
+
 
 	// create the work spec that we will actuall have executed
 	QueryExitContainer whichOnes;
 	whichOnes.copy (data.get_dest ());
 	FOREACH_TWL(el, whichOnes){
 	  QueryID query=el.query;
-	  FileObj file; 
+	  FileObj file;
 	  file.copy(streams.Find(query));
 	  streamsOut.Insert(query, file);
 	}END_FOREACH;

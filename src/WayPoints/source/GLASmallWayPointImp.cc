@@ -327,9 +327,6 @@ void GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes
         HoppingUpstreamMsg value;
         cachedProducingMessages.Remove(curQuery.query, key, value);
 
-        cout << "Sending start producing message for ";
-        key.Print();
-        cout << endl;
         SendHoppingUpstreamMsg( value );
     }END_FOREACH;
 }
