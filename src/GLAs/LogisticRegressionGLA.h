@@ -1,5 +1,6 @@
 #include <armadillo>
 #include <math.h>
+#include <boost/math/distributions.hpp>
 
 #define ADD(x) x += other.x;
 
@@ -26,14 +27,39 @@ using namespace arma;
 typedef Col<DOUBLE> VECTOR;
 typedef Mat<DOUBLE> MATRIX;
 
-class LogisticRegressionGLA {
+// Declaration
+class LogisticRegressionGLA;
 
+class LogisticRegressionGLA_ConstState {
     // Inter-iteration components
     uint64_t iteration;         // current iteration
     VECTOR coef;                // vector of coefficients
     VECTOR dir;                 // direction
     VECTOR grad;                // gradient
     DOUBLE beta;                // scale factor
+
+    // Constructor arguments
+    BIGINT width;
+
+    friend class LogisticRegressionGLA;
+
+public:
+    LogisticRegressionGLA_ConstState( const BIGINT& width ) :
+        width(width),
+        // Inter-iteration components
+        iteration       (0),
+        coef            (width),
+        dir             (width),
+        grad            (width),
+        beta            (0.0)
+    {
+    }
+
+};
+
+class LogisticRegressionGLA {
+    // Inter-iteration components in const state
+    const LogisticRegressionGLA_ConstState & constState;
 
     // Intra-iteration components
     uint64_t numRows;           // number of rows processed this iteration
@@ -51,32 +77,7 @@ class LogisticRegressionGLA {
 
 public:
 
-    // Initial constructor, no previous state.
-    LogisticRegressionGLA( const BIGINT & width ) :
-        // Inter-iteration components
-        iteration       (0),
-        coef            (width),
-        dir             (width),
-        grad            (width),
-        beta            (0.0),
-        // Intra-iteration components
-        numRows         (0),
-        gradNew         (width),
-        sparsity        (width, width),
-        loglikelihood   (0.0)
-    {
-        gradNew.zeroes();
-        sparsity.zeroes();
-    }
-
-    // Constructor for later iterations, using constant state
-    LogisticRegressionGLA( const BIGINT & width, const LogisticRegressionGLA & state ) :
-        // Inter-iteration components
-        iteration       (state.iteration + 1),
-        coef            (state.coef),
-        dir             (state.dir),
-        grad            (state.grad),
-        beta            (state.beta),
+    LogisticRegressionGLA( const LogisticRegressionGLA_ConstState & state ) :
         // Intra-iteration components
         numRows         (0),
         gradNew         (width),
@@ -90,7 +91,7 @@ public:
     void AddItem( const VECTOR & x, const DOUBLE & y ) {
         ++numRows;
 
-        DOUBLE xc = dot(x, coef);
+        DOUBLE xc = dot(x, state.coef);
         gradNew += sigma(-y * xc) * y * trans(x);
 
         double a = sigma(xc) * sigma(-xc);
@@ -107,6 +108,19 @@ public:
     }
 
     void Finalize() {
+        // Set internal iterator
+        tuplesProduced = 0;
+    }
+
+    bool ShouldIterate( LogisticRegressionGLA_ConstState& modibleState ) {
+        // References to the modifyable state's members so that we don't have
+        // to specifically access the members all the time.
+        VECTOR & grad = modibleState.grad;
+        VECTOR & coef = modibleState.coef;
+        VECTOR & dir = modibleState.dir;
+        DOUBLE & beta = modibleState.beta;
+        uint64_t & iteration = modibleState.iteration;
+
         if( iteration != 0 ) {
             // We use the Hestenes-Stiefel update formula:
             //
@@ -162,11 +176,11 @@ public:
             throw 1;
         }
 
-        // Set internal iterator
-        tuplesProduced = 0;
-    }
+        ++iteration;
 
-    // FIXME: Add in iteration condition.
+        // FIXME: Add in actual iteration condition
+        return (iteration < 5);
+    }
 
     // FIXME: The output should technically be a variety of things, including
     // vectors and other complex types.
@@ -195,9 +209,10 @@ public:
             for( size_t i = 0; i < coef.n_cols; ++i ) {
                 stdErr(i) = std::sqrt(diagInvSparse(i));
                 waldZStats(i) = coef(i) / stdErr(i);
-                // FIXME: Need to figure out what library is needed for the
-                // probability functions.
-                waldPValues(i) = 2.0 * prob::cdf( prob::normal(),
+                // Note: may need to add wrapper to the boost cdf function to modify
+                // the domain, as cdf may throw a domain_error if the input value is
+                // infinite instead of returning the correct mathematical result.
+                waldPValues(i) = 2.0 * boost::math::cdf( boost::math::normal_distribution(),
                         - std::abs(waldZStats(i)));
                 oddsRatios(i) = std::exp( coef(i) );
             }

@@ -59,7 +59,7 @@ void TableWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 	// make sure the internal datastructures get initialized at this time
 	if (!fileId.IsValid()){
 		// start file
-		
+
 		// need to determine the number of columns
 		// we do it the slow way: count the number from the map
 		int _numCols = 0;
@@ -71,7 +71,7 @@ void TableWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 		myName = tempConfig.get_relName();
 
 		numChunks = globalDiskPool.NumChunks(fileId);
-		
+
 		PDEBUG("Relation %s has %d chunks", myName.c_str(), numChunks);
 		queryChunkMap =  new QueryChunkMap(numChunks);
 		ackQueries = new QueryChunkMap(numChunks);
@@ -104,8 +104,8 @@ void TableWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 	qeTranslator.deleteQueryExits(tempConfig.get_deletedQE());
 
 	// tell the column manager its part of the config
-	colManager.ChangeMapping(tempConfig.get_queryColumnsMap(), 
-														tempConfig.get_columnsToSlotsMap(), 
+	colManager.ChangeMapping(tempConfig.get_queryColumnsMap(),
+														tempConfig.get_columnsToSlotsMap(),
 														delQueries);
 
   // tell people that we are ready to go with our queries... these messages will
@@ -131,9 +131,9 @@ void TableWayPointImp::GenerateTokenRequests(){
 	PDEBUG ("TableWayPointImp :: GenerateTokenRequests()");
 	for (; numRequestsOut < FILE_SCANNER_MAX_NO_CHUNKS_REQUEST; numRequestsOut++) {
 		RequestTokenDelayOK (DiskWorkToken::type);
-	}	
+	}
 }
-	
+
 void TableWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 	PDEBUG ("TableWayPointImp :: RequestGranted()");
 
@@ -173,7 +173,7 @@ void TableWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 		//get the union of the columns used by the active queries
 		SlotPairContainer colsToRead;
 		colManager.UnionColumns(myOutputExits, colsToRead);
-		
+
 		// get the lineage ready; we'll get this back when teh chunks is build
 		QueryExitContainer myOutputExitsCopy;
 		myOutputExitsCopy.copy (myOutputExits);
@@ -187,7 +187,7 @@ void TableWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 		// use uncompressed if less than USE_UNCOMPRESSED_THRESHOLD
 		// fraction of threads available
 		// bool useUncompressed = (numAvailableCPUs < USE_UNCOMPRESSED_THRESHOLD*NUM_EXEC_ENGINE_THREADS);
-		bool useUncompressed = true; 
+		bool useUncompressed = true;
 
 		// send the request
 		WayPointID tempID = GetID ();
@@ -211,12 +211,12 @@ void TableWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message)
 	PDEBUG ("TableWayPointImp :: ProcessHoppingUpstreamMsg()");
 
 	Notification& msg = message.get_msg ();
-	
+
 	// expect multiple message types. Figure out which one this is
 	if (msg.Type() == StartProducingMsg::type) {
 		StartProducingMsg myMessage;
 		msg.swap (myMessage);
-		
+
 		// NOTE: for now Chris is sending us a query at the time the code
 		// to deal with multiple queries is in place. We artificially
 		// place the one query in a list. Hopefully we convince him to send
@@ -225,36 +225,53 @@ void TableWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message)
 		// get the queries to start and tell our datastructure to mark them as ready
 		QueryExit &queryToStart = myMessage.get_whichOne ();
 		QueryExitContainer queries;
+        QueryID qID = queryToStart.query;
+        QueryExit qExit = queryToStart;
 		queries.Insert(queryToStart);
-		
+
 		TableScanInfo infoTS;
 		fileId.getInfo(infoTS);
 		QueryManager& qm = QueryManager::GetQueryManager();
 		string qName;
-		
+
 		// log info for scanning on behalf of queries
 		for (queries.MoveToStart(); !queries.AtEnd(); queries.Advance()){
 			QueryExit qe = queries.Current();
 			qm.GetQueryName(qe.query, qName);
 			IDInfo info;
 			qe.exit.getInfo(info);
-		
+
 			LOG_ENTRY_P(2, "SCANNER(%s) starting (%s,%s)", infoTS.getName().c_str(),
 								qName.c_str(), info.getName().c_str());
 		}
-		
+
 		// make sure that the queries we are supposed to start are a subset of
 		// the queries we are watching
 		Bitstring newQ=qeTranslator.queryExitToBitstring(queries);
-		
+
 		// OR this query set with all the bitmaps of the chunks that will be served
 		// to this query
-		
+
 		// WARNING: for now we assume that we do not have bulkloads so
 		// the query gets all the chunks in the system. When bulkloads are added
 		// we need an object to tell us what chunks we should serve to the query
 		queryChunkMap->ORAll(newQ);
-	} 
+
+        // Clear any acks we have nave gotten for this query, as we may have
+        // been asked to restart for this query.
+        ackQueries->DiffAll(qID);
+
+        // Remove this query from doneQueries if it is there.
+        doneQueries.Difference(qID);
+
+        // Reset the qeCounter for this query.
+        QECounters::iterator it = qeCounters.find(qExit);
+        FATALIF(it == qeCounters.end(), "Found a query exit that wasn't ours in the counters.");
+
+        int& counter = it->second;
+        counter = numChunks;
+
+	}
 	// this is where new messages go, such as write chunk
 	else {
 		FATAL( 	"Strange, why did a table scan get a HUS of a type that was not 'Start Producing'?");
@@ -264,7 +281,7 @@ void TableWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message)
 	GenerateTokenRequests();
 }
 
-void TableWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, 
+void TableWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits,
 																						 HistoryList &lineage) {
 	PDEBUG ("TableWayPointImp :: ProcessDropMsg()");
 
@@ -272,14 +289,14 @@ void TableWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits,
 
 	// make sure that the HistoryList has one item that is of the right type
 	lineage.MoveToStart ();
-	FATALIF (lineage.Length () != 1 || 
+	FATALIF (lineage.Length () != 1 ||
 					 (lineage.Current ().Type()!= TableReadHistory::type),
 		"Got a bad lineage item in an ack to a table scan waypoint!");
 
 	// get the history out
 	TableReadHistory myHistory;
 	lineage.Remove (myHistory);
-	
+
 	Bitstring toKill = qeTranslator.queryExitToBitstring(whichExits);
 	ChunkID cnkID = myHistory.get_whichChunk ();
 
@@ -315,18 +332,18 @@ void TableWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits,
 	      Bitstring toProd = queryChunkMap->GetBits(chk);
 	      Bitstring proc = ackQueries->GetBits(chk);
 	      if (toProd.Overlaps(proc))
-		printf("Diag CHUNK %d toProd=%s proc=%s\n",chk, 
+		printf("Diag CHUNK %d toProd=%s proc=%s\n",chk,
 		       toProd.GetStr().c_str(), proc.GetStr().c_str());
 	    }
 	    FATAL("Stopped");
 	  }
-	  
+
 	  // there should be no overlap between old and new
 	  WARNINGIF(old.Overlaps(toKill), "Adding queries to %s already in at position %d: old %s new %s\n", myName.c_str(), chunkNo, old.GetStr().c_str(), toKill.GetStr().c_str());
 
 	  queryChunkMap->OROne(chunkNo, toKill);
 	}
-	
+
 	LOG_ENTRY_P(2, "CHUNK %d of %s DROPPED : Queries %s",
 		    cnkID.GetInt(), myName.c_str(), toKill.GetStr().c_str()) ;
 
@@ -390,11 +407,11 @@ void TableWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, HistoryL
 	// if anyone is done, send the notification
 	if (!allComplete.IsEmpty()) {
 	Bitstring newFinished = qeTranslator.queryExitToBitstring(allComplete);
-	  
+
 	  FATALIF(doneQueries.Overlaps(newFinished), "Why am I seing queries finishing multiple times");
 	  doneQueries.Union(newFinished); // uptate finished queries
 
-	  LOG_ENTRY_P(2, "Scanning %s for query %s FINISHED", 
+	  LOG_ENTRY_P(2, "Scanning %s for query %s FINISHED",
 		      myName.c_str(), newFinished.GetStr().c_str());
 
 
@@ -404,19 +421,19 @@ void TableWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, HistoryL
 		HoppingDownstreamMsg myOutMsg (GetID (), allCompleteCopy, someAreDone);
 		SendHoppingDownstreamMsg (myOutMsg);
 
-	} 
+	}
 
 
 	LOG_ENTRY_P(2, "CHUNK %d of %s PROCESSED for queries %s",
 		    cnkID.GetInt(), myName.c_str(), toAck.GetStr().c_str()) ;
-	
+
 	GenerateTokenRequests();
 }
 
 void TableWayPointImp::ProcessHoppingDataMsg (HoppingDataMsg &data){
 	PDEBUG ("TableWayPointImp :: ProcessHoppingDataMsg()");
 	// this message is comming from somebody asking us to write chunks
-	
+
 	GenericWorkToken returnVal;
 	if (!RequestTokenImmediate (DiskWorkToken::type, returnVal)) {
 		// if we do not get one, then we will just return a drop message to the sender
@@ -444,16 +461,16 @@ void TableWayPointImp::ProcessHoppingDataMsg (HoppingDataMsg &data){
 	ChunkID chunkID(_chunkId, fileId);
 	SlotPairContainer colsToProcess;
 	colManager.GetColsToWrite(colsToProcess);
-	globalDiskPool.WriteRequest(chunkID, tempID, chunkCnt.get_myChunk(), data.get_lineage(), 
+	globalDiskPool.WriteRequest(chunkID, tempID, chunkCnt.get_myChunk(), data.get_lineage(),
 														 myDestinations, myToken, colsToProcess);
-	
+
 	LOG_ENTRY_P(2, "CHUNK %d of %s sent for WRITTING",
 							_chunkId, myName.c_str()) ;
 
 }
 
 
-void TableWayPointImp::DoneProducing (QueryExitContainer &whichOnes, HistoryList &history, 
+void TableWayPointImp::DoneProducing (QueryExitContainer &whichOnes, HistoryList &history,
                                         int result, ExecEngineData& data) {
   PDEBUG ("TableWayPointImp::DoneProducing()");
 
@@ -462,8 +479,8 @@ void TableWayPointImp::DoneProducing (QueryExitContainer &whichOnes, HistoryList
 	//    to whoever sent us the chunk
 	// 2. We read something. The history is ours and  we do nothing
 	// (system correctly pushes the chunk to the next guy)
-	// To tell them apart we peak at the id in the history.  
-	
+	// To tell them apart we peak at the id in the history.
+
 	// if this is a read ack than the first element should be a TableReadHistory
 	history.MoveToStart();
 	if (history.Current().Type() == TableReadHistory::type){
@@ -503,13 +520,13 @@ void TableWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
     QueryExitContainer endingOnes;
     FOREACH_TWL(qe, temp.get_whichOnes ()){
       if (qe.exit == GetID()){
-        QueryExit tmp = qe; 
+        QueryExit tmp = qe;
         endingOnes.Append(qe);
-      }   
+      }
     }END_FOREACH;
-    
+
     QueriesDoneMessage_Factory(globalCoordinator, endingOnes);
-    
+
   } else {
     FATAL ("Why did I get some hopping downstream message that was not a query done message?\n");
   }

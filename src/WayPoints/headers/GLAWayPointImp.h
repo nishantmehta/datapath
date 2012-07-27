@@ -41,6 +41,9 @@ protected:
     virtual void GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
             ChunkContainer& chunk, HistoryList& lineage ) = 0;
 
+    // Called when a wayoint has received a state from another waypoint.
+    virtual void GotState( StateContainer& state );
+
     /*************************************************************************/
     // The following methods are to be defined by subclasses to determine the
     // behavior of the RequestGranted method. These will determine whether
@@ -48,6 +51,9 @@ protected:
     // a work description to be sent for processing.
     // The default behavior for these functions is to return false.
     /*************************************************************************/
+
+    // Pre-Processing occurs before any chunks have been processed by the GLA.
+    virtual bool PreProcessingPossible( CPUWorkToken& token );
 
     // Post-Processing occurs after all chunks have been processed by the GLA
     // but before any finalization steps (e.g., merging states)
@@ -70,6 +76,9 @@ protected:
     // necessary after a particular work function has completed its work.
     // The default behavior of these functions is to do nothing.
     /*************************************************************************/
+
+    // Called when a Pre-Processing work function has finished.
+    virtual void PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
 
     // Called when a ProcessChunk work function has finished.
     // An Ack message will automatically be sent after this function is called.
@@ -97,8 +106,8 @@ protected:
 
     /*************************************************************************/
     // The following methods are for handling other types of message received
-    // by the waypoint, such as Acks, Drops, and Query Done messages.
-    // By default these methods do nothing.
+    // by the waypoint, such as Query Done and Start Producing messages.
+    // These methods must be defined by the subtype.
     /*************************************************************************/
 
     // This method is called when a query done message is received from another
@@ -106,6 +115,12 @@ protected:
     // This method should return true if additional cpu tokens should be
     // generated.
     virtual bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes ) = 0;
+
+    // This method is called when a start producing message is received from
+    // another waypoint downstream. whichOne is the query that is being
+    // requested to start producing. This method should return true if
+    // additional tokens should be generated.
+    virtual bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
 public:
 
@@ -127,6 +142,7 @@ public:
     void RequestGranted (GenericWorkToken &returnVal);
     void ProcessHoppingDataMsg (HoppingDataMsg &data);
     void ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message);
+    void ProcessHoppingUpstreamMsg( HoppingUpstreamMsg& message);
 
     virtual void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage) = 0;
     virtual void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage) = 0;

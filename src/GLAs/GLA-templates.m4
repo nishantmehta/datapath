@@ -160,8 +160,35 @@ m4_define(</OPT_ITERABLE/>, </dnl
 <//></$0($@)/>dnl
 <//>m4_if($#, 0, </dnl
 <//><//>m4_define(</GLA_ITERABLE_/>__META_GLA_NAME, <//>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_STATE/>, </(myConstState, />__META_GLA_NAME</_ConstState)/>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_GEN/>, </(myConstState, />__META_GLA_NAME</_ConstState)/>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_REC/>, <//>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_REC_NUM/>, </0/>)dnl
 <//>/>, </dnl
 <//><//>m4_define(</GLA_ITERABLE_/>$1, <//>)dnl
+<//><//>m4_define($1</_CONST_STATE/>, </(myConstState, $1_ConstState)/>)dnl
+<//><//>m4_define($1</_CONST_GEN/>, </(myConstState, $1_ConstState)/>)dnl
+<//><//>m4_define($1</_CONST_REC/>, <//>)dnl
+<//><//>m4_define($1</_CONST_REC_NUM/>, </0/>)dnl
+<//>/>)dnl
+/>)dnl
+
+m4_define(</REQ_CONST_STATES/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if($#, 2, </dnl $ State name must have been specified previously
+<//><//>m4_define(__META_GLA_NAME</_CONST_GEN/>, </$1/>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_REC/>, </$2/>)dnl
+<//><//>m4_define(__META_GLA_NAME</_CONST_REC_NUM/>, 0)dnl
+<//><//>m4_foreach(</__A__/>, </$2/>, </dnl
+<//><//><//>m4_autoincr(__META_GLA_NAME</_CONST_REC_NUM/>)dnl
+<//><//>/>)dnl
+<//>/>, </dnl # State name must be specified as $1
+<//><//>m4_define($1</_CONST_GEN/>, </$2/>)dnl
+<//><//>m4_define($1</_CONST_REC/>, </$3/>)dnl
+<//><//>m4_define($1</_CONST_REC_NUM/>, 0)dnl
+<//><//>m4_foreach(</__A__/>, </$3/>, </dnl
+<//><//><//>m4_autoincr($1</_CONST_REC_NUM/>)dnl
+<//><//>/>)dnl
 <//>/>)dnl
 />)dnl
 

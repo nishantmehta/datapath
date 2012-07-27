@@ -1,0 +1,21 @@
+LOAD customer;
+
+iter = GLA:IterationTestGLA
+FROM
+    customer
+USING
+    customer.c_acctbal
+AS
+    iteration : BIGINT,
+    sum : DOUBLE;
+
+PRINT
+    iter
+USING
+    iteration,
+    sum
+AS
+    iteration : BIGINT,
+    sum : DOUBLE
+INTO
+    "testIter-result.csv";

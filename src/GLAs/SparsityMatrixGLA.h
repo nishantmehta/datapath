@@ -1,5 +1,14 @@
 #include <armadillo>
-// LIBS(armadillo)
+
+/** Information for Meta-GLAs
+ *
+ * NAME(</SparsityMatrixGLA/>)
+ * INPUTS(</(v, VECTOR)/>)
+ * OUTPUTS(</(count, DOUBLE)/>)
+ * RESULT_TYPE(</single/>)
+ *
+ * LIBS(armadillo)
+ */
 
 class SparsityMatrixGLA {
 

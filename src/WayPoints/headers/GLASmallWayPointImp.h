@@ -32,20 +32,17 @@
         properly in the system
 */
 class GLASmallWayPointImp : public GLAWayPointImp {
-    // this is the set of queries for which we know we have received all of the data, and so we
-    // are just waiting for a worker to be available so that we can actually finish them up
-    QueryExitContainer queriesToComplete;
-
-    QueryIDSet queriesCompleted;
-
     // container for states
     QueryToGLASContMap myQueryToGLAStates;
 
     // States that were merged, need to finalize them
     QueryToGLAStateMap mergedStates;
 
-    // the queryExits merged
-    QueryExitContainer mergedQueries;
+    // Constant states used by some GLAs
+    QueryToGLASContMap constStates;
+
+    // States that need to be garbage collected.
+    QueryToGLAStateMap garbageStates;
 
     QueryFragmentMap queryFragmentMap;
 
@@ -60,32 +57,51 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     // last fragment we generated to ensure a circular list behavior
     off_t lastFragmentId;
 
+    // A counter for each query representing how many state objects that GLA is
+    // waiting on to being processing.
+    QueryIDToInt statesNeeded;
+
     // Some QueryIDSets to keep track of which queries are in which state.
+    QueryIDSet queriesToPreprocess;
     QueryIDSet queriesProcessing;
     QueryIDSet queriesMerging;
     QueryIDSet queriesCounting;
     QueryIDSet queriesFinalizing;
+    QueryIDSet queriesCompleted;
+
+    // QueryIDSets to keep track of information about the GLA in each query.
+    QueryIDSet queriesToRestart;
 
     // Map of QueryID to QueryExit
     typedef EfficientMap<QueryID, QueryExit> QueryIDToExitMap;
     QueryIDToExitMap queryIdentityMap;
 
-    // Helper method
-    bool MergeDone();
+    typedef EfficientMap<QueryID, HoppingUpstreamMsg> QueryIDToUpstreamMsg;
+    QueryIDToUpstreamMsg cachedProducingMessages;
+
+    // Helper methods
+    //bool MergeDone();
+    void FinishQueries( QueryIDSet queries );
+    void RestartQueries( QueryIDSet queries );
 
     // Overwritten virtual methods
     void GotChunkToProcess( CPUWorkToken & token, QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& lineage);
 
+    void GotState( StateContainer& state );
+
+    bool PreProcessingPossible( CPUWorkToken& token );
     bool PostProcessingPossible( CPUWorkToken& token );
     bool PreFinalizePossible( CPUWorkToken& token );
     bool FinalizePossible( CPUWorkToken& token );
 
+    void PreProcessingComplete( QueryExitContainer& whichONes, HistoryList& history, ExecEngineData& data );
     void ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
     void PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     void PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     void FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );
+    bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
 public:
 

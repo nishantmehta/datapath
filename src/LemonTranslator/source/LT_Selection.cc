@@ -74,7 +74,7 @@ void LT_Selection::ClearAllDataStructure() {
     synthesized.clear();
 }
 
-bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter cond*/, string initializer) {
+bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter cond*/, string initializer, string defs) {
     CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
 
     // we want to deal with the situation in which the predicate is specified as a series
@@ -100,7 +100,7 @@ bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter 
 
 bool LT_Selection::AddSynthesized(QueryID query, SlotID att,
         SlotSet& atts, string expr, string initializer, string defs) {
-    SynthInfo sInfo(att, expr, initializer, defs);
+    SynthInfo sInfo(att, expr, initializer);
     synthInfoMap[att] = sInfo;
     CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
     queriesCovered.Union(query);
@@ -120,6 +120,15 @@ bool LT_Selection::AddSynthesized(QueryID query, SlotID att,
       initializers[query]=initializer;
     } else { // add to filer
       initializers[query]= initializers[query] + "\n" +  initializer;
+    }
+
+    if( definitions.find(query) == definitions.end() ) {
+        // new filter
+        definitions[query] = defs;
+    }
+    else {
+        // add to filter
+        definitions[query] += "\n" + defs;
     }
 
     return true;
@@ -182,15 +191,9 @@ void LT_Selection::WriteM4File(ostream& out) {
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
     //out << "namespace {" << endl;
-    for (QueryFilterToExpr::iterator it = filters.begin();
-             it != filters.end(); ++it){
-        QueryID query = it->first;
-        SlotSet& sAtts = synthesized[query];
-        for (SlotSet::iterator its = sAtts.begin(); its != sAtts.end(); ++its ){
-            SlotID slot = *its;
-            SynthInfo& synthInfo = synthInfoMap[slot];
-            out << synthInfo.defs;
-        }
+    for (QueryFilterToExpr::iterator it = definitions.begin();
+             it != definitions.end(); ++it){
+            out << it->second << endl;
     }
     //out << "}";
 

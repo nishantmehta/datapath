@@ -30,7 +30,7 @@ TableScanWayPointImp :: ~TableScanWayPointImp () {
 		for (int i = 0; i < numQueryExits; i++) {
 			delete [] allDone[i];
 		}
-		delete [] allDone;	
+		delete [] allDone;
 	}
 }
 
@@ -64,7 +64,7 @@ void TableScanWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &confi
 	}
 
 }
-	
+
 void TableScanWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 
 	// the reason that this request was granted is that we had previously asked for a token that would
@@ -101,8 +101,8 @@ void TableScanWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 		if (gotOne) {
 			break;
 		}
-	} 
-	
+	}
+
 	// if three are no query exits that need data, then just give back the token and get out
 	if (!gotOne) {
 		GiveBackToken (myToken);
@@ -129,7 +129,7 @@ void TableScanWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 	// queue up some more work requests
 	for (; numRequestsOut < 5; numRequestsOut++) {
 		RequestTokenDelayOK (DiskWorkToken::type);
-	}	
+	}
 }
 
 void TableScanWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message) {
@@ -145,8 +145,8 @@ void TableScanWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &mess
 	QueryExit &queryToStart = myMessage.get_whichOne ();
 	cout << "About to start ";
 	queryToStart.Print ();
-	cout << "\n";
-	
+	cout << endl;
+
 	// start up the particular query that is specificied in the message
 	myExits.MoveToStart ();
 	for (int i = 0; i < numQueryExits; i++, myExits.Advance ()) {
@@ -162,7 +162,7 @@ void TableScanWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &mess
 	// if we don't have five requests for tokens out (five is a random choice) then send them
 	for (; numRequestsOut < 5; numRequestsOut++) {
 		RequestTokenDelayOK (DiskWorkToken::type);
-	}	
+	}
 }
 
 void TableScanWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, HistoryList &lineage) {
@@ -175,7 +175,7 @@ void TableScanWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, His
 	// get the history out
 	TableScanHistory myHistory;
 	lineage.Remove (myHistory);
-	
+
 	// now go and un-set the done bits for everyone who was dropped
 	myExits.MoveToStart ();
 	for (int i = 0; i < numQueryExits; i++, myExits.Advance ()) {
@@ -185,7 +185,7 @@ void TableScanWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, His
 			if (whichExits.Current ().IsEqual (myExits.Current ())) {
 				if (allDone[i][myHistory.get_whichChunk ()] == 0) {
 					FATAL ("Dropping a chunk not sent.\n");
-				}	
+				}
 				allDone[i][myHistory.get_whichChunk ()] = 0;
 			}
 		}
@@ -194,7 +194,7 @@ void TableScanWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, His
 	// if we don't have five requests for tokens out (five is a random choice) then send them
 	for (; numRequestsOut < 5; numRequestsOut++) {
 		RequestTokenDelayOK (DiskWorkToken::type);
-	}	
+	}
 }
 
 
@@ -219,10 +219,10 @@ void TableScanWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, Hist
 
 			// if this exit was one dropped, then reset
 			if (whichExits.Current ().IsEqual (myExits.Current ())) {
-				numDone[i]++;			
+				numDone[i]++;
 				if (allDone[i][myHistory.get_whichChunk ()] == 0) {
 					FATAL ("Acking a chunk not sent.\n");
-				}	
+				}
 				if (numDone[i] == 5000) {
 					QueryExit temp;
 					temp = whichExits.Current ();
@@ -253,10 +253,10 @@ void TableScanWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, Hist
 		QueryDoneMsg someAreDone (GetID (), allComplete);
 		HoppingDownstreamMsg myOutMsg (GetID (), allCompleteCopy, someAreDone);
 		SendHoppingDownstreamMsg (myOutMsg);
-	} 
-	
+	}
+
 	// if we don't have five requests for tokens out (five is a random choice) then send them
 	for (; numRequestsOut < 5; numRequestsOut++) {
 		RequestTokenDelayOK (DiskWorkToken::type);
-	}	
+	}
 }

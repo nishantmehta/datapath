@@ -232,6 +232,9 @@ protected:
     // Helper method to send a query done message for a given set of query exits
     void SendQueryDoneMsg( QueryExitContainer &whichOnes );
 
+    // Helper method to send a start producing message for a query exit
+    void SendStartProducingMsg( QueryExit whichOne );
+
     // Helper method that sets the number of particular kind of work token that
     // is desired by the waypoint. This will determine how many tokens of each
     // type that the waypoint will attempt to acquire when GenerateTokenRequests

@@ -972,6 +972,9 @@ bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& 
         string file;
         return FuncTemplateExists( fName, rettype, file );
     }
+    else {
+        return ret;
+    }
 }
 
 inline

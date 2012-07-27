@@ -23,11 +23,13 @@ bool LT_GLA::GetConfig(WayPointConfigureData& where){
 
     // first, get the function we will send to it
     //    WorkFunc tempFunc = NULL;
+    GLAPreProcessWorkFunc GLAPreProcessWF(NULL);
     GLAProcessChunkWorkFunc GLAProcessChunkWF (NULL);
     GLAMergeStatesWorkFunc GLAMergeWF (NULL);
     GLAPreFinalizeWorkFunc GLAPreFinalizeWF(NULL);
     GLAFinalizeWorkFunc GLAFinalizeWF (NULL);
     WorkFuncContainer myGLAWorkFuncs;
+    myGLAWorkFuncs.Insert (GLAPreProcessWF);
     myGLAWorkFuncs.Insert (GLAProcessChunkWF);
     myGLAWorkFuncs.Insert (GLAMergeWF);
     myGLAWorkFuncs.Insert (GLAPreFinalizeWF);

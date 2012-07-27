@@ -26,6 +26,10 @@ GLAWayPointImp :: ~GLAWayPointImp () {
     PDEBUG ("GLAWayPointImp :: GLAWayPointImp ()");
 }
 
+bool GLAWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
+    return false;
+}
+
 bool GLAWayPointImp :: PostProcessingPossible( CPUWorkToken& token ) {
     return false;
 }
@@ -40,6 +44,10 @@ bool GLAWayPointImp :: FinalizePossible( CPUWorkToken& token ) {
 
 bool GLAWayPointImp :: PostFinalizePossible( CPUWorkToken& token ) {
     return false;
+}
+
+void GLAWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    // Do nothing
 }
 
 void GLAWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
@@ -68,8 +76,13 @@ void GLAWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList
 
     // Notify that a token request was successful if we did anything other than
     // process a chunk.
-    if (result > 0 ){
+    if (result != 0 ){
         TokenRequestCompleted( CPUWorkToken::type );
+    }
+
+    // Pre-Processing complete
+    if( result == -1 ) {
+        PreProcessingComplete( whichOnes, history, data );
     }
 
     // Chunk processing function complete
@@ -116,16 +129,19 @@ void GLAWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
     CPUWorkToken myToken;
     myToken.swap (returnVal);
 
-    if( PostProcessingPossible( myToken ) ) {
-        return;
-    }
-    else if( PreFinalizePossible( myToken ) ) {
+    if( PostFinalizePossible( myToken ) ) {
         return;
     }
     else if( FinalizePossible( myToken ) ) {
         return;
     }
-    else if( PostFinalizePossible( myToken ) ) {
+    else if( PreFinalizePossible( myToken ) ) {
+        return;
+    }
+    else if( PostProcessingPossible( myToken ) ) {
+        return;
+    }
+    else if( PreProcessingPossible( myToken ) ) {
         return;
     }
     else {// nothing to do
@@ -137,31 +153,43 @@ void GLAWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 void GLAWayPointImp :: ProcessHoppingDataMsg (HoppingDataMsg &data) {
     PDEBUG ("GLAWayPointImp :: ProcessHoppingDataMsg ()");
 
-    // in this case, the first thing we do is to request a work token
-    GenericWorkToken returnVal;
-    if (!RequestTokenImmediate (CPUWorkToken::type, returnVal)) {
+    if( CHECK_DATA_TYPE(data.get_data(), ChunkContainer) ) {
+        // in this case, the first thing we do is to request a work token
+        GenericWorkToken returnVal;
+        if (!RequestTokenImmediate (CPUWorkToken::type, returnVal)) {
 
-        // if we do not get one, then we will just return a drop message to the sender
-        SendDropMsg (data.get_dest (), data.get_lineage ());
-        return;
+            // if we do not get one, then we will just return a drop message to the sender
+            SendDropMsg (data.get_dest (), data.get_lineage ());
+            return;
+        }
+
+        // convert the token into the correct type
+        CPUWorkToken myToken;
+        myToken.swap (returnVal);
+
+        // OK, got a token!  So first thing is to extract the chunk from the message
+        ChunkContainer temp;
+        data.get_data ().swap (temp);
+
+        // at this point, we are ready to create the work spec.  First we figure out what queries to finish up
+        QueryExitContainer whichOnes;
+        whichOnes.copy (data.get_dest ());
+
+        // if we have a chunk produced by a table waypoint log it
+        CHECK_FROM_TABLE_AND_LOG( data.get_lineage(), GLAWayPoint );
+
+        GotChunkToProcess( myToken, whichOnes, temp, data.get_lineage() );
     }
+    else if( CHECK_DATA_TYPE(data.get_data(), StateContainer) ) {
+        StateContainer temp;
+        data.get_data().swap( temp );
 
-    // convert the token into the correct type
-    CPUWorkToken myToken;
-    myToken.swap (returnVal);
-
-    // OK, got a token!  So first thing is to extract the chunk from the message
-    ChunkContainer temp;
-    data.get_data ().swap (temp);
-
-    // at this point, we are ready to create the work spec.  First we figure out what queries to finish up
-    QueryExitContainer whichOnes;
-    whichOnes.copy (data.get_dest ());
-
-    // if we have a chunk produced by a table waypoint log it
-    CHECK_FROM_TABLE_AND_LOG( data.get_lineage(), GLAWayPoint );
-
-    GotChunkToProcess( myToken, whichOnes, temp, data.get_lineage() );
+        GotState( temp );
+    }
+    else {
+        FATAL("GLAWaypoint got a hopping data message containing a type of data it "
+                "didn't expect!");
+    }
 }
 
 // the only kind of message we are interested in is a query done message... everything else is
@@ -169,7 +197,7 @@ void GLAWayPointImp :: ProcessHoppingDataMsg (HoppingDataMsg &data) {
 void GLAWayPointImp:: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message) {
     PDEBUG ("GLAWayPointImp :: ProcessHoppingDownstreamMsg ()");
 
-    // this is the set of queries that we are waiting to finish up
+    bool retVal = false;
 
     // see if we have a query done message
     if (CHECK_DATA_TYPE (message.get_msg (), QueryDoneMsg)) {
@@ -178,12 +206,44 @@ void GLAWayPointImp:: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message
         QueryDoneMsg temp;
         temp.swap (message.get_msg ());
 
-        if (ReceivedQueryDoneMsg( temp.get_whichOnes() )) {
-            GenerateTokenRequests();
-        }
-
-    } else {
-
+        retVal = ReceivedQueryDoneMsg( temp.get_whichOnes() );
+    }
+    else {
         SendHoppingDownstreamMsg (message);
     }
+
+    if( retVal ) {
+        GenerateTokenRequests();
+    }
+}
+
+void GLAWayPointImp :: ProcessHoppingUpstreamMsg( HoppingUpstreamMsg& message) {
+    PDEBUG("GLAWayPointImp :: ProessHoppingUpstreamMsg()");
+    bool retVal = false;
+
+    if( CHECK_DATA_TYPE( message.get_msg(), StartProducingMsg) ) {
+        StartProducingMsg temp;
+        temp.swap( message.get_msg() );
+        QueryExit whichOne = temp.get_whichOne();
+        temp.swap( message.get_msg() );
+
+        retVal = ReceivedStartProducingMsg( message, whichOne );
+    }
+    else {
+        SendHoppingUpstreamMsg( message );
+    }
+
+    if( retVal ) {
+        GenerateTokenRequests();
+    }
+}
+
+bool GLAWayPointImp :: ReceivedStartProducingMsg(HoppingUpstreamMsg& message, QueryExit& whichOne ) {
+    // Default behaior: just forward it.
+    SendHoppingUpstreamMsg(message);
+    return false;
+}
+
+void GLAWayPointImp :: GotState( StateContainer& state ) {
+    FATAL("Don't know what to do with this!");
 }

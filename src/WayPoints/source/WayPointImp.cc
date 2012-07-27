@@ -237,6 +237,14 @@ void WayPointImp :: SendQueryDoneMsg( QueryExitContainer &whichOnes ) {
     SendHoppingDownstreamMsg( myOutMsg );
 }
 
+void WayPointImp :: SendStartProducingMsg( QueryExit whichOne ) {
+    QueryExit whichOneCopy = whichOne;
+
+    StartProducingMsg startMsg( GetID(), whichOne );
+    HoppingUpstreamMsg outMsg( GetID(), whichOneCopy, startMsg );
+    SendHoppingUpstreamMsg( outMsg );
+}
+
 void WayPointImp :: SetTokensRequested( off_t requestType, int numTokens, int priority ) {
     tokensToRequest[requestType] = pair<int,int>( numTokens, priority );
 }

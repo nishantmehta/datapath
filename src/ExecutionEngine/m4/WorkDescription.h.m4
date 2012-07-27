@@ -121,6 +121,14 @@ M4_CREATE_DATA_TYPE(WriterWorkDescription, WorkDescription,
 
 /***** WorkDescriptions *****/
 
+/** work for GLAPreProcessWorkFunc:
+
+    only needs the list of query exits.
+*/
+M4_CREATE_DATA_TYPE(GLAPreProcessWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer)/>)
+
 /** work for GLAProcessChunkWorkFunc:
 
     glaStates: a map and must have an element for each value in whichQueryExits
@@ -128,7 +136,7 @@ M4_CREATE_DATA_TYPE(WriterWorkDescription, WorkDescription,
 */
 M4_CREATE_DATA_TYPE(GLAProcessChunkWD, WorkDescription,
 <//>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap), (chunkToProcess, Chunk)/>)
+</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (chunkToProcess, Chunk), (garbageStates, QueryToGLAStateMap)/>)
 
 /*** work description for GLAMergeStatesWorkFunc
      glaStates contains a list of states for each query
@@ -142,7 +150,7 @@ M4_CREATE_DATA_TYPE(GLAMergeStatesWD, WorkDescription,
 */
 M4_CREATE_DATA_TYPE(GLAPreFinalizeWD, WorkDescription,
 <//>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap)/>)
+</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap), (constStates, QueryToGLASContMap)/>)
 
 /*** work description for the finalize function
 

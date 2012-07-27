@@ -54,7 +54,7 @@ public:
 	void ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message);
 	void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
 	void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
-	
+
 };
 
 #endif

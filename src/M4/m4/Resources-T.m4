@@ -74,6 +74,7 @@ m4_define(m4_eighth, </_arg8/>$1)
 m4_define(m4_nineth, </_arg9/>$1)
 
 m4_define(m4_args, $*)
+m4_define(</m4_qargs/>, $@)
 
 ### reval macro -- forces evaluation of an M4 statement
 m4_define(reval, $1)

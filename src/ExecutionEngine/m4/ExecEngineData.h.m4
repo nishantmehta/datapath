@@ -44,6 +44,11 @@ M4_CREATE_DATA_TYPE(ChunkContainer, ExecEngineData,
  <//>,
  </(myChunk, Chunk)/>)
 
+// another type of EEData used to transport states between waypoints
+M4_CREATE_DATA_TYPE(StateContainer, ExecEngineData,
+</(whichIndex, int)/>,
+</(whichQuery, QueryExit), (myState, GLAState)/>)
+
 // this is what is returned by a join worker that has put data into the hash table.
 // It lists a small sample of the collisions that were found to happen
 M4_CREATE_DATA_TYPE(JoinHashResult, ExecEngineData,
@@ -75,6 +80,11 @@ dnl </(myChunksLHS, ContainerOfChunks),(myChunksRHS, ContainerOfChunks)/>)
 
 /****** Return types from GLA Process chunk *******/
 
+/** Results from preprocessing */
+M4_CREATE_DATA_TYPE(GLAPreProcessRez, ExecEngineData,
+<//>,
+</(constStates, QueryToGLASContMap), (statesNeeded, QueryIDToInt)/>)
+
 /** Results containing  GLAStates */
 M4_CREATE_DATA_TYPE(GLAStatesRez, ExecEngineData,
 <//>,
@@ -83,7 +93,7 @@ M4_CREATE_DATA_TYPE(GLAStatesRez, ExecEngineData,
 /** special version used by GLA merge */
 M4_CREATE_DATA_TYPE(GLAStatesFrRez, ExecEngineData,
 <//>,
-</(glaStates, QueryToGLAStateMap), (fragInfo, QueryIDToInt)/>)
+</(glaStates, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (fragInfo, QueryIDToInt), (queriesToIterate, QueryIDSet)/>)
 
 /** Results containing GlobalGLAStates */
 M4_CREATE_DATA_TYPE( GlobalGLAStatesRez, ExecEngineData,

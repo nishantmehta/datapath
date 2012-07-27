@@ -44,6 +44,7 @@ typedef EfficientMap <QueryID, GLAState> QueryToGLAStateMap;
 typedef EfficientMap <QueryID, GLAStateContainer> QueryToGLASContMap;
 
 typedef EfficientMap< QueryID, Swapify<int> > QueryIDToInt;
+typedef EfficientMap< QueryID, Swapify<bool> > QueryIDToBool;
 
 
 /** GLAPointer stores a pointer to a GLA state. This is an in-memory

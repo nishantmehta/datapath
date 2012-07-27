@@ -38,7 +38,7 @@ using namespace std;
 /** Class to deal with translations between QueryExits and bitstrings.
 
 		Rationale: bitstrings are much easier to manipulate and are
-		compact but the rest of the system needs QueryExits. 
+		compact but the rest of the system needs QueryExits.
 
 		The class maintains an internal mapping between bitstrings and
 		QueryExits. These bitstrings are not manipulated and maintained by
@@ -47,7 +47,7 @@ using namespace std;
 */
 
 class QEToBitstring {
-private: 
+private:
 	// variable to keep track of all the queries we work on
 	Bitstring queryExits;
 
@@ -99,7 +99,7 @@ public:
 	// for physical to logical columns information sent is the extra
 	// column info on QE, new logical to physical column mappings and
 	// deletedQE
-	void ChangeMapping(QueryExitToSlotsMap& _queryColumnsMap, 
+	void ChangeMapping(QueryExitToSlotsMap& _queryColumnsMap,
 										 SlotToSlotMap& _columnsToSlotsMap,
 										 QueryExitContainer& qExitsDone);
 
@@ -129,6 +129,7 @@ public:
 
 	void ORAll (Bitstring newQ);
 	void OROne (int chunkNo, Bitstring newQ);
+    void DiffAll (Bitstring query);
 
 	int FindFirstSet (int _start);
 
@@ -167,6 +168,13 @@ void QueryChunkMap::OROne (int chunkNo, Bitstring newQ) {
 }
 
 inline
+void QueryChunkMap :: DiffAll( Bitstring query ) {
+    for( int i = 0; i < qc.size(); ++i ) {
+        qc[i].Difference(query);
+    }
+}
+
+inline
 int QueryChunkMap::FindFirstSet (int _start) {
 
 	for (int i = _start; i < qc.size(); i++) {
@@ -184,14 +192,14 @@ int QueryChunkMap::FindFirstSet (int _start) {
 	return -1;
 }
 
-inline 
+inline
 void QueryChunkMap::Debugg(void){
 	for (int i = 0; i < qc.size(); i++) {
 		if (!qc[i].IsEmpty()) {
 		  printf("TS: %d\n", i);
 		}
 	}
-  
+
 }
 
 #endif //  _TABLE_SCAN_HELPER_H_

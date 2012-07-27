@@ -25,12 +25,10 @@ private:
         SlotID att;
         string expression;
         string initializer;
-        string defs;
 
         SynthInfo() {} // ctor for map compatibility
-        SynthInfo(SlotID _att, string _expression, string _initializer, string _defs):
-            att(_att), expression(_expression), initializer(_initializer),
-            defs(_defs){}
+        SynthInfo(SlotID _att, string _expression, string _initializer):
+            att(_att), expression(_expression), initializer(_initializer){}
     };
     // info for each synthesized attribute
     typedef map<SlotID, SynthInfo> SynthInfoMap;
@@ -41,6 +39,7 @@ private:
 
     QueryFilterToExpr filters;
     QueryFilterToExpr initializers;
+    QueryFilterToExpr definitions;
 
     QueryToSlotSet synthesized;
 
@@ -57,7 +56,7 @@ public:
 
     virtual void DeleteQuery(QueryID query);
 
-    virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer);
+    virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer, string defs);
 
     virtual bool AddSynthesized(QueryID query, SlotID att, SlotSet& atts, string expr, string initializer, string defs);
 
