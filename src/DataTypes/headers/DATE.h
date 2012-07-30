@@ -513,7 +513,7 @@ inline
 int DATE::ToString(char* text) const
 {
   // Use ISO YYYY/MM/DD format
-  return 1+sprintf(text, "%4d/%2d/%2d", int(GetYear()), int(GetMonth()), int(GetDay()));
+  return 1+sprintf(text, "%04d/%02d/%02d", int(GetYear()), int(GetMonth()), int(GetDay()));
 }
 
 // Description: Convert from string (ISO 8601 format YYYY-MM-DD)
@@ -537,7 +537,7 @@ void FromString(DATE& x, char* text){
 }
 
 inline
-int ToString(DATE& x, char* text){
+int ToString(const DATE& x, char* text){
   return x.ToString(text);
 }
 

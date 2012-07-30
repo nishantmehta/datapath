@@ -111,7 +111,7 @@ class macAddr{
   }
 
   //convert the mac address into string
-  int ToString(char *addr){
+  int ToString(char *addr) const{
     return 1 + sprintf(addr, "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
                        table_map[mac.split.c1], table_map[mac.split.c12],
                        table_map[mac.split.c11], table_map[mac.split.c10],
@@ -171,7 +171,7 @@ class macAddr{
 
 };
 
-inline int ToString(macAddr& x, char* text){
+inline int ToString(const macAddr& x, char* text){
     return x.ToString(text);
 }
 

@@ -78,7 +78,7 @@ public:
         addr.split.c4 = c4;
     }
 
-    int ToString(char* text){
+    int ToString(char* text) const{
         return 1+sprintf(text,"%u.%u.%u.%u",
                                             (unsigned int) addr.split.c1,
                                             (unsigned int) addr.split.c2,
@@ -135,7 +135,7 @@ inline void FromString(IPv4& x, const char* text){
     x.FromString(text);
 }
 
-inline int ToString(IPv4& x, char* text){
+inline int ToString(const IPv4& x, char* text){
     return x.ToString(text);
 }
 
