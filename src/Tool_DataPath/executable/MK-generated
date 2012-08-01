@@ -20,21 +20,29 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG -DDP_REGEX_LIB=${PAT_MATCH}
 
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
-# COMPILER OPTIMIZATION
-OPT=-O3 -march=native -ffast-math
-
 M4=m4 
 
-GLA_INC = -I ../../../GLAs/
-GLA_INC += -I ~/datapath/GLAs 
+# COMPILER OPTIMIZATION
+ifdef DEBUG_DATAPATH
+OPT= # no optimization
+else # full optimization
+OPT=-O3 -march=native -ffast-math
+endif
 
+
+GLA_INC = -I ../../../GLAs/
 M4INCLUDES = -I ../../../M4/m4 
 M4INCLUDES += -I ../../../WPFunctionModules 
 M4INCLUDES += -I ../../../GLAs 
-M4INCLUDES += -I ~/datapath/GLAs 
 M4INCLUDES += -I ../../../UDFs 
 
-CINCLUDES = -I ../../../Headersdp ${GLA_INC}
+ifdef DP_GLAs
+GLA_INC += -I $(DP_GLAs)
+M4INCLUDES += -I $(DP_GLAs) 
+FUNC_INC += -I $(DP_FUNCTIONS)
+endif
+
+CINCLUDES = -I ../../../Headersdp ${GLA_INC} $(FUNC_INC)
 
 LIB_EXTRACT = ../extract_libs.awk
 

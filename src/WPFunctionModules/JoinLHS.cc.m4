@@ -380,6 +380,8 @@ dnl //output.SwapBitmap (bitmapOut);
 
     PROFILING(start_time, "M4_WPName", "LHS_lookup", "%d", totalNum);
     PROFILING(0.0, "HashTable", "fillrate", "%2.4f", HashTableSegment::globalFillRate*100.0);
+    PROFILING2("jLHS", totalNum);
+    PROFILING2_FLUSH;
 
     free (serializeHere);
     return 1;

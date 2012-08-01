@@ -32,6 +32,7 @@
 #include "Timer.h"
 #include "DiskArray.h"
 #include "MmapAllocator.h"
+#include "Profiling.h"
 
 #ifndef O_DIRECT
 # define O_LARGEFILE 0100000
@@ -132,13 +133,18 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 				perror("HDThread:");
 				FATAL("Writting of file %s at position %ld of size %ld for job %d failed. Mem: %lx", 
 							evProc.fileName, page, PAGES_TO_BYTES(numPG),  (int)msg.requestId, where);
+			} else {
+			  PROFILING2("diskW", PAGES_TO_BYTES(numPG));
 			}
 		}
 		else  if (msg.operation == READ) {
 			if (read (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG)) == -1) {
 				perror("HDThread:");
 				WARNING("Reading of file %s at position %d of size %d for job %d failed. Mem: %lx", evProc.fileName, (int)page, PAGES_TO_BYTES(numPG), (int)msg.requestId, where);
+			} else {
+			  PROFILING2("diskR", PAGES_TO_BYTES(numPG));
 			}
+
 		}
 		else {
 			FATAL("Invalid operation type(%d) specified\n",msg.operation);
@@ -146,6 +152,8 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 
 		evProc.UpdateStatistics(clock.GetTime()/numPG);
 	}
+
+	PROFILING2_FLUSH;
 
 	//signal the calling thread if these are the last pages to read/write
 	if (msg.counter->Decrement(1) == 0) { // decrease the number of threads that finished

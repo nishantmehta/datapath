@@ -65,7 +65,7 @@ dnl # definition of constants used in expressions
 <//>_SEL_INITIALIZER(_P_)dnl # the initializer should have a new line
 <//><//>/>, <//>)dnl
 <//>/>)dnl
-
+	
     FOR_EACH_TUPLE(</input/>){
         QueryIDSet qry;
 <//><//>GET_QUERIES(qry)
@@ -103,6 +103,10 @@ dnl # now synthesized
 <//><//>/>, <//>)dnl
 <//>/>)dnl
 <//>M4_PUTBACK_OUTBITMAP(</input/>)
+
+    PROFILING2("sel", input.GetNumTuples());
+    PROFILING2_FLUSH;
+
 
 #ifdef COUNT_TUPLES
     cout << "\nCounter ***************** = " << cnt;

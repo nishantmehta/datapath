@@ -19,6 +19,7 @@
 #include "DiskPool.h"
 #include "QueryManager.h"
 #include "Logging.h"
+#include "Profiling.h"
 #include "CPUWorkerPool.h"
 
 extern EventProcessor globalCoordinator;
@@ -285,7 +286,9 @@ void TableWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits,
 																						 HistoryList &lineage) {
 	PDEBUG ("TableWayPointImp :: ProcessDropMsg()");
 
-	printf("X"); fflush(stdout);
+	//printf("X"); fflush(stdout);
+	PROFILING2("cDrop", 1);
+	PROFILING2_FLUSH;
 
 	// make sure that the HistoryList has one item that is of the right type
 	lineage.MoveToStart ();
@@ -370,7 +373,9 @@ bool TableWayPointImp::ChunkRequestIsPossible(off_t &_chunkId) {
 void TableWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, HistoryList &lineage) {
 	PDEBUG ("TableWayPointImp :: ProcessAckMsg()");
 
-	printf("."); fflush(stdout);
+	//printf("."); fflush(stdout);
+	PROFILING2("cAck", 1);
+	PROFILING2_FLUSH;
 
 	// make sure that the HistoryList has one item that is of the right type
 	lineage.MoveToStart ();

@@ -194,6 +194,8 @@ dnl         Bitstring myInBString(QueryIDSet(m4_first(_QC_), true));
 
     PROFILING(start_time, "M4_WPName", "RHS_hash", "%d", totalNum);
     PROFILING(0.0, "HashTable", "fillrate", "%2.4f", HashTableSegment::globalFillRate*100.0);
+    PROFILING2("jRHS", totalNum);
+    PROFILING2_FLUSH;
 
     // now we are finally done!
     JoinHashResult myResult (mySamples);

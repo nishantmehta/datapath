@@ -68,34 +68,9 @@
 
 #include "STRING_LITERAL.h"
 
+// STATE datatype
+#include "STATE.h"
 
-// like function for all string types
-extern bool LikeBody(const char* value, const char* pattern);
-
-
-/** Like function for strings */
-/** We implement fastpaths in the inline version.
-		If they do not match, we call the long function.
-	*/
-/** t is the text and p is the pattern */
-
-inline bool Like(const char* t, const char* p){
-	if (t == NULL)
-		return false;
-
-	/* Fast path for match-everything pattern */
-	if ((*p == '%') && (*(p+1) == '\0'))
-		return true;
-
-	/* Fast Path for non-matching of "Pattern%"*/
-	/* if the first letter does not match, no match overall */
-	if ((*p != '%') && ( (*p)!=(*t) ))
-		return false;
-
-	/** END OF FAST PATHS */
-
-	return LikeBody(t,p);
-}
 
 /** The category should almost never be added to since they are much
 		harder to add to the system. A special category, CExactMatch is

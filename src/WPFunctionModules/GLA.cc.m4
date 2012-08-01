@@ -301,9 +301,13 @@ dnl # get the queries out of queriesToRun
         GLA_TYPE(_Q_)<//>_Iterator* GLA_TYPE(_Q_)<//>_It
              = GLA_STATE(_Q_)->Finalize(GLA_TYPE(_Q_)<//>_fragment);
         while (    GLA_STATE(_Q_)->GetNextResult(GLA_TYPE(_Q_)<//>_It, reval(</m4_args/>GLA_OUTPUTS(_Q_))) )    {
+<//><//>/>,</state/>, </dnl
+<//><//>dnl we place the result in the first attribute	
+	{
+	    reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), 1);
 <//><//>/>,</dnl
         {
-            FATAL("Do not know how to deal with this type");
+            m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_));
 <//><//>/>)dnl
 dnl # write the tuple
             myOutBStringIter.Insert (M4_QUERY_NAME(_Q_));
@@ -435,7 +439,10 @@ dnl # definition of constants used in expressions
 <//><//>/>, <//>)dnl
 <//>/>)dnl
 
+    int numTuples = 0;
+
     FOR_EACH_TUPLE(</input/>){
+	numTuples++;
         QueryIDSet qry;
 <//><//>GET_QUERIES(qry);
 
@@ -458,6 +465,9 @@ dnl # definition of constants used in expressions
     }
 <//><//>/>)dnl
 <//>/>)dnl
+
+	PROFILING2("GLA", numTuples);
+	PROFILING2_FLUSH;
 
     // finally, if there were any results, put the data back in the chunk
 <//>M4_PUTBACK_COLUMNS(</M4_Attribute_Queries/>,</input/>)

@@ -34,38 +34,4 @@ Tool_DataPath/executable/dp:
   CPUWorkers
   Profiler
 
-Tool_Planner/executable/Planner:
-    -lsqlite3
-    -lpthread
-    Tool_Planner/object/y.tab.o
-    Tool_Planner/object/lex.yy.o
-    AttributeManager
-    Catalog
-    Global
-    IDs
-    QueryManager
-    SQLite
-    Messaging
-    DataTypes
-    Tool_Planner
 
-Tool_Analyzer/executable/Analyzer:
-    Tool_Analyzer
-    -lsqlite3
-    -lemon
-    -lpthread
-
-Tool_DataTypeManagerInitializer/executable/dtm_init:
-    -ldl
-    -lsqlite3
-    DataTypeManager
-    DataTypes
-    Global
-    M4
-    Tool_DataTypeManagerInitializer
-
-Tool_Tester/executable/checker:
-    -lsqlite3
-    Global
-    M4
-    Tool_Tester
