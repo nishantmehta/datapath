@@ -81,7 +81,6 @@ inline void SystemCounters::Increment(const char* counter, uint64_t value){
 inline std::string SystemCounters::GetCounters(double newClock){
   std::ostringstream out;
   clock_t newCpu=clock();
-  pthread_mutex_lock (&mutex);
   out << "CPU:" << (newCpu-lastCpu)/(newClock-lastTick)/CLOCKS_PER_SEC << "\t";
   lastCpu = newCpu;
   FOREACH_STL(el, cMap){
@@ -104,16 +103,17 @@ inline std::string SystemCounters::GetCounters(double newClock){
     value = 0; // reset value
   }END_FOREACH;
   lastTick = newClock;
-  pthread_mutex_unlock (&mutex);
   return out.str();
 }
 
 inline void SystemCounters::PrintIfTick(){
+  pthread_mutex_lock (&mutex);
   double clock = global_clock.GetTime();
   if ( clock> 1.0+lastTick){
     std::string output = GetCounters(clock);
     printf("SC(%.2f)\t%s\n", clock, output.c_str());
   }
+  pthread_mutex_unlock (&mutex);
 }
 
 inline SystemCounters::~SystemCounters(){
