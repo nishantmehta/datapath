@@ -16,5 +16,5 @@ LOAD lineitem;
 LOAD orders;
 sel = FILTER orders BY orders.o_orderdate < '1998/07/03';
 lo = JOIN lineitem BY lineitem.l_orderkey, sel BY orders.o_orderkey;
-rez = GLA:CountGLA FROM lo USING 1.0 AS count:BIGINT;
+rez = GLA:Count FROM lo USING 1.0 AS count:BIGINT;
 PRINT rez USING count AS count:BIGINT INTO "Q1-result.csv" ;

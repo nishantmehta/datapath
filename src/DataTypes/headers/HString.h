@@ -91,6 +91,7 @@ using namespace std;
         synchronization on the dictionary.
 */
 
+// TYPE_DESC(</HString/>)
 class HString {
 public:
     typedef tr1::unordered_map<__uint64_t, string> Dictionary; // type for global dictionary
@@ -342,6 +343,9 @@ public:
     bool operator <( const HString & input ) const;
     bool operator >=( const HString & input ) const;
     bool operator <=( const HString & input ) const;
+    bool operator !=( const HString & input ) const;
+
+    HString operator +( const HString & input ) const;
 
     // Add a Hash() function to bring it into line with all of the other
     // datatypes. Just returns mHash
@@ -360,7 +364,9 @@ public:
     // END DEBUG
 };
 
+// SYN_DEF(</VARCHAR/>, </HString/>)
 typedef  HString VARCHAR;
+// SYN_DEF(</STRING/>, </HString/>)
 typedef  HString STRING;
 
 ///////////// Functions definitions ///////////////////////////////
@@ -614,6 +620,22 @@ inline bool HString :: operator >=( const HString & input ) const {
 
 inline bool HString :: operator <=( const HString & input ) const {
     return (strcmp(this->GetStr(), input.GetStr()) <= 0);
+}
+
+inline bool HString :: operator !=( const HString & input ) const {
+    return !(*this == input);
+}
+
+inline HString HString :: operator +( const HString & input ) const {
+    const char * str1 = this->GetStr();
+    const char * str2 = input.GetStr();
+
+    size_t len = strlen(str1) + strlen(str2) + 1;
+    char buff[len];
+    strcpy( buff, str1 );
+    strcat( buff, str2 );
+
+    return HString( buff );
 }
 
 // Hash function for use by GLAs and such.

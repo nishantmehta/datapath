@@ -67,6 +67,7 @@ struct FuncInfo {
     string returnType;
     int priority;
     Associativity assoc;
+    string file;
     bool pure;
 
     // Two FuncInfos are the same if they have the same type and arguments
@@ -133,10 +134,9 @@ struct FuncInfo {
 class DataTypeManager {
 
     struct FuncTemplateInfo {
-        string retType;
         string file;
 
-        FuncTemplateInfo( string retType, string file ) : retType(retType), file(file) {}
+        FuncTemplateInfo( string file ) : file(file) {}
 
         FuncTemplateInfo() {}
     };
@@ -170,11 +170,11 @@ class DataTypeManager {
     static DataTypeManager* instance;
 
     // Helper functions
-    void AddFunc (string type, string fName, vector<string>& args, string returnType, Associativity assoc, int priority, bool pure);
-    bool IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs);
+    void AddFunc (string type, string fName, vector<string>& args, string returnType, string file, Associativity assoc, int priority, bool pure);
+    bool IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, string& file, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs);
 
-    void AddFuncTemplate( string fName, string retType, string file );
-    bool FuncTemplateExists( string fName, string& retType, string& file );
+    void AddFuncTemplate( string fName, string file );
+    bool FuncTemplateExists( string fName, string& file );
 
     void AddGLATemp( string glaName, string file );
     bool GLATemplateExists( string glaName, string& file );
@@ -199,16 +199,18 @@ class DataTypeManager {
     // 5. The return type must be of type dest.
     bool ConvertFuncExists( string source, string dest );
 
-    public:
-
+    // Due to the Singleton pattern, the constructor and destructor are private
+    // and can only be called by the static methods of the class
     DataTypeManager();
     ~DataTypeManager();
 
+public:
+
     static DataTypeManager& GetDataTypeManager();
     // load/save functions to SQLite
-    void Load();
-    void Save();
-    void Initialize();
+    //void Load();
+    //void Save();
+    //void Initialize();
 
     // Used to reset internal data structures.
     void Clear();
@@ -228,6 +230,7 @@ class DataTypeManager {
 
     // Get the base type to which all synonyms are convertible to
     string GetBaseType(string synonymT);
+    bool IsType(string& type);
 
     // conversion capabiilty
     // All conversions are recorded w.r.t base type, that means, one base type is convertible to other
@@ -244,46 +247,52 @@ class DataTypeManager {
       the Is ... functins return true if the function exists.
       They must use type conversion to decide.
       */
-    void AddUnaryOperator(string op, string typearg, string rettype, int priority, bool pure);
+    void AddUnaryOperator(string op, string typearg, string rettype, string file, int priority, bool pure);
     bool IsUnary(string op, string typearg,
-            string& /* out param */ rettype, bool& /* out param */ pure,
+            string& /* out param */ rettype, string& file, bool& /* out param */ pure,
             vector<ArgFormat>& /* out param */ actualArgs);
 
     //
-    void AddBinaryOperator(string op, string typearg1, string typearg2, string rettype, Associativity assoc, int priority, bool pure);
+    void AddBinaryOperator(string op, string typearg1, string typearg2, string rettype, string file, Associativity assoc, int priority, bool pure);
     bool IsBinary(string op, string typearg1, string typearg2,
-            string& /* out param */ rettype, bool& /* out param */ pure,
+            string& /* out param */ rettype, string& file, bool& /* out param */ pure,
             vector<ArgFormat>& /* out param */ actualArgs );
 
     // generic functions. types are specified in order: Have(myType, int, double)
-    void AddFunctions(string fName, vector<string>& typeargs, string rettype, bool pure);
-    void AddFunctionTemplate( string fName, string rettype, string file );
+    void AddFunctions(string fName, vector<string>& typeargs, string rettype, string file, bool pure);
+    void AddFunctionTemplate( string fName, string file );
     // is this a valid function and if YES what is the return type
     bool IsFunction(string fName, vector<string>& typeargs,
-            string& /* out param */ rettype, bool& /* out param */ pure,
+            string& /* out param */ rettype, string& file, bool& /* out param */ pure,
             vector<ArgFormat>& /* out param */ actualArgs);
+    bool IsFunctionTemplate( string fName, string& file );
 
     // same as function, but method to a type myType.Have(int, double)
-    void AddMethod(string type, string mName, vector<string>& typeargs, string rettype, bool pure);
-    bool IsMethod(string type, string mName, vector<string>& typeargs, string& rettype,
+    void AddMethod(string type, string mName, vector<string>& typeargs, string rettype, string file, bool pure);
+    bool IsMethod(string type, string mName, vector<string>& typeargs, string& rettype, string& file,
             bool& /* out param */ pure, vector<ArgFormat>& /* out param */ actualArgs );
 
     // filter functions. Functions that evaluate to bool
-    void AddFilter(string fName, vector<string>& typeargs, bool pure);
-    bool IsFilter(string fName, vector<string>& typeargs, bool& /* out param */ pure,
+    void AddFilter(string fName, vector<string>& typeargs, string file, bool pure);
+    bool IsFilter(string fName, vector<string>& typeargs, string& file, bool& /* out param */ pure,
             vector<ArgFormat>& /* out param */ actualArgs);
 
     // Adding GLAs to the system. Represented by 2 functions representing
     // AddItem and GetResult
     void AddGLA(string glaName, vector<string>& typeargs, vector<string>& typeret, string filename );
-    bool IsGLA( string glaName, vector<string>& typeargs, vector<string>& typeret,
+    bool IsGLA( string& glaName, vector<string>& typeargs, vector<string>& typeret, string& file,
             vector<ArgFormat>& /* out param */ actualArgs );
 
+    bool GLAExists( string& glaName, string& file );
+
     void AddGLATemplate( string glaName, string filename );
+    bool IsGLATemplate( string glaName, string& filename );
 
     // generate the set of includes for a given list of attributes
     // result should contain the #include statements
     void GenerateIncludes(vector<string>& types, string& result);
+
+    string GetTypeFile(string type);
 
 }; // DataTypeManager
 
@@ -402,17 +411,34 @@ string DataTypeManager :: GetBaseType(string synonymType) {
 }
 
 inline
+bool DataTypeManager :: IsType( string& type ) {
+    // Check synonym map
+    map<string, string>::const_iterator it = mSynonymToBase.find(type);
+    if( it != mSynonymToBase.end() ) {
+        type = it->second;
+
+        return true;
+    }
+
+    return false;
+}
+
+inline
 void DataTypeManager :: SetPossibleConversion(string fromType, string toType) {
 
     // Assumption is, all conversions should be recorded w.r.t base type, hence get basetype first
-    string baseType = GetBaseType(fromType);
-    if (baseType.size() == 0) {
-        cout << "\nError: Base type not found";
+    if( !IsType(fromType) ) {
+        cout << "\nError: type " << fromType << " not found";
+        return;
+    }
+
+    if( !IsType(toType) ) {
+        cout << "\nError: type " << toType << " not found";
         return;
     }
 
     // If base type found. Just insert.
-    TypeToInfoMap::const_iterator it = mType.find(baseType);
+    TypeToInfoMap::const_iterator it = mType.find(fromType);
     if (it != mType.end())
         (it->second)->convertibleTo.insert(toType);
 }
@@ -421,14 +447,18 @@ inline
 bool DataTypeManager :: IsConversionPossible(string fromType, string toType) {
 
     // Assumption is, all conversions should be recorded w.r.t base type, hence get basetype first
-    string baseType = GetBaseType(fromType);
-    if (baseType.size() == 0) {
-        cout << "\nError: Base type not found";
+    if( !IsType(fromType) ) {
+        cout << "\nError: type " << fromType << " not found";
+        return false;
+    }
+
+    if( !IsType(toType) ) {
+        cout << "\nError: type " << toType << " not found";
         return false;
     }
 
     // If base type found. Just check
-    TypeToInfoMap::const_iterator it = mType.find(baseType);
+    TypeToInfoMap::const_iterator it = mType.find(fromType);
     if (it != mType.end()) {
         set<string>::const_iterator iter = (it->second)->convertibleTo.find(toType);
         if (iter != (it->second)->convertibleTo.end())
@@ -469,6 +499,16 @@ void DataTypeManager :: DeleteType(string type) {
 
 inline
 bool DataTypeManager :: ConvertFuncExists ( string source, string dest ) {
+    if( !IsType(source) ) {
+        cout << "\nError: type " << source << " not found";
+        return false;
+    }
+
+    if( !IsType(dest) ) {
+        cout << "\nError: type " << dest << " not found";
+        return false;
+    }
+
     string funcName = CONVERSION_PREFIX + dest;
 
     set<FuncInfo*> funcSet = mFunc[funcName];
@@ -506,18 +546,25 @@ bool DataTypeManager :: ConvertFuncExists ( string source, string dest ) {
 }
 
 inline
-void DataTypeManager :: AddFunc (string type, string fName, vector<string>& args, string returnType, Associativity assoc, int priority, bool pure) {
+void DataTypeManager :: AddFunc (string type, string fName, vector<string>& args, string returnType, string file, Associativity assoc, int priority, bool pure) {
 
     // Make sure we are dealing with base types.
-    // TODO: Implement better detection for when a corresponding base type for
-    // a given type is not found.
-    type = GetBaseType( type );
-    if( returnType != "" )
-        returnType = GetBaseType( returnType );
+    if( type != "" && !IsType(type) ) {
+        cout << "\nError: type " << type << " not found";
+        return;
+    }
+
+    if( returnType != "" && !IsType(returnType) ) {
+        cout << "\nError: type " << returnType << " not found";
+        return;
+    }
 
     for( int i = 0; i < args.size(); ++i )
     {
-        args[i] = GetBaseType( args[i] );
+        if( !IsType( args[i] ) ) {
+            cout << "\nError: type " << args[i] << " not found";
+            return;
+        }
     }
 
     // Create a new struct
@@ -528,6 +575,7 @@ void DataTypeManager :: AddFunc (string type, string fName, vector<string>& args
     f->priority = priority;
     f->assoc = assoc;
     f->pure = pure;
+    f->file = file;
 
     // Check if function already exists
     FuncToInfoMap::const_iterator it = mFunc.find(fName);
@@ -556,24 +604,20 @@ void DataTypeManager :: AddFunc (string type, string fName, vector<string>& args
 }
 
 inline
-bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs) {
+bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, string& file, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs) {
 
     // Make sure we are dealing with base types.
-    type = GetBaseType( type );
+    if( type != "" && !IsType(type) ) {
+        cout << "\nError: type " << type << " not found";
+        return false;
+    }
 
     for( int i = 0; i < args.size(); ++i )
     {
-        string temp = args[i];
-        temp = GetBaseType( args[i] );
-
-        // If the type is empty, we failed to find a base type for the argument
-        // type, and thus this function is invalid.
-        if( temp.size() == 0 ) {
-            printf("\nFailed to get base type for %s.\n", args[i].c_str());
+        if( !IsType( args[i] ) ) {
+            cout << "\nError: type " << args[i] << " not found";
             return false;
         }
-
-        args[i] = temp;
     }
 
     // Check if function exists
@@ -695,6 +739,7 @@ bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>
         // matches vector.
         returnType = matches.back()->returnType;
         pure = matches.back()->pure;
+        file = matches.back()->file;
 
         actualArgs.clear();
 
@@ -768,6 +813,7 @@ bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>
         // Set return type and return
         returnType = f->returnType;
         pure = f->pure;
+        file = f->file;
 
         actualArgs.clear();
 
@@ -835,15 +881,13 @@ bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>
 }
 
 inline
-void DataTypeManager :: AddFuncTemplate( string fName, string retType, string file ) {
+void DataTypeManager :: AddFuncTemplate( string fName, string file ) {
     FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
-
-    retType = GetBaseType( retType );
 
     if( it != mTempFunc.end() ) {
         FuncTemplateInfo & fInfo = it->second;
 
-        if( fInfo.retType != retType || fInfo.file != file ) {
+        if( fInfo.file != file ) {
             cout << "\nError adding templated function " << fName
                 << ", function exists with different definition.";
         }
@@ -851,18 +895,17 @@ void DataTypeManager :: AddFuncTemplate( string fName, string retType, string fi
         return;
     }
     else {
-        mTempFunc[fName] = FuncTemplateInfo( retType, file );
+        mTempFunc[fName] = FuncTemplateInfo( file );
     }
 }
 
 inline
-bool DataTypeManager :: FuncTemplateExists( string fName, string& retType, string& file ) {
+bool DataTypeManager :: FuncTemplateExists( string fName, string& file ) {
     FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
 
     if( it != mTempFunc.end() ) {
         FuncTemplateInfo & fInfo = it->second;
 
-        retType = fInfo.retType;
         file = fInfo.file;
 
         return true;
@@ -907,115 +950,116 @@ bool DataTypeManager :: GLATemplateExists( string glaName, string& file ) {
 }
 
 inline
-void DataTypeManager :: AddUnaryOperator(string op, string typearg, string rettype, int priority, bool pure) {
+void DataTypeManager :: AddUnaryOperator(string op, string typearg, string rettype, string file, int priority, bool pure) {
 
     vector<string> vec;
     vec.push_back(typearg);
     string type;
-    AddFunc (type, op, vec, rettype, NoAssoc, priority, pure);
+    AddFunc (type, op, vec, rettype, file, NoAssoc, priority, pure);
 }
 
 inline
-bool DataTypeManager :: IsUnary(string op, string typearg, string &rettype, bool& pure,
+bool DataTypeManager :: IsUnary(string op, string typearg, string &rettype, string& file, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
     vector<string> vec;
     vec.push_back(typearg);
     string type;
-    return IsCorrectFunc (type, op, vec, rettype, NoAssoc, -1, pure, actualArgs);
+    return IsCorrectFunc (type, op, vec, rettype, file, NoAssoc, -1, pure, actualArgs);
 }
 
 inline
-void DataTypeManager :: AddBinaryOperator(string op, string tp1, string tp2, string rettype, Associativity assoc, int priority, bool pure) {
+void DataTypeManager :: AddBinaryOperator(string op, string tp1, string tp2, string rettype, string file, Associativity assoc, int priority, bool pure) {
 
     vector<string> vec;
     vec.push_back(tp1);
     vec.push_back(tp2);
     string type;
-    AddFunc (type, op, vec, rettype, assoc, priority, pure);
+    AddFunc (type, op, vec, rettype, file, assoc, priority, pure);
 }
 
 inline
-bool DataTypeManager :: IsBinary(string op, string tp1, string tp2, string &rettype, bool& pure,
+bool DataTypeManager :: IsBinary(string op, string tp1, string tp2, string &rettype, string& file, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
     vector<string> vec;
     vec.push_back(tp1);
     vec.push_back(tp2);
     string type;
-    return IsCorrectFunc (type, op, vec, rettype, NoAssoc, -1, pure, actualArgs);
+    return IsCorrectFunc (type, op, vec, rettype, file, NoAssoc, -1, pure, actualArgs);
 }
 
 inline
-void DataTypeManager :: AddFunctions(string fName, vector<string>& types, string rettype, bool pure) {
+void DataTypeManager :: AddFunctions(string fName, vector<string>& types, string rettype, string file, bool pure) {
 
     vector<string> vec(types);
     string type;
-    AddFunc (type, fName, vec, rettype, NoAssoc, -1, pure);
+    AddFunc (type, fName, vec, rettype, file, NoAssoc, -1, pure);
 }
 
 inline
-void DataTypeManager :: AddFunctionTemplate( string fName, string rettype, string file ) {
-    AddFuncTemplate( fName, rettype, file );
+void DataTypeManager :: AddFunctionTemplate( string fName, string file ) {
+    AddFuncTemplate( fName, file );
 }
 
 inline
-bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& rettype, bool& pure,
+bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& rettype, string& file, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
     vector<string> vec(types);
     string type;
-    bool ret = IsCorrectFunc (type, fName, vec, rettype, NoAssoc, -1, pure, actualArgs);
-
-    if( !ret ) {
-        pure = true;
-        string file;
-        return FuncTemplateExists( fName, rettype, file );
-    }
-    else {
-        return ret;
-    }
+    return IsCorrectFunc (type, fName, vec, rettype, file, NoAssoc, -1, pure, actualArgs);
 }
 
 inline
-void DataTypeManager :: AddMethod(string type, string mName, vector<string>& types, string rettype, bool pure) {
+bool DataTypeManager :: IsFunctionTemplate( string fName, string& file ) {
+    return FuncTemplateExists( fName, file );
+}
+
+inline
+void DataTypeManager :: AddMethod(string type, string mName, vector<string>& types, string rettype, string file, bool pure) {
 
     vector<string> vec(types);
-    AddFunc (type, mName, vec, rettype, NoAssoc, -1, pure);
+    AddFunc (type, mName, vec, rettype, file, NoAssoc, -1, pure);
 }
 
 inline
-bool DataTypeManager :: IsMethod(string type, string mName, vector<string>& types, string& rettype, bool& pure,
+bool DataTypeManager :: IsMethod(string type, string mName, vector<string>& types, string& rettype, string& file, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
     vector<string> vec(types);
-    return IsCorrectFunc (type, mName, vec, rettype, NoAssoc, -1, pure, actualArgs);
+    return IsCorrectFunc (type, mName, vec, rettype, file, NoAssoc, -1, pure, actualArgs);
 }
 
 inline
-void DataTypeManager :: AddFilter(string fName, vector<string>& typeargs, bool pure) {
+void DataTypeManager :: AddFilter(string fName, vector<string>& typeargs, string file, bool pure) {
 
     vector<string> vec(typeargs);
     string ret;
     string type;
-    AddFunc (type, fName, vec, ret, NoAssoc, -1, pure);
+    AddFunc (type, fName, vec, ret, file, NoAssoc, -1, pure);
 }
 
 inline
-bool DataTypeManager :: IsFilter(string fName, vector<string>& typeargs, bool& pure,
+bool DataTypeManager :: IsFilter(string fName, vector<string>& typeargs, string& file, bool& pure,
         vector<ArgFormat>& actualArgs) {
 
     vector<string> vec(typeargs);
     string ret;
     string type;
-    return IsCorrectFunc (type, fName, vec, ret, NoAssoc, -1, pure, actualArgs);
+    return IsCorrectFunc (type, fName, vec, ret, file, NoAssoc, -1, pure, actualArgs);
 }
 
 inline
 void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
-        vector<string>& typeret, string fileName = string() ) {
+        vector<string>& typeret, string fileName ) {
     if( !DoesTypeExist( glaName ) ) {
         AddBaseType( glaName, fileName );
+    }
+    else {
+        // Duplicate definition.
+        cout << "\nWarning: Attempting to add a duplicate GLA " << glaName;
+        return;
     }
 
     string fName_add = "AddItem_" + glaName;
@@ -1026,8 +1070,8 @@ void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
     vector<string> args_vec(typeargs);
     vector<string> ret_vec(typeret);
 
-    AddFunc( glaName, fName_add, args_vec, ret, NoAssoc, -1, false );
-    AddFunc( glaName, fName_ret, ret_vec, ret, NoAssoc, -1, false );
+    AddFunc( glaName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( glaName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
 }
 
 inline
@@ -1036,13 +1080,23 @@ void DataTypeManager :: AddGLATemplate( string glaName, string filename ) {
 }
 
 inline
-bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
-        vector<string>& typeret,
+bool DataTypeManager :: IsGLATemplate( string glaName, string& filename ) {
+    return GLATemplateExists(glaName, filename);
+}
+
+inline
+bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
+        vector<string>& typeret, string& file,
         vector<ArgFormat>& /* out param */ actualArgs ) {
 
     vector<string> arg_vec(typeargs);
     vector<string> ret_vec(typeret);
     string ret("");
+
+    if( !IsType( glaName ) ) {
+        cout << "\nError: No GLA " << glaName << " known to system!";
+        return false;
+    }
 
     //cerr << "GLA: " << glaName << endl;
 
@@ -1050,9 +1104,9 @@ bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
 
     //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
 
-    //cerr << "Number returns " << typeargs.size() << endl;
+    //cerr << "Number returns " << typeret.size() << endl;
 
-    //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
+    //for( int i = 0; i < typeret.size(); ++i ) cerr << typeret[i] << endl;
 
     string fName_add = "AddItem_" + glaName;
     string fName_ret = "GetResult_" + glaName;
@@ -1060,19 +1114,22 @@ bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
     bool pure;
 
     // Check the arguments and get any formatting necessary.
-    bool correct = IsCorrectFunc( glaName, fName_add, arg_vec, ret, NoAssoc, -1, pure, actualArgs );
+    bool correct = IsCorrectFunc( glaName, fName_add, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
 
     // If we didn't get a match for a concrete GLA, see if a template with this
     // name exists.
     if( !correct ) {
-        string file;
-        return GLATemplateExists( glaName, file );
+        return false;
     }
 
     // We don't want any transformations on the return arguments
     // so check for an EXACT match for the results function.
     for( int i = 0; i < ret_vec.size(); ++i ) {
         ret_vec[i] = GetBaseType( ret_vec[i] );
+        if( !IsType( ret_vec[i] ) ) {
+            cout << "\nError: No type " << ret_vec[i] << " known to system!";
+            return false;
+        }
     }
 
     set<FuncInfo*> & possibleFuncs = mFunc[fName_ret];
@@ -1101,7 +1158,7 @@ bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
         {
             if( *argIter != *fArgIter )
             {
-                //cerr << "Teh failz" << endl;
+                //cerr << endl << "Failed to match on function arg " << *argIter << " expected " << *fArgIter << endl;
                 goodArgs = false;
                 break;
             }
@@ -1126,11 +1183,21 @@ bool DataTypeManager ::  IsGLA( string glaName, vector<string>& typeargs,
 }
 
 inline
+bool DataTypeManager :: GLAExists( string& glaName, string& file ) {
+    if( !IsType( glaName ) )
+        return false;
+
+    file = GetTypeFile( glaName );
+
+    return true;
+}
+
+inline
 void DataTypeManager :: GenerateIncludes(vector<string>& types, string& result) {
 
-    result.clear();
     for (int i = 0; i < types.size(); i++) {
-        string baseType = GetBaseType(types[i]);
+        IsType(types[i]);
+        string& baseType = types[i];
         TypeToInfoMap::const_iterator iter = mType.find(baseType);
         if (iter != mType.end()) {
             result += "#include " + (iter->second)->file;
@@ -1142,10 +1209,21 @@ void DataTypeManager :: GenerateIncludes(vector<string>& types, string& result) 
 }
 
 inline
+string DataTypeManager :: GetTypeFile(string type) {
+    if( !IsType(type) ) {
+        cout << "\nError: attempting to get source file for unknown type " << type;
+        return "";
+    }
+
+    TypeToInfoMap::const_iterator it = mType.find(type);
+    return (it->second)->file;
+}
+
+inline
 DataTypeManager& DataTypeManager::GetDataTypeManager() {
     if (instance == NULL) {
-        instance = new DataTypeManager;
-        instance->Load();
+        instance = new DataTypeManager();
+        //instance->Load();
     }
     return *instance;
 }

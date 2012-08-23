@@ -15,7 +15,7 @@ RESULT_FILE(Q2-result.csv)
 
 LOAD lineitem;
 
-gl = GLA:Multiplexer< GLA:SumGLA, GLA:SumGLA, GLA:SumGLA, GLA:CountGLA >
+gl = GLA:Multiplexer< GLA:Sum, GLA:Sum, GLA:Sum, GLA:Count >
     FROM lineitem
     USING lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax, 0.0
     AS eprice:DOUBLE, discount:DOUBLE, tax:DOUBLE, count:BIGINT;

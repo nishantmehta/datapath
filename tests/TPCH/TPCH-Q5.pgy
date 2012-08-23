@@ -113,12 +113,12 @@ JOIN
 // Group by
 
 gby =
-GLA:GroupByGLA
+GLA:GroupBy
 <
     [
         n_name:HString
     ],
-    GLA:SumGLA
+    GLA:Sum
 >
 FROM
     join_master
@@ -132,7 +132,7 @@ AS
 // Order by
 
 orderby =
-GLA:OrderByGLA
+GLA:OrderBy
 <
     [
         revenue : DOUBLE : DESC

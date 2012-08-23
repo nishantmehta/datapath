@@ -26,7 +26,9 @@ m4_redefine(</m4_fix_order/>, </dnl
 
 m4_redefine(</ORDER/>,</m4_third($1)/>)
 
-m4_define(</OrderByGLA/>,</dnl
+GLA_TEMPLATE_DESC(</OrderBy/>)
+
+m4_define(</OrderBy/>,</dnl
 m4_redefine(</TOPK_NAME/>, </$1/>)dnl
 m4_redefine(</TOPK_TUPLE/>, </$3/>)dnl
 dnl
@@ -57,10 +59,15 @@ dnl
 using namespace std;
 
 /** Information for Meta-GLAs
-    m4_qdefine(</TOPK_NAME</_INPUT/>/>, </MY_INPUT/>)
-    m4_qdefine(</TOPK_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
-    m4_qdefine(</TOPK_NAME</_INIT/>/>, </MY_INIT/>)
-    m4_qdefine(</</GLA_REZTYPE_/>TOPK_NAME/>, </MY_REZTYPE/>)
+ *  GLA_DESC
+ *
+ *  NAME(TOPK_NAME)
+ *  INPUTS(MY_INPUT)
+ *  OUTPUTS(MY_OUTPUT)
+ *  CONSTRUCTOR(MY_INIT)
+ *  RESULT_TYPE(MY_REZTYPE)
+ *
+ *  END_DESC
 */
 
 struct TOPK_NAME<//>_Tuple {
@@ -239,3 +246,7 @@ void TOPK_NAME::AddState(TOPK_NAME& other) {
     }
 }
 />)
+
+dnl # Synonym for compatibility reasons
+GLA_TEMPLATE_DESC(</OrderByGLA/>)
+m4_define(</OrderByGLA/>, m4_defn(</OrderBy/>))

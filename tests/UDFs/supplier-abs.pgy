@@ -14,7 +14,7 @@ RESULT_FILE("supplier-abs.csv")
 
 LOAD supplier;
 
-agg = GLA:SumGLA
+agg = GLA:Sum
 FROM
     supplier
 USING

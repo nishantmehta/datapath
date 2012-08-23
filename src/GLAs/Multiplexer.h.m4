@@ -12,6 +12,8 @@ dnl # Usage
 dnl # $1=GLA_NAME name of the class generated
 dnl # All other arguments are names of GLAs to multiplex.
 dnl
+GLA_TEMPLATE_DESC(</Multiplexer/>)
+dnl
 m4_define(</Multiplexer/>,</dnl
 m4_redefine(</GLA_NAME/>, </$1/>)dnl
 dnl
@@ -57,6 +59,7 @@ dnl # Handle result types
 <//><//>m4_define(</MY_REZTYPE/>, m4_quote(</GLA_REZTYPE_/>_ARG_))/>,</<//>dnl
 <//><//>m4_if(m4_quote(MY_REZTYPE), reval(</GLA_REZTYPE_/>_ARG_), <//>, </<//>dnl
 <//><//><//>m4_errprintn(</Have GLAs with different result types in the same multiplexer! />)<//>dnl
+<//><//><//>m4_errprintn(</Previous: />MY_REZTYPE</ New: />reval(</GLA_REZTYPE_/>_ARG_))<//>dnl
 <//><//><//>m4_exit(1)<//>dnl
 <//><//>/>)<//>dnl
 <//>/>)<//>dnl
@@ -68,9 +71,14 @@ m4_if(MY_REZTYPE, single, <//>, </<//>dnl
 />)dnl
 dnl
 /** Information for Meta-GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUTS/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUTS/>)
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUTS)
+ * OUTPUTS(MY_OUTPUTS)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * END_DESC
  */
 
 class GLA_NAME {

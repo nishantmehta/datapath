@@ -27,7 +27,8 @@ m4_redefine(</m4_fix_order/>, </dnl
 
 m4_redefine(</ORDER/>,</m4_third($1)/>)
 
-m4_define(</ExtremeTuplesGLA/>, </dnl
+GLA_TEMPLATE_DESC(</ExtremeTuples/>)
+m4_define(</ExtremeTuples/>, </dnl
 m4_redefine(</GLA_NAME/>, </$1/>)dnl
 m4_redefine(</EXT_ATTS/>, </$3/>)dnl
 dnl
@@ -35,9 +36,10 @@ m4_redefine(</__TEMP__/>,</$2/>)dnl
 m4_foreach(</_A_/>,</__TEMP__/>,</dnl
 <//>m4_redefine(</_TARG_/>, m4_quote(</(/>VAR(_A_)</, />TYPE(_A_)</, />m4_fix_order(ORDER(_A_))</)/>))
 <//>m4_append(</MIN_ATTS/>, _TARG_, </</, />/>)
+<//>m4_append(</SRT_ATTS/>, </(/>VAR(_A_)</, />TYPE(_A_)</)/>, </</, />/>)
 />)dnl
 dnl
-m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</$2/>, </EXT_ATTS/>)))dnl
+m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</SRT_ATTS/>, </EXT_ATTS/>)))dnl
 m4_redefine(</MY_OUTPUT/>, m4_defn(</MY_INPUT/>))dnl
 m4_redefine(</MY_REZTYPE/>, </multi/>)dnl
 dnl
@@ -50,10 +52,15 @@ dnl
 
 using namespace std;
 
-/** Informatio for Meta-GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
+/** Information for Meta-GLAs
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUT)
+ * OUTPUTS(MY_OUTPUT)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * END_DESC
  */
 
 struct GLA_NAME<//>_Tuple {
@@ -219,3 +226,7 @@ m4_foreach(</_A_/>, </MY_OUTPUT/>, </dnl
     }
 }
 />)
+
+dnl # Synonym for compatibility reasons
+GLA_TEMPLATE_DESC(</ExtremeTuples/>)
+m4_define(</ExtremeTuplesGLA/>, m4_defn(</ExtremeTuples/>))

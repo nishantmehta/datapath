@@ -18,9 +18,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 /** Type definition for the basic type DOUBLE */
 
+// TYPE_DESC(</DOUBLE/>)
 typedef double DOUBLE; // use native int
 
 /////////////////

@@ -27,26 +27,29 @@ dnl # GLA_NAME: name of the produced class. This must coincide withe the produce
 dnl # DST_ATTS: list of distinct attrbutes
 dnl # All lists are of the form </(arg1, type1),.../>
 
+GLA_TEMPLATE_DESC(</Distinct/>)
 dnl # Usage
 dnl # $1 = GLA_NAME   name of the class generated
 dnl # $2 = DST_ATTS   list of distinct attributes
-m4_define(</DistinctGLA/>,</dnl
+m4_define(</Distinct/>,</dnl
+m4_ifndef(</USE_FRAGMENTS/>, </dnl
+<//>m4_define(</USE_FRAGMENTS/>, </NUM_EXEC_ENGINE_THREADS/>)dnl
+/>)dnl
 m4_ifdef(</GLA_NAME/>,</m4_undef(</GLA_NAME/>)/>)dnl
 m4_ifdef(</DST_ATTS/>,</m4_undef(</GBY_ATTS/>)/>)dnl
 m4_define(</GLA_NAME/>, </$1/>)dnl
 m4_define(</DST_ATTS/>,m4_quote($2))dnl
+m4_redefine(</MY_REZTYPE/>, m4_ifdef(</USE_FRAGMENTS/>, </fragment/>, </multi/>))dnl
 dnl
-m4_ifndef(</USE_FRAGMENTS/>, </dnl
-<//>m4_define(</USE_FRAGMENTS/>, </NUM_EXEC_ENGINE_THREADS/>)dnl
-/>)dnl
 /* Information for meta GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </DST_ATTS/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </DST_ATTS/>)
-m4_ifdef(</USE_FRAGMENTS/>,</dnl
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </fragment/>)
-/>,</dnl
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </multi/>)
-/>)dnl
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(DST_ATTS)
+ * OUTPUTS(DST_ATTS)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * END_DESC
  */
 
 #include <iomanip>
@@ -266,3 +269,7 @@ typedef GLA_NAME::GLA_NAME<//>_Iterator GLA_NAME<//>_Iterator;
 />)dnl
 
 />)dnl # end of the DistinctTemplate
+
+dnl # Synonym for compatibility reasons
+GLA_TEMPLATE_DESC(</DistinctGLA/>)
+m4_define(</DistinctGLA/>, m4_defn(</Distinct/>))

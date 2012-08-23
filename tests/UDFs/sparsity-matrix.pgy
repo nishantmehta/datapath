@@ -1,7 +1,7 @@
 LOAD lineitem;
 
 agg =
-GLA:SparsityMatrixGLA
+GLA:SparsityMatrix
 <
     4,
     DOUBLE

@@ -17,21 +17,26 @@
 #define _AVERAGE_GLA_H_
 
 /** Information for Meta-GLAs
- * m4_define(</AverageGLA_INPUT/>, </(x, DOUBLE)/>)
- * m4_define(</AverageGLA_OUTPUT/>, </(_count, BIGINT), (_sum, DOUBLE), (avg, DOUBLE)/>)
- * m4_define(</GLA_REZTYPE_AverageGLA/>, </single/>)
+ * GLA_DESC
+ *
+ * NAME(</Average/>)
+ * INPUTS(</(x, DOUBLE)/>)
+ * OUTPUTS(</(_count, BIGINT), (_sum, DOUBLE), (avg, DOUBLE)/>)
+ * RESULT_TYPE(</single/>)
+ *
+ * END_DESC
  */
 
-class AverageGLA {
+class Average {
   long long int count; // keeps the number of tuples aggregated
   long double sum; // sum of the values
 public:
-  AverageGLA(){ count=0; sum=0.0; }
-  AverageGLA(BIGINT _count, DOUBLE _sum){ count=_count; sum=_sum; }
+  Average(){ count=0; sum=0.0; }
+  Average(BIGINT _count, DOUBLE _sum){ count=_count; sum=_sum; }
 
   void AddItem(const DOUBLE& x){ count++; sum+=x; }
 
-  void AddState(AverageGLA& o){ count+=o.count; sum+=o.sum; }
+  void AddState(Average& o){ count+=o.count; sum+=o.sum; }
 
   // we only support one tuple as output
   void GetResult(BIGINT& _count, DOUBLE& _sum, DOUBLE& avg){
@@ -45,5 +50,8 @@ public:
       cout << "Boundary" << endl;
   }
 };
+
+// Synonym for compatibility reasons.
+// SYN_DEF(</AverageGLA/>, </Average/>)
 
 #endif // _AVERAGE_GLA_H_

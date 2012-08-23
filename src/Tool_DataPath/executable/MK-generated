@@ -35,6 +35,7 @@ M4INCLUDES = -I ../../../M4/m4
 M4INCLUDES += -I ../../../WPFunctionModules 
 M4INCLUDES += -I ../../../GLAs 
 M4INCLUDES += -I ../../../UDFs 
+M4INCLUDES += -I ../../../Libs 
 
 ifdef DP_GLAs
 GLA_INC += -I $(DP_GLAs)

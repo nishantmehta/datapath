@@ -20,7 +20,7 @@
     trannsport states withing the same memory space between
     operators. The object the state points to MUST be treated like a
     const.
-    
+
     Note: this type cannot be read from the disk or written to the
     output. A different mechanism will be used for that.
 
@@ -35,6 +35,7 @@
 
 **/
 
+// TYPE_DESC(</STATE/>)
 class STATE {
   void* object; // the object we are pointing to
   uint64_t type; // type of object (acts like a password)
@@ -46,7 +47,7 @@ public:
   void* GetObject(uint64_t password){
     return (type == password) ? object : NULL;
   }
-  
+
   /** no destructor. object should not be deallocated here */
 };
 

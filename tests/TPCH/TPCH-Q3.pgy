@@ -75,14 +75,14 @@ JOIN
     j1 BY orders.o_orderkey;
 
 gby =
-GLA:GroupByGLA
+GLA:GroupBy
 <
     [
         l_orderkey     : INT     ,
         o_orderdate    : DATE    ,
         o_shippriority : HString
     ],
-    GLA:SumGLA
+    GLA:Sum
 >
 FROM
     j2
@@ -115,7 +115,7 @@ INTO
 */
 
 orderby =
-GLA:OrderByGLA
+GLA:OrderBy
 <
     [
         revenue     : DOUBLE : DESC ,

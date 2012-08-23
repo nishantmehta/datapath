@@ -121,10 +121,11 @@ public:
                 ostringstream ctName;
                 ctName << "ct" << NextVar();
                 ostringstream gen;
-                gen << list[i].type << " " << ctName.str() << "("
-                    << list[i].sExpr << ");\n";
+                gen << "    ";
+                gen << "const " << list[i].type << " " << ctName.str() << " = "
+                    << list[i].sExpr << ";\n";
 
-                cstStr += "    " + gen.str();
+                cstStr += gen.str();
                 list[i].sExpr = ctName.str();
             }
         }

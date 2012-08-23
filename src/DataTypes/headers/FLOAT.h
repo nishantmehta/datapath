@@ -18,14 +18,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 /** Type definition for the basic type FLOAT */
 
+// TYPE_DESC(</FLOAT/>)
 typedef float FLOAT; // use native int
 
 /////////////////
 // Aliases
 
+// SYN_DEF(</REAL/>, </FLOAT/>)
 typedef FLOAT REAL;
 
 

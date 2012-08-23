@@ -17,7 +17,9 @@ dnl # Macros that have to be defined
 dnl # TOPK_NAME: name of the resulting GLA
 dnl # TOPK_TUPLE: list of elements of the tuple (var, type)...
 
-m4_define(</TopKGLA/>, </dnl
+GLA_TEMPLATE_DESC(</TopK/>)
+
+m4_define(</TopK/>, </dnl
 m4_redefine(</TOPK_NAME/>, </$1/>)dnl
 m4_redefine(</TOPK_TUPLE/>, </$2/>)dnl
 dnl
@@ -35,10 +37,15 @@ m4_redefine(</MY_INIT/>, </(_limit, BIGINT)/>)dnl
 using namespace std;
 
 /* Information for meta GLAs
-    m4_qdefine(</TOPK_NAME</_INPUT/>/>, </MY_INPUT/>)
-    m4_qdefine(</TOPK_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
-    m4_qdefine(</TOPK_NAME</_INIT/>/>, </MY_INIT/>)
-    m4_qdefine(</</GLA_REZTYPE_/>TOPK_NAME/>, </MY_REZTYPE/>)
+ * GLA_DESC
+ *
+ * NAME(TOPK_NAME)
+ * INPUTS(MY_INPUT)
+ * OUTPUTS(MY_OUTPUT)
+ * CONSTRUCTOR(MY_INIT)
+ * RESULT_TYPE(MY_REZtYPE)
+ *
+ * END_DESC
  */
 
 struct TOPK_NAME<//>_Tuple {
@@ -187,3 +194,7 @@ void TOPK_NAME::AddState(TOPK_NAME& other) {
 }
 
 />)dnl
+
+dnl # Synonym for compatibility reasons
+GLA_TEMPLATE_DESC(</TopKGLA/>)
+m4_define(</TopKGLA/>, m4_defn(</TopK/>))

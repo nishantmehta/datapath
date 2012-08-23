@@ -167,12 +167,12 @@ INTO
 */
 
 gby =
-GLA:GroupByGLA
+GLA:GroupBy
 <
     [
         p_partkey : INT
     ],
-    GLA:ExtremeTuplesGLA
+    GLA:ExtremeTuples
     <
         [
             ps_supplycost : FLOAT : MIN
@@ -239,7 +239,7 @@ INTO
 */
 
 orderby =
-GLA:OrderByGLA
+GLA:OrderBy
 <
     [
         s_acctbal : FLOAT   : DESC ,

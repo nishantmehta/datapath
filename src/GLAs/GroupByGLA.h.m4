@@ -29,7 +29,10 @@ dnl # $2=GBY_ATTS, list of group by attributes
 dnl # $3=INNER_GLA, name of the GLA used for each group
 dnl # this GLA must be in the file GLA.h and have a description
 dnl # specifying the input
-m4_define(</GroupByGLA/>,</dnl
+
+GLA_TEMPLATE_DESC(</GroupBy/>)
+
+m4_define(</GroupBy/>,</dnl
 m4_ifdef(</INNER_GLA/>,</m4_undefine(</INNER_GLA/>)/>)dnl
 m4_ifdef(</GLA_NAME/>,</m4_undefine(</GLA_NAME/>)/>)dnl
 m4_ifdef(</GBY_ATTS/>,</m4_undefine(</GBY_ATTS/>)/>)dnl
@@ -53,10 +56,15 @@ m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</
 m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</_OUTPUT/>))))dnl
 
 /* Information for meta GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
-    m4_qdefine(</GLA_NAME</_INIT/>/>, </MY_INIT/>)
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUT)
+ * OUTPUTS(MY_OUTPUT)
+ * CONSTRUCTOR(MY_INIT)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * END_DESC
  */
 
 #include <iomanip>
@@ -315,3 +323,7 @@ m4_ifdef(</USE_FRAGMENTS/>,</dnl use fragment interface
 typedef GLA_NAME::GLA_NAME<//>_Iterator GLA_NAME<//>_Iterator;
 />)dnl
 />)dnl # end of the GroupByTemplate
+
+dnl # Synonym for compatibility reasons
+GLA_TEMPLATE_DESC(</GroupByGLA/>)
+m4_define(</GroupByGLA/>, m4_defn(</GroupBy/>))

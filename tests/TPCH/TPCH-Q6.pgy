@@ -27,7 +27,7 @@ sel = FILTER lineitem
         && lineitem.l_discount <= 0.07f
         && lineitem.l_quantity < 24;
 
-rev = GLA:SumGLA
+rev = GLA:Sum
     FROM sel
     USING (lineitem.l_extendedprice * lineitem.l_discount)
     AS revenue:DOUBLE;
@@ -38,7 +38,7 @@ PRINT rev
     INTO "TPCH-Q6-result.csv";
 
 /*
-rev = GLA:CountGLA
+rev = GLA:Count
     FROM sel
     USING 1.0
     AS count:BIGINT;

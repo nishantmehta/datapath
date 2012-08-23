@@ -23,7 +23,7 @@ then
 fi
 
 # what are the grammars to compile
-FILES="BaseLexer.g DataPath.g Piggy.g DPtree.g"
+FILES="BaseLexer.g Desc.g DataPath.g Piggy.g DPtree.g"
 ANTLR=antlr3
 #ANTLR="java -jar /usr/local/lib/antlr-3.3-complete.jar"
 #ANTLR="java -jar /usr/local/lib/antlr-3.4-complete-no-antlrv2.jar"

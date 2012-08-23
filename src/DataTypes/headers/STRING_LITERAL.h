@@ -24,6 +24,7 @@
    another type in order to be useful.
  */
 
+// TYPE_DESC(</STRING_LITERAL/>)
 typedef const char* STRING_LITERAL;
 
 #endif

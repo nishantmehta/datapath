@@ -12,16 +12,19 @@
  */
 
 /** Information for Meta-GLAs
+ *  GLA_DESC
  *
  *  NAME(</LogisticRegressionIRLS/>)
  *  INPUTS(</(x, VECTOR), (y, DOUBLE)/>)
- *  OUTPUTS(</(count, DOUBLE)/>)
+ *  OUTPUTS(</(count, BIGINT)/>)
  *  CONSTRUCTOR(</(width, BIGINT)/>)
  *  RESULT_TYPE(</multi/>)
  *
  *  OPT_ITERABLE
  *
  *  LIBS(armadillo)
+ *
+ *  END_DESC
  */
 
 using namespace arma;

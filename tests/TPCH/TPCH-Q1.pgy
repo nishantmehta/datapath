@@ -34,6 +34,23 @@ RESULT_FILE(TPCH-Q1-result.csv)
 
 */
 
+DEFINE GLA:multi AS
+    GLA:Multiplexer
+    <
+        GLA:Sum,
+        GLA:Sum,
+        GLA:Average,
+        GLA:Average,
+        GLA:Average
+    >;
+
+DEFINE GLA:gby AS
+    GLA:GroupBy
+    <
+        [retturnflag:HString, linestatus:HString],
+        GLA:multi
+    >;
+
 LOAD lineitem;
 
 sel =
@@ -41,19 +58,7 @@ sel =
 BY
     lineitem.l_shipdate <= DATE('1998/12/01') - 90;
 
-gl =
-    GLA:GroupByGLA
-    <
-        [retturnflag:HString, linestatus:HString],
-        GLA:Multiplexer
-        <
-            GLA:SumGLA,
-            GLA:SumGLA,
-            GLA:AverageGLA,
-            GLA:AverageGLA,
-            GLA:AverageGLA
-        >
-    >
+gl = GLA:gby
 FROM
     sel
 USING
@@ -67,23 +72,23 @@ USING
 AS
     gl_l_returnflag   : HString ,
     gl_l_linestatus   : HString ,
-    gl_sum_disc_price : DOUBLE  , // SumGLA
-    gl_sum_charge     : DOUBLE  , // SumGLA
-    // AverageGLA
+    gl_sum_disc_price : DOUBLE  , // Sum
+    gl_sum_charge     : DOUBLE  , // Sum
+    // Average
     gl_count_order    : BIGINT  ,
     gl_sum_qty        : DOUBLE  ,
     gl_avg_qty        : DOUBLE  ,
-    // AverageGLA
+    // Average
     gl_avg2_count     : BIGINT  , // Unused
     gl_sum_base_price : DOUBLE  ,
     gl_avg_price      : DOUBLE  ,
-    // AverageGLA  ,
+    // Average  ,
     gl_avg3_count     : BIGINT  , // Unused
     gl_avg3_sum       : DOUBLE  , // Unused
     gl_avg_disc       : DOUBLE;
 
 orderby =
-    GLA:OrderByGLA
+    GLA:OrderBy
     <
         [
             l_returnflag   : HString : ASC ,

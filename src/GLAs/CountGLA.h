@@ -17,21 +17,30 @@
 #define _COUNT_GLA_H_
 
 /** Info for the meta-GLAs
-    m4_define(</CountGLA_INPUT/>,</(dummy, INT)/>)dnl
-    m4_define(</CountGLA_OUTPUT/>,</(_count, BIGINT)/>)dnl
+ * GLA_DESC
+ *
+ * NAME(</Count/>)
+ * INPUTS(</(dummy, INT)/>)
+ * OUTPUTS(</(_count, BIGINT)/>)
+ * RESULT_TYPE(</single/>)
+ *
+ * END_DESC
  */
 
-class CountGLA {
+class Count {
   long long int count; // keeps the number of tuples aggregated
 public:
-  CountGLA(){ count=0; }
+  Count(){ count=0; }
   void AddItem(int dummy){ count++; }
-  void AddState(CountGLA& o){ count+=o.count; }
+  void AddState(Count& o){ count+=o.count; }
 
   // we only support one tuple as output
   void GetResult(BIGINT& _count){
-	  _count=count;
+      _count=count;
   }
 };
+
+// Synonym for compatibility purposes
+// SYN_DEF(</CountGLA/>, </Count/>)
 
 #endif // _COUNT_GLA_H_

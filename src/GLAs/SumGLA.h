@@ -17,24 +17,32 @@
 #define _SUM_GLA_H_
 
 /** Info for meta-GLAs
-    m4_define(</SumGLA_INPUT/>, </(x, DOUBLE)/>)dnl
-    m4_define(</SumGLA_OUTPUT/>, </(_sum, DOUBLE)/>)dnl
-    m4_define(</GLA_REZTYPE_SumGLA/>, </single/>)
+ * GLA_DESC
+ *
+ * NAME(</Sum/>)
+ * INPUTS(</(x, DOUBLE)/>)
+ * OUTPUTS(</(_sum, DOUBLE)/>)
+ * RESULT_TYPE(</single/>)
+ *
+ * END_DESC
 */
 
-class SumGLA {
+class Sum {
   long double sum; // sum of the values
 public:
-  SumGLA(){ sum=0.0; }
+  Sum(){ sum=0.0; }
 
   void AddItem(const DOUBLE& x){ sum+=x; }
 
-  void AddState(SumGLA& o){ sum+=o.sum; }
+  void AddState(Sum& o){ sum+=o.sum; }
 
   // we only support one tuple as output
   void GetResult(DOUBLE& _sum){
       _sum=sum;
   }
 };
+
+// Synonym for compatibility purposes
+// SYN_DEF(</SumGLA/>, </Sum/>)
 
 #endif // _SUM_GLA_H_

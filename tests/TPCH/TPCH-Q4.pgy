@@ -54,7 +54,7 @@ BY
 
 // TODO: Remove this distinct once we have EXISTS functionality in the join
 dst_lineitem =
-GLA:DistinctGLA
+GLA:Distinct
 <
     [ l_orderkey : INT ]
 >
@@ -71,12 +71,12 @@ JOIN
     selorders BY orders.o_orderkey;
 
 gby =
-GLA:GroupByGLA
+GLA:GroupBy
 <
     [
         o_orderpriority:HString
     ],
-    GLA:CountGLA
+    GLA:Count
 >
 FROM
     jol
@@ -88,7 +88,7 @@ AS
     gby_order_count     : BIGINT;
 
 orderby =
-GLA:OrderByGLA
+GLA:OrderBy
 <
     [
         o_orderpriority : HString : ASC

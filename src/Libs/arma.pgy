@@ -1,0 +1,25 @@
+#ifndef _arma_PGY_
+#define _arma_PGY_
+// Piggy description file for library arma
+// generated on Thursday, August 23, 2012 at 14:36 EDT
+
+// arma/Types/VECTOR.h
+DEFINE DATATYPE VECTOR FROM "arma/Types/VECTOR.h";
+DEFINE DATATYPE FVECTOR FROM "arma/Types/VECTOR.h";
+
+// arma/Types/MATRIX.h
+DEFINE DATATYPE MATRIX FROM "arma/Types/MATRIX.h";
+DEFINE DATATYPE FMATRIX FROM "arma/Types/MATRIX.h";
+
+// arma/GLAs/LogisticRegressionIRLS.h
+DEFINE GLA LogisticRegressionIRLS ( VECTOR, DOUBLE ) -> ( BIGINT ) FROM "arma/GLAs/LogisticRegressionIRLS.h";
+
+// arma/GLAs/LogisticRegressionCG.h
+DEFINE GLA LogisticRegressionCG ( VECTOR, DOUBLE ) -> ( BIGINT ) FROM "arma/GLAs/LogisticRegressionCG.h";
+
+// arma/GLAs/SparsityMatrixGLA.h
+DEFINE GLA SparsityMatrix ( VECTOR ) -> ( DOUBLE ) FROM "arma/GLAs/SparsityMatrixGLA.h";
+
+// arma/UDFs/MakeVector.h.m4
+DEFINE TEMPLATE FUNCTION MakeVector FROM "arma/UDFs/MakeVector.h.m4";
+#endif // _arma_PGY_

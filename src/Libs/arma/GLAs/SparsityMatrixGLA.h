@@ -2,15 +2,17 @@
 
 /** Information for Meta-GLAs
  *
- * NAME(</SparsityMatrixGLA/>)
- * INPUTS(</(v, VECTOR)/>)
- * OUTPUTS(</(count, DOUBLE)/>)
- * RESULT_TYPE(</single/>)
+ * GLA_DESC
+ *  NAME(</SparsityMatrix/>)
+ *  INPUTS(</(v, VECTOR)/>)
+ *  OUTPUTS(</(count, DOUBLE)/>)
+ *  RESULT_TYPE(</single/>)
+ * END_DESC
  *
  * LIBS(armadillo)
  */
 
-class SparsityMatrixGLA {
+class SparsityMatrix {
 
     uint64_t tupleCount;
 
@@ -22,7 +24,7 @@ class SparsityMatrixGLA {
     typedef Col<DOUBLE> VECTOR;
 public:
 
-    SparsityMatrixGLA<//>() : tupleCount(0), sparsityMatrix(NUM_ELEM, NUM_ELEM) {
+    SparsityMatrix<//>() : tupleCount(0), sparsityMatrix(NUM_ELEM, NUM_ELEM) {
         sparsityMatrix.zeros();
     }
 
@@ -31,7 +33,7 @@ public:
         ++tupleCount;
     }
 
-    void AddState( const SparsityMatrixGLA & other ) {
+    void AddState( const SparsityMatrix & other ) {
         tupleCount += other.tupleCount;
         sparsityMatrix += other.sparsityMatrix;
     }
@@ -40,7 +42,7 @@ public:
         curRow = 0;
 
         cout << endl;
-        cout << "</SparsityMatrixGLA/>: tuples processed = " << tupleCount << endl;
+        cout << "</SparsityMatrix/>: tuples processed = " << tupleCount << endl;
         cout << "Sparsity Matrix:" << endl;
         cout << sparsityMatrix << endl;
     }

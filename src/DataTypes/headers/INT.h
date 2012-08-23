@@ -18,16 +18,21 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 /** Type definition for the basic type INT */
 
+// TYPE_DESC(</INT/>)
 typedef int INT; // use native int
 
 /////////////////
 // Aliases
 
+// SYN_DEF(</TINYINT/>, </INT/>)
 typedef INT TINYINT;
+// SYN_DEF(</SMALLINT/>, </INT/>)
 typedef INT SMALLINT;
+// SYN_DEF(</INTEGER/>, </INT/>)
 typedef INT INTEGER;
 
 //////////////

@@ -93,6 +93,14 @@ bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter 
     } else { // add to filer
       initializers[query]= initializers[query] + "\n" +  initializer;
     }
+    if( definitions.find(query) == definitions.end() ) {
+        // new filter
+        definitions[query] = defs;
+    }
+    else {
+        // add to filter
+        definitions[query] += "\n" + defs;
+    }
 
     queriesCovered.Union(query);
     return true;

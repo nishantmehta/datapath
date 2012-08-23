@@ -14,7 +14,7 @@ RESULT_FILE(lineitem_distinct_all-results.csv)
 
 LOAD lineitem;
 
-linedist = GLA:DistinctGLA< [val1:BIGINT, val2:INT, val3:INT, val4:INT,
+linedist = GLA:Distinct< [val1:BIGINT, val2:INT, val3:INT, val4:INT,
             val5:FLOAT, val6:FLOAT, val7:FLOAT, val8:FLOAT, val9:HString,
             val10:HString, val11:DATE, val12:DATE, val13:DATE, val14:HString,
             val15:HString, val16:HString] >
@@ -29,6 +29,6 @@ linedist = GLA:DistinctGLA< [val1:BIGINT, val2:INT, val3:INT, val4:INT,
         linestatus:HString, shipdate:DATE, commitdate:DATE, receiptdate:DATE,
         shipinstruct:HString, shipmode:HString, comment:HString;
 
-counter = GLA:CountGLA linedist USING 0 AS count:BIGINT;
+counter = GLA:Count linedist USING 0 AS count:BIGINT;
 
 PRINT counter using count AS count:BIGINT INTO "lineitem_distinct_all-results.csv";

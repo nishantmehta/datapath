@@ -30,6 +30,7 @@
 #include "DataPathGraph.h"
 #include "TransMessages.h"
 #include "ExprListInfo.h"
+#include "ExternalCommands.h"
 
 /** this has to be last */
 #include "DataPathLexer.h"
@@ -38,9 +39,6 @@
 #include "PiggyParser.h"
 #include "DPtree.h"
 #include <fstream>
-
-#include "ExternalCommands.h"
-
 
 /* This is needed by the tree grammar to count variables */
 int ExprListInfo::cVarCNT = 0;
@@ -247,19 +245,30 @@ bool  TranslatorImp::ParsePiggy(    pANTLR3_INPUT_STREAM    input){
 
 /* return false if fail */
 bool TranslatorImp::ParseFile(const char* filename){
+    // figure out the type of file from the extension
+    const char* dotLoc = strrchr(filename, '.');
+
+    // First preprocess file using C++ processor.
+    string inFile = "./inFile";
+    inFile += dotLoc;
+    string call = "./preprocess.sh ";
+    call += filename;
+    call += " " + inFile;
+    cout << call << "\n";
+
+    int sysret = execute_command(call.c_str());
+    FATALIF(sysret != 0, "Unable to preprocess input file %s!", filename);
+
     bool result = true;
     pANTLR3_UINT8        fName;
     pANTLR3_INPUT_STREAM    input;
 
-    input    = antlr3FileStreamNew((pANTLR3_UINT8)filename, ANTLR3_ENC_8BIT);
+    input    = antlr3FileStreamNew((pANTLR3_UINT8)inFile.c_str(), ANTLR3_ENC_8BIT);
 
     if (input == NULL){
-        WARNING( "Failed to open the file %s\n", filename);
+        WARNING( "Failed to open the file %s\n", inFile.c_str());
         return false;
     }
-
-    // figure out the type of file from the extension
-    const char* dotLoc = strrchr(filename, '.');
 
     if (strcmp(dotLoc, ".dp") == 0) { // dp file
         cout << "Using DP parser" << endl;

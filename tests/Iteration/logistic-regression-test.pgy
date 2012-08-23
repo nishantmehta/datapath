@@ -1,12 +1,14 @@
+#include "arma.pgy"
+
 LOAD lineitem;
 
 agg =
-GLA:LogisticRegressionIRLS (4)
+GLA:LogisticRegressionIRLS (3)
 FROM
     lineitem
 USING
-    UDF:MakeVector<4, DOUBLE>(lineitem.l_quantity, lineitem.l_extendedprice, lineitem.l_discount, lineitem.l_tax) -> VECTOR,
-    1.0 // dummy scale factor
+    UDF:MakeVector<3, DOUBLE>(lineitem.l_quantity, lineitem.l_discount, lineitem.l_tax),
+    lineitem.l_extendedprice
 AS
     tupleCount : BIGINT;
 

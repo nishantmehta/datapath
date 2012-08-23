@@ -15,7 +15,7 @@ RESULT_FILE(lineitem_distinct_primekey_large-results.csv)
 LOAD lineitem;
 
 /*
-linedist = GLA+:DistinctGLA< [val1:BIGINT, val2:INT] >
+linedist = GLA+:Distinct< [val1:BIGINT, val2:INT] >
     FROM lineitem
     USING lineitem.l_orderkey, lineitem.l_linenumber
     AS orderkey:BIGINT, linenumber:INT;
@@ -27,7 +27,7 @@ linedist = GLA:Segmented
         orderkey : BIGINT,
         linenumber : INT
     ],
-    GLA:DistinctGLA
+    GLA:Distinct
     <
         [
             val1 : BIGINT,
@@ -46,6 +46,6 @@ AS
     orderkey : BIGINT,
     linenumber : INT;
 
-counter = GLA:CountGLA linedist USING 0 AS count:BIGINT;
+counter = GLA:Count linedist USING 0 AS count:BIGINT;
 
 PRINT counter using count AS count:BIGINT INTO "lineitem_distinct_primekey_large-results.csv";

@@ -14,6 +14,7 @@ dnl #  See the License for the specific language governing permissions and
 dnl #  limitations under the License.
 dnl #
 
+FUNC_TEMPLATE_DESC(</MakeVector/>)
 dnl # This is a templated function to created an Armadillo vector from a set
 dnl # of values. This is a column vector, by default.
 dnl #
@@ -26,12 +27,23 @@ m4_redefine(</FUNC_NAME/>, </$1/>)dnl
 m4_redefine(</NUM_ELEM/>, </$2/>)dnl
 m4_redefine(</ELEM_TYPE/>, m4_ifval(</$3/>, VAR($3), </DOUBLE/>))dnl
 m4_redefine(</MAX_INDEX/>, m4_eval(NUM_ELEM - 1))dnl
+m4_undefine(</MY_INPUT/>)dnl
+m4_forloop(</_I_/>, 0, MAX_INDEX, </dnl
+<//>m4_append(</MY_INPUT/>, </(/>x_<//>_I_</,/> ELEM_TYPE</)/>, </</, />/>)dnl
+/>)dnl
 dnl
 m4_if( m4_eval(NUM_ELEM < 1), 1, </m4_fatal(Cannot create vector with NUM_ELEM elements!)/>)dnl
 </#/>include <armadillo>
 
 /*
  * Function to create an Armadillo Column Vector of size NUM_ELEM of type ELEM_TYPE.
+ *
+ * FUNC_DESC
+ *  NAME(FUNC_NAME)
+ *  INPUTS(MY_INPUT)
+ *  OUTPUTS(</(v, VECTOR)/>)
+ * END_DESC
+ *
  * LIBS(armadillo)
  */
 

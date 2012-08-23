@@ -1,6 +1,6 @@
 LOAD customer;
 
-iter = GLA:IterationTestGLA
+iter = GLA:IterationTest
 FROM
     customer
 USING

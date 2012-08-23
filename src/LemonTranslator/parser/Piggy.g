@@ -23,6 +23,7 @@ IN : 'in' | 'In' | 'IN';
 NOT_K : 'not' | 'Not' | 'NOT';
 FOREACH : 'foreach' | 'Foreach' | 'FOREACH';
 GENERATE : 'generate' | 'Generate' | 'GENERATE';
+DEFINE : 'define' | 'Define' | 'DEFINE';
 
 parse[LemonTranslator* trans]
     : {
@@ -51,22 +52,30 @@ statement
   | STORE a=ID INTO b=ID
     -> ^(NEWSTATEMENT ^(WRITER__ $b ID[$a, qry.c_str()] TERMCONN $a))
   | CREATE createStatement -> createStatement
+  | DEFINE defineStatement -> defineStatement
   ;
 
 createStatement
   : RELATION n=ID LPAREN tpAttList RPAREN -> ^(CRRELATION $n tpAttList)
-  | DATATYPE n=ID FROM f=STRING -> ^(CRDATATYPE $n $f)
-  | SYNONYM syn=ID FROM base=ID -> ^(CRSYNONYM $syn $base)
+  ;
+
+defineStatement
+  : DATATYPE n=ID FROM f=STRING -> ^(CRDATATYPE $n $f)
+  | SYNONYM syn=ID FROM base=ID -> ^(CRSYNONYM $base $syn)
   | FUNCTION n=ID LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
     -> ^(FUNCTION $n $f $ret $params)
-  | OPKEYWORD n=STRING FROM f=STRING LPAREN params=typeList RPAREN ARROW ret=type
+  | OPKEYWORD n=STRING LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
     -> ^(OPDEF $n $f $ret $params)
   | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     -> ^(CRGLA $n $f ^(TPATT $retList) ^(TPATT $params))
-  | TEMPLATE FUNCTION n=ID ARROW ret=type FROM f=STRING
-    -> ^(CR_TMPL_FUNC $n $f $ret)
+  | TEMPLATE FUNCTION n=ID FROM f=STRING
+    -> ^(CR_TMPL_FUNC $n $f)
   | TEMPLATE GLA n=ID FROM f=STRING
     -> ^(CR_TMPL_GLA $n $f)
+  | GLA COLON n=ID AS GLA glaDef
+    -> ^(TYPEDEF_GLA $n glaDef)
+  | n=ID AS ty=type
+    -> ^(CRSYNONYM $ty $n)
   ;
 
 tpAttList

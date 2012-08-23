@@ -27,6 +27,7 @@ dnl # has an object of a particular class that it gives information to
 dnl # and receives a key from. Could possibly just be a templated
 dnl # function.
 
+GLA_TEMPLATE_DESC(</Segmented/>)
 dnl # Usage
 dnl # $1 = GLA_NAME     name of the class generated
 dnl # $2 = SEG_KEY      data used to generate the key for the tuple
@@ -57,11 +58,17 @@ m4_redefine(</INNER_OUTPUT/>, m4_defn(INNER_GLA</_OUTPUT/>))dnl
 m4_redefine(</INNER_REZTYPE/>, m4_defn(</GLA_REZTYPE_/>INNER_GLA))dnl
 
 /* Information for meta GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUT/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUT/>)
-    m4_qdefine(</GLA_NAME</_INIT/>/>, </MY_INIT/>)
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
-    m4_qdefine(</</GLA_CHUNKBOUNDARY_/>GLA_NAME/>)
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUT)
+ * OUTPUTS(MY_OUTPUTS)
+ * CONSTRUCTOR(MY_INIT)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * OPT_CHUNK_BOUNDARY
+ *
+ * END_DESC
  */
 
 #include <iomanip>

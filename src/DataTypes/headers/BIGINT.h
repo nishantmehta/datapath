@@ -18,14 +18,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 /** Type definition for the basic type BIGINT */
 
+// TYPE_DESC(</BIGINT/>)
 typedef uint64_t BIGINT; // use native int
 
 /////////////////
 // Aliases
 
+// SYN_DEF(</IDENTIFIER/>, </BIGINT/>)
 typedef BIGINT IDENTIFIER;
 
 

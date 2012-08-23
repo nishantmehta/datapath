@@ -15,9 +15,16 @@ options {
  #include "DataTypeManager.h"
  #include "ExprListInfo.h"
  #include "Catalog.h"
+ #include "ExternalCommands.h"
+ #include "Errors.h"
  #include <iostream>
+ #include <fstream>
  #include <map>
  #include <vector>
+
+ #include <antlr3.h>
+ #include "DescLexer.h"
+ #include "DescParser.h"
 
 /* Debugging */
 #undef PREPORTERROR
@@ -25,7 +32,7 @@ options {
 
 // uncomment this to enforce types
 #define ENFORCE_TYPES
-//#define ENFORCE_GLA_TYPES
+#define ENFORCE_GLA_TYPES
 
 #ifndef TXT
 #define TXT(x) ((const char*)(x->getText(x))->chars)
@@ -46,7 +53,7 @@ options {
 #define STRS(X) ( string(TXTS(X)) )
 #endif
 #ifndef ADD_CST
-#define ADD_CST(cstStr, cst) ((cstStr) += "    " + (cst))
+#define ADD_CST(cstStr, cst) ((cstStr) += ("    " + (cst)))
 #endif
 }
 
@@ -78,6 +85,41 @@ string StripQuotes(string str);
 string NormalizeQuotes(string str);
 string GenerateTemp(const char* pattern);
 
+void parseDescFile( string path ) {
+    pANTLR3_INPUT_STREAM input;
+    input = antlr3FileStreamNew((pANTLR3_UINT8) path.c_str(), ANTLR3_ENC_8BIT);
+
+    pDescLexer lexer;
+    pANTLR3_COMMON_TOKEN_STREAM tstream;
+    pDescParser parser;
+
+    lexer = DescLexerNew(input);
+    FATALIF(lexer == NULL, "Failed to instantiate description file lexer for \%s!\n", path.c_str());
+
+    tstream = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer));
+    FATALIF(tstream == NULL, "Failed to instantiate token stream for description file \%s!\n", path.c_str());
+
+    parser = DescParserNew(tstream);
+    FATALIF(parser == NULL, "Failed to instantiate description file parser for \%s!\n", path.c_str());
+
+    parser ->parse(parser);
+
+    bool errors=false;
+    if( parser->pParser->rec->state->errorCount > 0 ) {
+        fprintf(stderr, "The description file parser returned \%d errors, tree walking aborted.\n", parser->pParser->rec->state->errorCount );
+        errors = true;
+    }
+
+    parser ->free(parser);
+    parser = NULL;
+    tstream ->free(tstream);
+    tstream = NULL;
+    lexer ->free(lexer);
+    lexer = NULL;
+
+    FATALIF(errors, "Failed to parse description file \%s\n", path.c_str());
+}
+
 }
 
 parse[LemonTranslator* trans] : {
@@ -91,13 +133,17 @@ complexStatement
   | ^(DELQUERY ID) { QueryID q=qm.GetQueryID(TXT($ID)); lT->DeleteQuery(q); }
   | ^(CRDATATYPE ID s=STRING) { dTM.AddBaseType(STR($ID), STRS($s)); }
   | ^(CRSYNONYM tp=ID s=ID) { dTM.AddSynonymType(STR($tp), STR($s)); }
-  | ^(FUNCTION ID (s=STRING)? dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, true); /* string ignored for now */ }
-  | ^(OPDEF n=STRING (s=STRING)? dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, true); /* string ignored for now */ }
-  | ^(CRGLA ID (s=STRING)? ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT); }
-  | ^(CR_TMPL_FUNC name=ID file=STRING retType=dType) { dTM.AddFunctionTemplate( STR($name), $retType.type, STR($file));}
-  | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRN($file)); }
+  | ^(TYPEDEF_GLA name=ID g=glaDef) {
+        string glaName = $g.name;
+        dTM.AddSynonymType(glaName, STR($name));
+      }
+  | ^(FUNCTION ID (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
+  | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
+  | ^(CRGLA ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
+  | ^(CR_TMPL_FUNC name=ID file=STRING ) { dTM.AddFunctionTemplate( STR($name), STRS($file));}
+  | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRS($file)); }
   | relationCR
-  | FLUSHTOKEN {dTM.Save(); catalog.SaveCatalog();}
+  | FLUSHTOKEN {/*dTM.Save();*/ catalog.SaveCatalog();}
   | runStmt
   | QUITTOKEN { exit(0); }
   ;
@@ -117,7 +163,16 @@ relationCR
 @after { catalog.AddSchema(newSch);/* register the relatin with catalog */ }
   : ^(CRRELATION x=ID {newSch.SetRelationName(TXT($x));/* set relation name */}
       ( ^(TPATT n=ID t=ID)
-        { Attribute att; att.SetName(TXT($n)); string ty(string(TXT($t))); att.SetType(ty); att.SetIndex(++index); newSch.AddAttribute(att);/* add attribte n with type t */ }
+        {
+            Attribute att;
+            att.SetName(TXT($n));
+
+            string ty(string(TXT($t)));
+            FATALIF(!dTM.IsType(ty), "Attempting to create relation with attribute of unknown type \%s, please ensure that all required libraries are loaded.\n", ty.c_str());
+
+            att.SetType(ty);
+            att.SetIndex(++index);
+            newSch.AddAttribute(att);/* add attribte n with type t */ }
       )+ )
   ;
 
@@ -277,20 +332,53 @@ glaDef returns [string name, string defs]
   ;
 
 glaTemplate[string& name, string& defs]
-@init { string args; }
-    : /* simpleGLA */ { defs+="m4_include("; defs+=name; defs+=".h)\n"; }
+@init { string args;
+
+    }
+    : /* simpleGLA */
+    {
+        string file;
+        FATALIF( !dTM.GLAExists( name, file ), "No GLA named \%s known to the system!\n", name.c_str());
+
+        defs += "m4_include(" + file + ")\n";
+    }
     | ^(GLATEMPLATE  ({args+=",";} glaTemplArg[args, defs] )* )
         {
+        string file;
+        if( !dTM.IsGLATemplate(name, file) ) {
+            FATAL("No GLA Template called \%s known.", name.c_str());
+        }
+
+         string tmp = "GLA_\%d_" + name;
+         string tempName = GenerateTemp(tmp.c_str());
+         string m4File = "Generated/" + tempName + ".m4";
+         string descFile = "Generated/" + tempName + ".desc";
+
+         // Create temporary file.
+         ofstream outfile (m4File.c_str());
+
+         // Add necessary includes
+         outfile << "include(Resources-T.m4)dnl" << endl;
+         outfile << "m4_include(GLA-templates.m4)dnl" << endl;
+         outfile << endl;
+         outfile << defs << endl;
+
          // form the template instantiation code and change name to temp
-            defs+="\nm4_include(</";
-         defs+=name+".h.m4/>)\n";
-         string tempName = GenerateTemp("GLA_\%d");
-         defs+=name;
-         defs+="(";
-         defs+=tempName; // args has comma
-         defs+=args;
-         defs+=")\n";
+         outfile << endl << "m4_include(</" << file << "/>)" << endl;
+         outfile << name << "(" << tempName << args << ")" << endl;
+
+        // close the temporary file
+         outfile.close();
+
+         // Run M4 on the temporary file
+         string call = "./processTemp.sh " + tempName;
+         int sysret = execute_command(call.c_str());
+         FATALIF(sysret != 0, "Failed to instantiate templated GLA \%s", name.c_str());
+
+         parseDescFile(descFile);
+
          name=tempName; // new name
+         defs = "m4_include(" + tempName + ".h)\n";
         }
     ;
 
@@ -309,33 +397,61 @@ glaTemplArg[string& args, string& defs]
     ;
 
 funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
-@init{ $name = fName; string args; }
+@init{  $name = fName;
+        string args;
+    }
     : /* nothing */
-        {
-            if( isExternal ) {
-                defs += "#include ";
-                defs += name;
-                defs += ".h\n";
-            }
-        }
     | ^(FUNCTEMPLATE ({args += ",";} funcTemplateArg[args, defs] )* )
         {
-            defs += "\nm4_include(</";
-            defs += $name + ".h.m4/>)\n";
-            string namePattern = "FUNC_\%d_" + $name;
-            string tempName = GenerateTemp(namePattern.c_str());
-            defs += $name;
-            defs += "(";
-            defs += tempName;
-            defs += args; // args has comma
-            defs += ")\n";
-            $name = tempName;
+            string file;
+
+            if( isExternal )
+                file = $name + ".h.m4";
+            else {
+                FATALIF(!dTM.IsFunctionTemplate($name, file),
+                    "No function template for \%s found!", fName.c_str());
+            }
+
+            string tmp = "FUNC_\%d_" + fName;
+            string tempName = GenerateTemp(tmp.c_str());
+            string m4File = "Generated/" + tempName + ".m4";
+            string descFile = "Generated/" + tempName + ".desc";
+
+            // Create temporary file.
+            ofstream outfile (m4File.c_str());
+
+            // Add necessary includes
+            outfile << "include(Resources-T.m4)dnl" << endl;
+            outfile << "m4_include(GLA-templates.m4)dnl" << endl;
+            outfile << endl;
+
+            // form the template instantiation code and change name to temp
+            outfile << endl << "m4_include(</" << file << "/>)" << endl;
+            outfile << name << "(" << tempName << args << ")" << endl;
+
+            // close the temporary file
+            outfile.close();
+
+            // Run M4 on the temporary file
+            string call = "./processTemp.sh " + tempName;
+            int sysret = execute_command(call.c_str());
+            FATALIF(sysret != 0, "Failed to instantiate templated function \%s", fName.c_str());
+
+            parseDescFile(descFile);
+
+            $name=tempName; // new name
         }
     ;
 
 funcTemplateArg[string& args, string & defs]
     : ^(LIST {args += "</";} attC[args] ({args += ",";} attC[args])* {args += "/>";})
     | attC[args]
+    | GLA glaDef {
+      // glue the definitions accumulated
+      defs+=$glaDef.defs;
+      // add the name to current definition
+      args+=$glaDef.name;
+    }
     | s=STRING { args += TXTN($s); }
     | i=INT { args += TXT($i); }
     | f=FLOAT { args += TXT($f); }
@@ -376,11 +492,12 @@ glaRule
         }
     : ^(GLA (PLUS {isLarge = true;})? ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
-            string glaName((const char *) $glaDef.text->chars );
+            string glaName = $glaDef.name;
+            string file = $glaDef.name + ".h";
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
-           if (!dTM.IsGLA(glaName, outTypes, lInfo.GetListTypes(), actArgs)) {
+           if (!dTM.IsGLA(glaName, lInfo.GetListTypes(), outTypes, file, actArgs)) {
                printf("\nERROR: GLA \%s with arguments \%s do not exist",
                       glaName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {
@@ -392,7 +509,6 @@ glaRule
 #else
            lInfo.Prepare( cstStr );
 #endif
-           /** in future, check if the function is pure as well */
            bool isCT = lInfo.IsListConstant();
 
            std::vector<string> eVals = lInfo.Generate();
@@ -409,6 +525,9 @@ glaRule
            ctArgs+=")";
 
            defs += $glaDef.defs;
+
+           // Changed this so it's done in the glaTemplate itself
+           /*defs += "\nm4_include(</" + file + "/>)\n";*/
 
             if( isLarge )
                 lT->AddGLALarge(wp, qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
@@ -546,11 +665,12 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
   {
       string funcName((char*)($OPERATOR.text->chars));
       bool funcPure = true;
+      string file;
       // This is we get in return
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, funcPure, actArgs)) {
+      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -565,6 +685,8 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
 #endif
 
       $isCT = lInfo.IsListConstant() && funcPure;
+      if( file != "" )
+          defs += "#include \"" + file + "\"\n";
 
       std::vector<string> eVals = lInfo.Generate();
       $sExpr = "(";
@@ -579,11 +701,12 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
 
       string funcName((char*)($UOPERATOR.text->chars));
       bool funcPure = true;
+      string file;
       // This is we get in return
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, funcPure, actArgs)) {
+      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -597,6 +720,8 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       lInfo.Prepare( $cstStr );
 #endif
       $isCT = lInfo.IsListConstant() && funcPure;
+      if( file != "" )
+          defs += "#include \"" + file + "\"\n";
 
       std::vector<string> eVals = lInfo.Generate();
       $sExpr = "(";
@@ -607,13 +732,14 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
 
   | ^(FUNCTION i=ID {fName = TXT($i);} rt=funcRetType t=funcTemplate[fName, defs, $rt.external]  (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // Function
     {
-      string funcName((char*)($i.text->chars));
+      string funcName = $t.name;
       bool funcPure = true;
+      string file = fName + ".h";
       // This is we get in return
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if ( !$rt.external && !dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, funcPure, actArgs)) {
+      if ( !$rt.external && !dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -626,6 +752,8 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       lInfo.Prepare( $cstStr );
 #endif
       $isCT = lInfo.IsListConstant() && funcPure;
+      if( file != "" )
+          defs += "#include \"" + file + "\"\n";
 
       if( $rt.external )
         $type = $rt.type;
@@ -685,7 +813,14 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
         // Add the attribute long name string to the expression
         $sExpr = longName;
         // Find the correct function to get attr type
-        $type = dTM.GetBaseType(am.GetAttributeType(longName.c_str()));
+        $type = am.GetAttributeType(longName.c_str());
+        if( !dTM.IsType($type) ) {
+            FATAL("Attempting to access attribute \%s of unknown type \%s, "
+            "please ensure that all of the required libraries are included.\n",
+            longName.c_str(), $type.c_str());
+        }
+        string file = dTM.GetTypeFile($type);
+        defs += "#include \"" + file + "\"\n";
         $isCT = false;
 }
 | INT

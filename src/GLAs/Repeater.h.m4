@@ -13,6 +13,7 @@ dnl # Usage
 dnl # $1=GLA_NAME name of the class generated
 dnl # All other arguments are names of the GLAs to repeat input to.
 
+GLA_TEMPLATE_DESC(</Repeater/>)
 m4_define(</Repeater/>, </dnl
 m4_redefine(</GLA_NAME/>, </$1/>)dnl
 dnl
@@ -65,9 +66,14 @@ m4_if(MY_REZTYPE, single, <//>, </
 />)dnl
 dnl
 /** Information for Meta-GLAs
-    m4_qdefine(</GLA_NAME</_INPUT/>/>, </MY_INPUTS/>)
-    m4_qdefine(</GLA_NAME</_OUTPUT/>/>, </MY_OUTPUTS/>)
-    m4_qdefine(</</GLA_REZTYPE_/>GLA_NAME/>, </MY_REZTYPE/>)
+ * GLA_DESC
+ *
+ * NAME(GLA_NAME)
+ * INPUTS(MY_INPUTS)
+ * OUTPUTS(MY_OUTPUTS)
+ * RESULT_TYPE(MY_REZTYPE)
+ *
+ * END_DESC
  */
 
 class GLA_NAME {
