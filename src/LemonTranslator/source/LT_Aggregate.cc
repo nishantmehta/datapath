@@ -154,6 +154,7 @@ void LT_Aggregate::WriteM4File(ostream& out) {
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
     //out << "namespace {" << endl;
+    out << "m4_divert(0)" << endl;
     for (QueryToSlotSet::iterator it = aggAttribs.begin();
              it != aggAttribs.end(); ++it){
 

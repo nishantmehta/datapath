@@ -91,7 +91,16 @@ using namespace std;
         synchronization on the dictionary.
 */
 
-// TYPE_DESC(</HString/>)
+/** Type definition for the type HString
+ *
+ *  TYPE_DESC
+ *      NAME(</HString/>)
+ *      COMPLEX_TYPE(</HStringIterator/>)
+ *  END_DESC
+ *
+ *  SYN_DEF(</VARCHAR/>, </HString/>)
+ *  SYN_DEF(</STRING/>, </HString/>)
+ */
 class HString {
 public:
     typedef tr1::unordered_map<__uint64_t, string> Dictionary; // type for global dictionary
@@ -364,9 +373,7 @@ public:
     // END DEBUG
 };
 
-// SYN_DEF(</VARCHAR/>, </HString/>)
 typedef  HString VARCHAR;
-// SYN_DEF(</STRING/>, </HString/>)
 typedef  HString STRING;
 
 ///////////// Functions definitions ///////////////////////////////

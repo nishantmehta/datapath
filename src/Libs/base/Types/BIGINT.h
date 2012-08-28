@@ -20,9 +20,16 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Type definition for the basic type BIGINT */
+/** Type definition for the basic type BIGINT
+ *
+ *  TYPE_DESC
+ *      NAME(</BIGINT/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ *
+ *  SYN_DEF(</IDENTIFIER/>, </BIGINT/>)
+ */
 
-// TYPE_DESC(</BIGINT/>)
 typedef uint64_t BIGINT; // use native int
 
 /////////////////

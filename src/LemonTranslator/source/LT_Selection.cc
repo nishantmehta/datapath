@@ -15,6 +15,8 @@
 //
 #include "LT_Selection.h"
 #include "AttributeManager.h"
+#include "DataTypeManager.h"
+#include "Errors.h"
 
 bool LT_Selection::GetConfig(WayPointConfigureData& where){
 
@@ -191,6 +193,7 @@ void LT_Selection::WriteM4File(ostream& out) {
     string wpname = info.getName();
 
     AttributeManager& am = AttributeManager::GetAttributeManager();
+    DataTypeManager & dTM = DataTypeManager::GetDataTypeManager();
 
     // Need to first print all of the definitions required by our queries.
 
@@ -199,11 +202,29 @@ void LT_Selection::WriteM4File(ostream& out) {
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
     //out << "namespace {" << endl;
+    out << "m4_divert(0)" << endl;
     for (QueryFilterToExpr::iterator it = definitions.begin();
              it != definitions.end(); ++it){
             out << it->second << endl;
     }
     //out << "}";
+
+    // Get includes for used attributes.
+    for( QueryToSlotSet::const_iterator it = used.begin(); it != used.end(); ++it ) {
+        const QueryID curID = it->first;
+        const SlotSet& curSet = it->second;
+        out << "// Includes for Query " << curID.GetStr() << endl;
+
+        for( SlotSet::const_iterator iter = curSet.begin(); iter != curSet.end(); ++iter ) {
+            const SlotID& slot = *iter;
+            string name = am.GetAttributeName(slot);
+            string type = am.GetAttributeType(name);
+            FATALIF( !dTM.IsType( type ), "Selection: Used attribute %s of unknown type %s!",
+                    name.c_str(), type.c_str());
+            string file = dTM.GetTypeFile(type);
+            out << "m4_include(</" << file << "/>)" << endl;
+        }
+    }
 
     out << "M4_SELECTION_MODULE(" << wpname << ", ";
     out << "\t</";

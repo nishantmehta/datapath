@@ -35,7 +35,13 @@
 
 **/
 
-// TYPE_DESC(</STATE/>)
+/** Type definition for the basic type BIGINT
+ *
+ *  TYPE_DESC
+ *      NAME(</STATE/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ */
 class STATE {
   void* object; // the object we are pointing to
   uint64_t type; // type of object (acts like a password)

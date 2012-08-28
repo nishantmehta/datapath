@@ -97,7 +97,7 @@ m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
 />)dnl
 
 dnl # constructor
-  Key_<//>GLA_NAME (TYPED_REF_ARGS(GBY_ATTS)) :
+  Key_<//>GLA_NAME (TYPED_CONST_REF_ARGS(GBY_ATTS)) :
 m4_undefine_full(</_TMP_/>)dnl
 m4_foreach(</_A_/>, </GBY_ATTS/>, </dnl
         m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
@@ -163,7 +163,7 @@ m4_ifval(MY_INIT, </dnl
 />)dnl
     ~GLA_NAME</()/> {}
 
-    void AddItem(TYPED_ARGS(MY_INPUT)) {
+    void AddItem(TYPED_CONST_REF_ARGS(MY_INPUT)) {
         // check if _key is already in the map; if yes, add _value; else, add a new
         // entry (_key, _value)
         Key_<//>GLA_NAME key(ARGS(GBY_ATTS));

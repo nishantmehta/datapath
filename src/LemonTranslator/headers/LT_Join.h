@@ -17,6 +17,7 @@
 #define _LT_JOIN_H_
 
 #include "LT_Waypoint.h"
+#include "EfficientMap.h"
 
 class LT_Join : public LT_Waypoint {
 private:
@@ -28,9 +29,9 @@ private:
 	QueryToSlotSet RHS_terminating;
 	// Data for RHS while adding query attributes pairs
 	QueryToSlotSet RHS;
-	// attributes to copy for each query 
-	QueryToSlotSet LHS_copy; 
-	QueryToSlotSet RHS_copy; 
+	// attributes to copy for each query
+	QueryToSlotSet LHS_copy;
+	QueryToSlotSet RHS_copy;
 
 	QueryIDSet ExistsTarget; // set of queries for which we run an exists predicate
 	QueryIDSet NotExistsTarget; // same for notExists
@@ -38,9 +39,17 @@ private:
 	// id of cleaner so we can write config messages
 	WayPointID cleanerID;
 
+    // Definitions required for all queries
+    string global_defs;
+
+    // Definitions required per query
+    typedef map< QueryID, string > QueryIDToString;
+    QueryIDToString query_defs;
+
+
 public:
 
- LT_Join(WayPointID id, const SlotSet& atts, WayPointID _cleanerID): LT_Waypoint(id), LHS_atts(atts), cleanerID(_cleanerID)
+ LT_Join(WayPointID id, const SlotSet& atts, WayPointID _cleanerID, string defs): LT_Waypoint(id), LHS_atts(atts), cleanerID(_cleanerID), global_defs(defs)
 	{}
 
 	virtual WaypointType GetType() {return JoinWaypoint;}
@@ -53,7 +62,7 @@ public:
 
 	virtual void DeleteQuery(QueryID query);
 
-	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type);
+	virtual bool AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type, string defs);
 
 	// Consider this as LHS
 	virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);

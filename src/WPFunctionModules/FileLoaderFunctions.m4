@@ -54,24 +54,22 @@ m4_define(</M4_DECLARE_COLUMN/>, </dnl
 dnl # macro to declare the correct iterator type
 dnl # $1=column type
 m4_define(</M4_ITERATOR_TYPE/>, </dnl
-dnl # if column is of type VARCHAR we use HStringIterator otherwise
-dnl # we use ColumnIterator<type>
-<//>m4_case($1,VARCHAR,</HStringIterator/>,</ColumnIterator< $1 >/>) dnl
+<//>m4_ifdef(</DT_ITERATOR_$1/>, </m4_defn(</DT_ITERATOR_$1/>)/>, </m4_fatal(</No known iterator for type $1/>)/>)<//>dnl
 />)
 
 dnl # macro to put extra arguments for iterators
 dnl # $1: column type
 m4_define(</M4_ITERATOR_EXTRA_ARG/>, </dnl
-dnl # if column is of type VARCHAR we use HStringIterator otherwise
+dnl # if column is of type HString we use HStringIterator otherwise
 dnl # we use ColumnIterator<type>
-<//>m4_case($1,VARCHAR,</, localDictionary/>,<//>) dnl
+<//>m4_case($1,HString,</, localDictionary/>,<//>) dnl
 />)
 
 
 dnl # macro to declare the correct basic type
 dnl # $1=column type
 m4_define(</M4_BASIC_TYPE/>, </dnl
-dnl # if column is of type VARCHAR we use HStringIterator otherwise
+dnl # if column is of type HString we use HStringIterator otherwise
 dnl # we use ColumnIterator<type>
 <//>m4_case($1,VARCHAR,</HString/>,</$1/>) dnl
 />)

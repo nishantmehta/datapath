@@ -21,6 +21,7 @@ options {
  #include <fstream>
  #include <map>
  #include <vector>
+ #include <set>
 
  #include <antlr3.h>
  #include "DescLexer.h"
@@ -55,6 +56,12 @@ options {
 #ifndef ADD_CST
 #define ADD_CST(cstStr, cst) ((cstStr) += ("    " + (cst)))
 #endif
+#ifndef ADD_INCLUDE
+#define ADD_INCLUDE(defs, file) if( waypointIncludes.find(file) == waypointIncludes.end() ) { \
+    (defs) += ("m4_include(</" + (file) + "/>)\n"); \
+    waypointIncludes.insert(file); \
+    }
+#endif
 }
 
 @members {
@@ -79,6 +86,9 @@ static DataTypeManager& dTM = DataTypeManager::GetDataTypeManager();
 
 // the catalog
 static Catalog& catalog = Catalog::GetCatalog();
+
+// Set of includes for the current waypoint, used to reduce redundant includes.
+static set<string> waypointIncludes;
 
 extern int tempCounter; // id for temporary variables}
 string StripQuotes(string str);
@@ -168,7 +178,7 @@ relationCR
             att.SetName(TXT($n));
 
             string ty(string(TXT($t)));
-            FATALIF(!dTM.IsType(ty), "Attempting to create relation with attribute of unknown type \%s, please ensure that all required libraries are loaded.\n", ty.c_str());
+            FATALIF(!dTM.IsType(ty), "Attempting to create relation with attribute of unknown type \%s, please ensure that all required libraries are loaded.", ty.c_str());
 
             att.SetType(ty);
             att.SetIndex(++index);
@@ -201,9 +211,19 @@ writer :
         wp = WayPointID::GetIdByName((const char*)$a.text->chars);
         // set the query
         SlotContainer attribs;
-        am.GetAttributesSlots(TXT($a), attribs); // put attributes in attribs
-        WayPointID scanner = WayPointID::GetIdByName(TXT($a));
-        lT->AddScannerWP(scanner, TXT($a), attribs);
+        string relName = STR($a);
+        am.GetAttributesSlots(relName, attribs); // put attributes in attribs
+
+
+        // Ensure that all the types are known by the system
+        FOREACH_TWL(sID, attribs) {
+            string name = am.GetAttributeName( sID );
+            string type = am.GetAttributeType( name );
+            FATALIF(!dTM.IsType( type ), "Attempting to write relation \%s containing unknown type \%s, please ensure all required libraries are loaded.", relName.c_str(), type.c_str());
+        } END_FOREACH;
+
+        WayPointID scanner = WayPointID::GetIdByName(relName.c_str());
+        lT->AddScannerWP(scanner, relName, attribs);
         qry = qm.GetQueryID((const char*) $b.text->chars);
         lT->AddWriter(wp, qry);
         // now wp is set for connList
@@ -219,6 +239,14 @@ scanner
             SlotContainer attribs;
             am.GetAttributesSlots(rName, attribs); // put attributes in attribs
             //WayPointID scanner = WayPointID::GetIdByName(sName.c_str());
+
+            // Ensure that all the types are known by the system
+            FOREACH_TWL(sID, attribs) {
+                string name = am.GetAttributeName( sID );
+                string type = am.GetAttributeType( name );
+                FATALIF(!dTM.IsType( type ), "Attempting to write relation \%s containing unknown type \%s, please ensure all required libraries are loaded.", rName.c_str(), type.c_str());
+            } END_FOREACH;
+
             WayPointID scanner(sName);
             lT->AddScannerWP(scanner, rName, attribs);
         }
@@ -227,6 +255,7 @@ scanner
 waypoint[bool isNew]
     :    ^(WAYPOINT__ ID {
             if (isNew){
+                waypointIncludes.clear();
                 WayPointID nWp((const char*)$ID.text->chars);
                 wp = nWp;
             } else {
@@ -277,9 +306,11 @@ synthRule
       string cstStr; /* the constants used in the expression */
       string defs; /* definitions needed by expressions */
         }
-    : ^(SYNTHESIZE__ a=ID t=ID expr[atts, cstStr, defs]) {
-      SlotID sID = am.AddSynthesizedAttribute(qry, (const char*)$a.text->chars,
-                                                (const char*)$t.text->chars);
+    : ^(SYNTHESIZE__ a=ID t=dType expr[atts, cstStr, defs]) {
+        string type = $t.type;
+        FATALIF( !dTM.IsType( type ), "Cannot synthesize attribute \%s of unknown type \%t.", TXT($a), type.c_str());
+      SlotID sID = am.AddSynthesizedAttribute(qry, (const char*)$a.text->chars, type);
+      ADD_INCLUDE(defs, dTM.GetTypeFile( type ) );
       lT->AddSynthesized(wp,qry, sID, atts, $expr.sExpr, cstStr, defs);
     }
   ;
@@ -340,7 +371,7 @@ glaTemplate[string& name, string& defs]
         string file;
         FATALIF( !dTM.GLAExists( name, file ), "No GLA named \%s known to the system!\n", name.c_str());
 
-        defs += "m4_include(" + file + ")\n";
+        ADD_INCLUDE(defs, file);
     }
     | ^(GLATEMPLATE  ({args+=",";} glaTemplArg[args, defs] )* )
         {
@@ -378,7 +409,8 @@ glaTemplate[string& name, string& defs]
          parseDescFile(descFile);
 
          name=tempName; // new name
-         defs = "m4_include(" + tempName + ".h)\n";
+         defs.clear();
+         ADD_INCLUDE(defs, tempName + ".h");
         }
     ;
 
@@ -424,6 +456,7 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
             outfile << "include(Resources-T.m4)dnl" << endl;
             outfile << "m4_include(GLA-templates.m4)dnl" << endl;
             outfile << endl;
+            outfile << defs << endl;
 
             // form the template instantiation code and change name to temp
             outfile << endl << "m4_include(</" << file << "/>)" << endl;
@@ -439,6 +472,7 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
 
             parseDescFile(descFile);
 
+            defs.clear();
             $name=tempName; // new name
         }
     ;
@@ -462,13 +496,18 @@ funcRetType returns [string type, bool external]
     | ^(TYPE_ t=ID) { $type = TXT($t); $external = true; }
     ;
 
-attWT[string& args]
+attWT[string& args, string& defs]
     : ^(ATTWT att=ID type=ID) {
       args+="(";
       args+=(const char*) $att.text->chars;
       args+=",";
       args+=(const char*) $type.text->chars;
       args+=")";
+
+      string t = STR($type);
+      FATALIF(!dTM.IsType(t), "Attempted to use unknown type \%s", t.c_str());
+      string file = dTM.GetTypeFile(t);
+      ADD_INCLUDE(defs, file);
     }
     ;
 
@@ -487,17 +526,17 @@ glaRule
             ExprListInfo lInfo;
             string ctArgs="("; /* constructor arguments*/
             std::vector<std::string> outTypes;
-            bool isLarge = false;
             string defs; /* the definitions needed by the expressions */
         }
-    : ^(GLA (PLUS {isLarge = true;})? ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+    : ^(GLA ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes, defs]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
             string glaName = $glaDef.name;
             string file = $glaDef.name + ".h";
+            vector<string> paramTypes = lInfo.GetListTypes();
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
-           if (!dTM.IsGLA(glaName, lInfo.GetListTypes(), outTypes, file, actArgs)) {
+           if (!dTM.IsGLA(glaName, paramTypes, outTypes, file, actArgs)) {
                printf("\nERROR: GLA \%s with arguments \%s do not exist",
                       glaName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {
@@ -505,6 +544,13 @@ glaRule
                // arguments and any special formatting needed using the vector of
                // ArgFormats.
                lInfo.Prepare( cstStr, actArgs );
+           }
+           // Update the parameter types after the data type manager's information has been
+           // considered.
+           paramTypes = lInfo.GetListTypes();
+           for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+               string file = dTM.GetTypeFile(*it);
+               ADD_INCLUDE(defs, file);
            }
 #else
            lInfo.Prepare( cstStr );
@@ -526,21 +572,20 @@ glaRule
 
            defs += $glaDef.defs;
 
-           // Changed this so it's done in the glaTemplate itself
-           /*defs += "\nm4_include(</" + file + "/>)\n";*/
-
-            if( isLarge )
-                lT->AddGLALarge(wp, qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
-            else
-               lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
+            lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
     }
   ;
 
-attLWT [SlotContainer& outAtts, vector<string> &outTypes]
+attLWT [SlotContainer& outAtts, vector<string> &outTypes, string& defs]
     : ^(ATTWT att=ID type=ID) {
             SlotID glaID = am.AddSynthesizedAttribute(qry, (const char*)$att.text->chars,
                                                       (const char*)$type.text->chars);
             string t((const char*)($type.text->chars));
+
+            FATALIF(!dTM.IsType( t ), "Attempted to use unknown type \%s", t.c_str());
+            string file = dTM.GetTypeFile( t );
+            ADD_INCLUDE(defs, file);
+
             outTypes.push_back(t);
             outAtts.Append(glaID);
         }
@@ -560,16 +605,34 @@ joinType returns [LemonTranslator::JoinType type]
 ;
 
 joinRule
-    @init {SlotContainer atts; /* the set of attributes */ }
-    : ^(JOIN joinType attributeList[atts]) {
-lT->AddJoin(wp, qry, atts, $joinType.type);
-}
+    @init
+    {
+        SlotContainer atts; /* the set of attributes */
+        set<string> includeFiles;
+    }
+    : ^(JOIN joinType attributeList[atts, includeFiles])
+    {
+        string defs;
+        for( set<string>::const_iterator it = includeFiles.begin(); it != includeFiles.end(); ++it ) {
+            ADD_INCLUDE(defs, *it);
+        }
+
+        lT->AddJoin(wp, qry, atts, $joinType.type, defs);
+    }
   ;
 
-attribute returns [SlotID slot]
+attribute returns [SlotID slot, string file]
     :     att=ATT {
-            $slot = am.GetAttributeSlot((char*)$att.text->chars);
-            WARNINGIF( !slot.IsValid(), "Attribute does not exist");
+            string attName = STR($att);
+            $slot = am.GetAttributeSlot(attName);
+            FATALIF( !$slot.IsValid(), "Attribute \%s does not exist", attName.c_str());
+
+            string type = am.GetAttributeType(attName);
+            FATALIF( !dTM.IsType(type), "Attempting to access Attribute \%s of unknown type \%s" \
+                ", ensure all necessary libraries have been included.", \
+                attName.c_str(), type.c_str());
+
+            $file = dTM.GetTypeFile( type );
         }
      ;
 
@@ -580,12 +643,24 @@ selectWP
     ;
 
 joinWP
-@init {SlotContainer atts;}
-    : ^(JOIN attributeList[atts] { lT->AddJoinWP(wp, atts); } connList)
+@init
+    {
+        SlotContainer atts;
+        set<string> includeFiles;
+    }
+    : ^(JOIN attributeList[atts, includeFiles]
+    {
+        string defs;
+        for( set<string>::const_iterator it = includeFiles.begin(); it != includeFiles.end(); ++it ) {
+            ADD_INCLUDE(defs, *it);
+        }
+
+        lT->AddJoinWP(wp, atts, defs);
+    } connList)
     ;
 
-attributeList[SlotContainer& atts]
-: ^(ATTS (a=attribute {$atts.Append($a.slot);})+ )
+attributeList[SlotContainer& atts, set<string>& includeFiles]
+: ^(ATTS (a=attribute {$atts.Append($a.slot); includeFiles.insert($a.file);})+ )
 ;
 
 aggregateWP
@@ -666,11 +741,11 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       string funcName((char*)($OPERATOR.text->chars));
       bool funcPure = true;
       string file;
-      // This is we get in return
+      vector<string> paramTypes = lInfo.GetListTypes();
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
+      if (!dTM.IsFunction(funcName, paramTypes, $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -680,13 +755,20 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
           // ArgFormats.
           lInfo.Prepare( $cstStr, actArgs );
       }
+      paramTypes = lInfo.GetListTypes();
+      for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+      }
+
+      ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 #else
       lInfo.Prepare( $cstStr );
 #endif
 
       $isCT = lInfo.IsListConstant() && funcPure;
       if( file != "" )
-          defs += "#include \"" + file + "\"\n";
+        ADD_INCLUDE(defs, file);
 
       std::vector<string> eVals = lInfo.Generate();
       $sExpr = "(";
@@ -702,11 +784,11 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       string funcName((char*)($UOPERATOR.text->chars));
       bool funcPure = true;
       string file;
-      // This is we get in return
+      vector<string> paramTypes = lInfo.GetListTypes();
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if (!dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
+      if (!dTM.IsFunction(funcName, paramTypes, $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -716,6 +798,12 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
           // ArgFormats.
           lInfo.Prepare( $cstStr, actArgs );
       }
+      paramTypes = lInfo.GetListTypes();
+      for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+      }
+      ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 #else
       lInfo.Prepare( $cstStr );
 #endif
@@ -735,11 +823,13 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       string funcName = $t.name;
       bool funcPure = true;
       string file = fName + ".h";
+      vector<string> paramTypes = lInfo.GetListTypes();
+      // This is we get in return
       // This is we get in return
       // Check if operator exists
 #ifdef ENFORCE_TYPES
       vector<ArgFormat> actArgs;
-      if ( !$rt.external && !dTM.IsFunction(funcName, lInfo.GetListTypes(), $type, file, funcPure, actArgs)) {
+      if ( !$rt.external && !dTM.IsFunction(funcName, paramTypes, $type, file, funcPure, actArgs)) {
         printf("\nERROR: Operator \%s with arguments \%s do not exist",
                funcName.c_str(), lInfo.GetTypesDesc().c_str());
       }
@@ -748,6 +838,12 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       // arguments and any special formatting needed using the vector of
       // ArgFormats.
       lInfo.Prepare( $cstStr, actArgs );
+      paramTypes = lInfo.GetListTypes();
+      for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+      }
+      ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 #else
       lInfo.Prepare( $cstStr );
 #endif
@@ -776,10 +872,16 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
         // of the form: PatternMather ctObj(pattern)
         // then on use do ctObj.IsMatch(expr)
         $type = "bool";
+        ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 
         $isCT = lInfo.IsListConstant();
 
         lInfo.Prepare( $cstStr );
+        vector<string> paramTypes = lInfo.GetListTypes();
+        for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+        }
         std::vector<string> eVals = lInfo.Generate();
         // new constant
         int ctNo = ExprListInfo::NextVar();
@@ -800,9 +902,16 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
         $isCT = lInfo.IsListConstant();
 
         lInfo.Prepare( $cstStr );
+        vector<string> paramTypes = lInfo.GetListTypes();
+        for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+        }
         std::vector<string> eVals = lInfo.Generate();
         FATALIF(eVals.size()!=3, "We only support CASE(test, true_expr, false_expr) for now");
         $sExpr = $sExpr+"("+eVals[0]+") ? ("+eVals[1]+") : ("+eVals[2]+")";
+        // TODO: Make sure all of the action statements return the same type.
+        $type = paramTypes[1];
    }
 | att=ATT  // Attribute
 {
@@ -820,7 +929,7 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
             longName.c_str(), $type.c_str());
         }
         string file = dTM.GetTypeFile($type);
-        defs += "#include \"" + file + "\"\n";
+        ADD_INCLUDE(defs, file );
         $isCT = false;
 }
 | INT
@@ -832,18 +941,21 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
     else
         $type = "INT";          // Literal int
     $isCT = true;
+    ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 }
 | BOOL_T
 {
     $sExpr = (char*)($BOOL_T.text->chars);
     $type = "bool";
     $isCT = true;
+    ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 }
 |    STRING
 {
     $sExpr = TXTN($STRING);
     $type = "STRING_LITERAL";
     $isCT = true;
+    ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 }
 |    FLOAT
 {
@@ -856,5 +968,6 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
     else    // Literal double
         $type = "DOUBLE";
     $isCT = true;
+    ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
 }
 ;

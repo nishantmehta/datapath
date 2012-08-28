@@ -98,8 +98,8 @@ actionBody
     -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
     | FILTER r1=ID USING l1=attEListAlt inStmt r2=ID LPAREN l2=attEListAlt RPAREN
     ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
-    | GLA (PLUS)? gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
-    -> ^(GLA (PLUS)? $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA (PLUS)? $ct $gla $rez $exp))
+    | GLA gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
+    -> ^(GLA $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA $ct $gla $rez $exp))
   | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
     -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
   | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID

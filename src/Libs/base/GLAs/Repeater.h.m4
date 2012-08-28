@@ -42,7 +42,6 @@ m4_foreach(</_ARG_/>, m4_quote(m4_shift($@)), </
 dnl # Handle GLA inputs
 <//>m4_ifndef(</MY_INPUTS/>, </m4_define(</MY_INPUTS/>, m4_defn(_ARG_</_INPUT/>))/>)
 <//>m4_redefine(_GLANAME_</_INPUT/>, defn(</MY_INPUTS/>))
-<//>/>)
 dnl # Handle GLA outputs
 <//>m4_foreach(</_OUTPUT/>, _ARG_</_OUTPUT/>, </
 <//><//>m4_redefine(</_TMP_/>, m4_quote(</(/>m4_first(_OUTPUT)</_/>OUTVAL</, />m4_second(_OUTPUT)</)/>))

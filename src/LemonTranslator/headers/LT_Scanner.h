@@ -34,10 +34,10 @@ public:
 
 public:
 
-	LT_Scanner(WayPointID id, string relName, SlotSet& atts): 
+	LT_Scanner(WayPointID id, string relName, SlotSet& atts):
 	LT_Waypoint(id), relation(relName)
 	{assert(!atts.empty()); allAttr = atts;}
-	
+
 	virtual WaypointType GetType() {return ScannerWaypoint;}
 
 	virtual void ClearAllDataStructure();

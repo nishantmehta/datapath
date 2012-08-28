@@ -26,11 +26,12 @@ M4=m4
 ifdef DEBUG_DATAPATH
 OPT= # no optimization
 else # full optimization
-OPT=-O3 -march=native -ffast-math
+OPT= -O3 -march=native -ffast-math
 endif
 
 
 GLA_INC = -I ../../../GLAs/
+LIB_INC = -I ../../../Libs/
 M4INCLUDES = -I ../../../M4/m4 
 M4INCLUDES += -I ../../../WPFunctionModules 
 M4INCLUDES += -I ../../../GLAs 
@@ -43,7 +44,7 @@ M4INCLUDES += -I $(DP_GLAs)
 FUNC_INC += -I $(DP_FUNCTIONS)
 endif
 
-CINCLUDES = -I ../../../Headersdp ${GLA_INC} $(FUNC_INC)
+CINCLUDES = -I ../../../Headersdp ${GLA_INC} $(FUNC_INC) ${LIB_INC}
 
 LIB_EXTRACT = ../extract_libs.awk
 

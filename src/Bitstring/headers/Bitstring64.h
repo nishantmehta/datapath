@@ -57,14 +57,14 @@ public:
 		the return value tells whether the operation is successful */
 	bool AddMember (unsigned int x); 	/* set bit x */
 	bool DeleteMember (unsigned int x);	/* reset bit x */
-	bool IsMember (unsigned int x);
+	bool IsMember (unsigned int x) const;
 
 	/* test functions */
-	bool IsSubsetOf (const Bitstring64 &b);
-	bool Overlaps (const Bitstring64 &b); // do b and ourselves intersect?
-	bool IsEqual (const Bitstring64 &b);
+	bool IsSubsetOf (const Bitstring64 &b) const;
+	bool Overlaps (const Bitstring64 &b) const; // do b and ourselves intersect?
+	bool IsEqual (const Bitstring64 &b) const;
 	bool operator == (const Bitstring64 &b) const;
-	bool IsEmpty ();
+	bool IsEmpty () const;
 
 	/* Set operations */
 	void Union (const Bitstring64 &b);
@@ -79,12 +79,12 @@ public:
 	void SetAll ();
 
 	/* Utility functions */
-	long Size ();	/* current size of set */
+	long Size () const;	/* current size of set */
 	static long MaxSize (); /* max capcity of this set */
-	void Print (); /* print set as query name or binary */
-	void PrintBinary(); // print set in binary
+	void Print () const; /* print set as query name or binary */
+	void PrintBinary() const; // print set in binary
 
-	string GetStr();
+	string GetStr() const;
 
 	/* Auxiliary functions to use Bitstirngs in a map */
 	bool operator<(const Bitstring64& other) const;
@@ -124,7 +124,7 @@ public:
 
 /* inline functions */
 
-inline 
+inline
 Bitstring64::Bitstring64(string str){
 	w = atol(str.c_str());
 }
@@ -137,10 +137,10 @@ string Bitstring64::ToString(){
 	return out.str();
 }
 
-inline 
+inline
 void Bitstring64::SetAll () {
 	for (int i = 0; i < MaxSize () - 1; i++) {
-		AddMember (i);	
+		AddMember (i);
 	}
 }
 
@@ -189,27 +189,27 @@ bool Bitstring64::DeleteMember (unsigned int index) {
 }
 
 inline
-bool Bitstring64::IsMember (unsigned int index) {
+bool Bitstring64::IsMember (unsigned int index) const {
 	if ((w & (BITSTRING_ONE << BITNUM(index))) != 0)
 		return true;
 	return false;
 }
 
 inline
-bool Bitstring64::IsSubsetOf (const Bitstring64 &b) {
+bool Bitstring64::IsSubsetOf (const Bitstring64 &b) const {
 	if ((w & ~(b.w)) != 0)
 		return false;
 	return true;
 }
 
 inline
-bool Bitstring64::Overlaps (const Bitstring64 &b) {
+bool Bitstring64::Overlaps (const Bitstring64 &b) const {
 	return (w & (b.w));
 }
 
 
 inline
-bool Bitstring64::IsEqual (const Bitstring64 &b) {
+bool Bitstring64::IsEqual (const Bitstring64 &b) const {
 	return (w == b.w);
 }
 
@@ -263,14 +263,14 @@ void Bitstring64::swap (Bitstring64 &b) {
 }
 
 inline
-bool Bitstring64::IsEmpty () {
+bool Bitstring64::IsEmpty () const {
 	if (w == 0)
 		return true;
 	return false;
 }
 
 inline
-long Bitstring64::Size () {
+long Bitstring64::Size () const {
 	int res = 0;
 	bitmapword x = w;
 	while (x != 0) {
@@ -285,7 +285,7 @@ long Bitstring64::MaxSize () {
 	return BITS_PER_WORD;
 }
 
-inline void Bitstring64::Print () {
+inline void Bitstring64::Print () const {
 	int first = 1;
 	cout << "{";
 	for (unsigned int i = 0; i < BITS_PER_WORD; i++) {
@@ -300,7 +300,7 @@ inline void Bitstring64::Print () {
 }
 
 inline
-void Bitstring64::PrintBinary() {
+void Bitstring64::PrintBinary() const {
 	bitmapword mask = BITSTRING_ONE;
 	mask = mask << (BITS_PER_WORD - 1);
 	for (unsigned int i = 1; i <= BITS_PER_WORD; i++) {
@@ -315,7 +315,7 @@ void Bitstring64::PrintBinary() {
 	cerr << endl;
 }
 
-inline string Bitstring64::GetStr () {
+inline string Bitstring64::GetStr () const {
   int first = 1;
   string str;
   str += "{";

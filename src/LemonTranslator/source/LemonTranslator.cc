@@ -34,6 +34,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include "ExternalCommands.h"
+#include "DataTypeManager.h"
 
 extern HashTable centralHashTable;
 
@@ -296,13 +297,13 @@ bool LemonTranslator::AddSelectionWP(WayPointID selWPID)
     return AddGraphNode(selWPID, SelectionWaypoint, WP);
 }
 
-bool LemonTranslator::AddJoinWP(WayPointID joinWPID, SlotContainer& LHS_att)
+bool LemonTranslator::AddJoinWP(WayPointID joinWPID, SlotContainer& LHS_att, string defs)
 {
     PDEBUG("LemonTranslator::AddJoinWP(WayPointID joinWPID = %s, SlotContainer& LHS_att = %s)", joinWPID.getName().c_str(), (GetAllAttrAsString(LHS_att)).c_str());
     FATALIF(!joinWPID.IsValid(), "Invalid WaypointID received in AddJoinWP");
     set<SlotID> attr;
     ConvertToSTLSet (LHS_att, attr);
-    LT_Waypoint* WP = new LT_Join(joinWPID, attr, cleanerID);
+    LT_Waypoint* WP = new LT_Join(joinWPID, attr, cleanerID, defs);
     return AddGraphNode(joinWPID, JoinWaypoint, WP);
 }
 
@@ -472,14 +473,14 @@ bool LemonTranslator::AddBypass(WayPointID wpID, QueryID query)
 // Join
 bool LemonTranslator::AddJoin(WayPointID wpID, QueryID query,
         SlotContainer& RHS_atts /* right hand side attributes */,
-        JoinType type)
+        JoinType type, string defs)
 {
     PDEBUG("LemonTranslator::AddJoin(WayPointID wpID = %s, QueryID query = %s, SlotContainer& RHS_atts = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(RHS_atts)).c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddJoin");
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, RHS_atts, attr, WP) == false) return false;
-    return WP->AddJoin(query, attr, type);
+    return WP->AddJoin(query, attr, type, defs);
 }
 
 
@@ -1015,10 +1016,38 @@ void LemonTranslator::WriteM4FileCleaner (ostream& out) {
     QueryIDSet queries;
     GetAccumulatedLHSRHS (LHS, RHS, queries);
 
+    AttributeManager& am = AttributeManager::GetAttributeManager();
+    DataTypeManager & dTM = DataTypeManager::GetDataTypeManager();
+
+    // Make sure we have included the files we need for the different data types
+    // LHS attributes
+    out << "m4_divert(0)" << endl;
+    out << "// Includes for LHS" << endl;
+    for (set<SlotID>::const_iterator it = LHS.begin(); it != LHS.end(); ++it)
+    {
+        SlotID s = *it;
+        string attName = am.GetAttributeName(s);
+        string attType = am.GetAttributeType(attName);
+        string attFile = dTM.GetTypeFile(attType);
+
+        out << "m4_include(</" << attFile <<  "/>)" << endl;
+    }
+
+    // RHS attributes
+    out << "// Includes for RHS" << endl;
+    for (set<SlotID>::const_iterator it = RHS.begin(); it != RHS.end(); ++it)
+    {
+        SlotID s = *it;
+        string attName = am.GetAttributeName(s);
+        string attType = am.GetAttributeType(attName);
+        string attFile = dTM.GetTypeFile(attType);
+
+        out << "m4_include(</" << attFile <<  "/>)" << endl;
+    }
+
     string wpname = "Cleaner";
     out << "M4_CLEANER_MODULE(" << wpname << ", ";
 
-    AttributeManager& am = AttributeManager::GetAttributeManager();
 
     // LHS attributes
     out << "</";

@@ -13,34 +13,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-#ifndef _COUNT_GLA_H_
-#define _COUNT_GLA_H_
+#ifndef _STRING_LITERAL_H
+#define _STRING_LITERAL_H
 
-/** Info for the meta-GLAs
- * GLA_DESC
- *
- * NAME(</Count/>)
- * INPUTS(</(dummy, INT)/>)
- * OUTPUTS(</(_count, BIGINT)/>)
- * RESULT_TYPE(</single/>)
- *
- * END_DESC
+/**
+   This defines a type for string literals, which are considered by be of type
+   const char *. This allows for literal strings to be handled differently than
+   string variables, which is required as datapath does not use const char *
+   as its string type, and thus all string literals must be converted to
+   another type in order to be useful.
  */
 
-class Count {
-  long long int count; // keeps the number of tuples aggregated
-public:
-  Count(){ count=0; }
-  void AddItem(int dummy){ count++; }
-  void AddState(Count& o){ count+=o.count; }
+/** Type definition for the basic type STRING_LITERAL
+ *
+ *  TYPE_DESC
+ *      NAME(</STRING_LITERAL/>)
+ *  END_DESC
+ */
+typedef const char* STRING_LITERAL;
 
-  // we only support one tuple as output
-  void GetResult(BIGINT& _count){
-      _count=count;
-  }
-};
-
-// Synonym for compatibility purposes
-// SYN_DEF(</CountGLA/>, </Count/>)
-
-#endif // _COUNT_GLA_H_
+#endif

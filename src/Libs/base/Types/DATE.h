@@ -122,7 +122,12 @@
 //
 //---------------------------------------------------------------------------
 //
-// TYPE_DESC(</DATE/>)
+/** Meta-information about type
+ *  TYPE_DESC
+ *      NAME(</DATE/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ */
 class DATE
 {
 public:

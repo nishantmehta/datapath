@@ -72,7 +72,7 @@ public:
 };
 
 /** Slot pairs are used to map logical to physical columns
-		
+
 		struct since it is just a container for two slots
  */
 
@@ -82,11 +82,11 @@ struct SlotPair {
 
 	// default constructor
 	SlotPair(){}
-	
+
 	// regular consructor
 	SlotPair(SlotID _first, SlotID _second):
 		first(_first),second(_second){}
-	
+
 	void swap(SlotPair& other);
 	void copy(const SlotPair& other);
 	void Print() {

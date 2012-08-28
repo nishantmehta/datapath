@@ -11,9 +11,17 @@
 #include "DOUBLE.h"
 #include "FLOAT.h"
 
-// TYPE_DESC(</VECTOR/>)
+/**
+ *  TYPE_DESC
+ *      NAME(</VECTOR/>)
+ *  END_DESC
+ */
 typedef Col<DOUBLE> VECTOR;
-// TYPE_DESC(</FVECTOR/>)
+/**
+ *  TYPE_DESC
+ *      NAME(</FVECTOR/>)
+ *  END_DESC
+ */
 typedef Col<FLOAT> FVECTOR;
 
 #endif // _ARMA_VECTOR_H_

@@ -89,6 +89,15 @@ m4_define(</FUNC_TEMPLATE_DESC/>, </dnl
 />)dnl
 
 m4_define(</TYPE_DESC/>, </dnl
+<//>m4_divert_push(D_DEFINE)dnl
+<//>DEFINE DATATYPE<//>dnl
+<//>m4_divert_pop(D_DEFINE)dnl
+<//>m4_divert_push(D_FILE)dnl
+<//> FROM "SOURCE_FILE"<//>dnl
+<//>m4_divert_pop(D_FILE)dnl
+/>)dnl
+
+m4_define(</TYPE_DEF/>, </dnl
 <//>m4_divert_push(0)dnl
 <//>DEFINE DATATYPE $1 FROM "SOURCE_FILE";
 <//>m4_divert_pop(0)dnl

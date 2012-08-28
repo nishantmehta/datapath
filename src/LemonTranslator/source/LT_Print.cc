@@ -179,6 +179,7 @@ void LT_Print::WriteM4File(ostream& out) {
     // complaining. The anonymous namespace restricts the linkage visibility
     // of everything in it to this file only.
     //out << "namespace {" << endl;
+    out << "m4_divert(0)" << endl;
     for (QueryToPrintString::iterator it = definitions.begin();
              it != definitions.end(); ++it){
         out << it->second;

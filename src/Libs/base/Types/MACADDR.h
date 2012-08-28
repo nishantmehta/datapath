@@ -27,6 +27,15 @@
 
  */
 
+/** Type definition for the type macAddr
+ *
+ *  TYPE_DESC
+ *      NAME(</macAddr/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ *
+ *  SYN_DEF(</MACADDR/>, </macAddr/>)
+ */
 
 using namespace std;
 
@@ -41,7 +50,6 @@ bool operator >= (const macAddr &mac1, const macAddr &mac2);
 
 static char table_map[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-// TYPE_DESC(</macAddr/>)
 class macAddr{
 
  private:
@@ -181,7 +189,6 @@ inline void FromString(macAddr& x, const char* text){
     x.FromString(text);
 }
 
-// SYN_DEF(</MACADDR/>, </macAddr/>)
 typedef macAddr MACADDR;
 
 inline unsigned int Hash(macAddr mac1){

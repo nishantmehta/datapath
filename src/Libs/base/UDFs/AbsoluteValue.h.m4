@@ -13,6 +13,7 @@ dnl #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 dnl #  See the License for the specific language governing permissions and
 dnl #  limitations under the License.
 dnl #
+FUNC_TEMPLATE_DESC(</AbsoluteValue/>)
 m4_define(</AbsoluteValue/>, </dnl
 m4_redefine(</FUNC_NAME/>, </$1/>)dnl
 m4_redefine(</VALUE/>, </$2/>)dnl

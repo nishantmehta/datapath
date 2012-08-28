@@ -23,6 +23,15 @@
         Internal representation is an int (for efficiency).
 */
 
+/** Type definition for the type IPv4
+ *
+ *  TYPE_DESC
+ *      NAME(</IPv4/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ *
+ *  SYN_DEF(</IPV4ADDR/>, </IPv4/>)
+ */
 class IPv4;
 
 bool operator < (const IPv4 &d1, const IPv4 &d2);
@@ -35,7 +44,6 @@ bool operator != (const IPv4 &d1, const IPv4 &d2);
 // function to extract the domain (class C)
 IPv4 Domain(IPv4 x);
 
-// TYPE_DESC(</IPv4/>)
 class IPv4 {
 private:
     union addr_rep {
@@ -144,7 +152,6 @@ inline int ToString(const IPv4& x, char* text){
 inline uint64_t Hash(IPv4 d){ return d.addr.asInt; }
 
 // compatibility with the other type definitions
-// SYN_DEF(</IPV4ADDR/>, </IPv4/>)
 typedef IPv4 IPV4ADDR;
 
 

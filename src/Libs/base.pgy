@@ -1,334 +1,340 @@
-#ifndef _BASE_PGY_
-#define _BASE_PGY_
+#ifndef _base_PGY_
+#define _base_PGY_
+// Piggy description file for library base
+// generated on Tuesday, August 28, 2012 at 11:14 EDT
 
-/*
- * Library describing built-in data-structures, functions, and GLAs.
- * This library is automatically included in all Piggy programs.
- */
-/***** DATATYPES *****/
+// base/Types/HString.h
+DEFINE DATATYPE HString FROM "base/Types/HString.h";
+DEFINE VARCHAR AS HString;
+DEFINE STRING AS HString;
 
-// Built-in and literal types
-DEFINE DATATYPE bool FROM "bool.h";
-DEFINE DATATYPE STRING_LITERAL FROM "STRING_LITERAL.h";
+// base/Types/STRING_LITERAL.h
+DEFINE DATATYPE STRING_LITERAL FROM "base/Types/STRING_LITERAL.h";
 
-// Integer types
-DEFINE DATATYPE INT FROM "INT.h";
-DEFINE SYNONYM INTEGER FROM INT;
-DEFINE SYNONYM SMALLINT FROM INT;
+// base/Types/FLOAT.h
+DEFINE DATATYPE FLOAT FROM "base/Types/FLOAT.h";
+DEFINE REAL AS FLOAT;
 
-DEFINE DATATYPE BIGINT FROM "BIGINT.h";
-DEFINE SYNONYM IDENTIFIER FROM BIGINT;
+// base/Types/DOUBLE.h
+DEFINE DATATYPE DOUBLE FROM "base/Types/DOUBLE.h";
 
-// Floating point types
-DEFINE DATATYPE FLOAT FROM "FLOAT.h";
-DEFINE DATATYPE DOUBLE FROM "DOUBLE.h";
+// base/Types/BIGINT.h
+DEFINE DATATYPE BIGINT FROM "base/Types/BIGINT.h";
+DEFINE IDENTIFIER AS BIGINT;
+DEFINE IDENTIFIER AS BIGINT;
 
-// String
-DEFINE DATATYPE HString FROM "HString.h";
-DEFINE SYNONYM VARCHAR FROM HString;
-DEFINE SYNONYM STRING FROM HString;
+// base/Types/STATE.h
+DEFINE DATATYPE STATE FROM "base/Types/STATE.h";
 
-// Other types
-DEFINE DATATYPE DATE FROM "DATE.h";
-DEFINE DATATYPE IPV4ADDR FROM "IPV4ADDR.h";
-DEFINE DATATYPE MACADDR FROM "MACADDR.h";
+// base/Types/DATE.h
+DEFINE DATATYPE DATE FROM "base/Types/DATE.h";
 
-/***** FUNCTIONS *****/
+// base/Types/MACADDR.h
+DEFINE DATATYPE macAddr FROM "base/Types/MACADDR.h";
+DEFINE MACADDR AS macAddr;
 
-// Constructors (used for type conversions)
-DEFINE FUNCTION DOUBLE( FLOAT ) -> DOUBLE FROM "DOUBLE.h";
-DEFINE FUNCTION DOUBLE( BIGINT ) -> DOUBLE FROM "DOUBLE.h";
-DEFINE FUNCTION DOUBLE( INT ) -> DOUBLE FROM "DOUBLE.h";
-DEFINE FUNCTION FLOAT( DOUBLE ) -> FLOAT FROM "FLOAT.h";
-DEFINE FUNCTION FLOAT( BIGINT ) -> FLOAT FROM "FLOAT.h";
-DEFINE FUNCTION FLOAT( INT ) -> FLOAT FROM "FLOAT.h";
-DEFINE FUNCTION BIGINT( DOUBLE ) -> BIGINT FROM "BIGINT.h";
-DEFINE FUNCTION BIGINT( FLOAT ) -> BIGINT FROM "BIGINT.h";
-DEFINE FUNCTION BIGINT( INT ) -> BIGINT FROM "BIGINT.h";
-DEFINE FUNCTION INT( DOUBLE ) -> INT FROM "INT.h";
-DEFINE FUNCTION INT( FLOAT ) -> INT FROM "INT.h";
-DEFINE FUNCTION INT( BIGINT ) -> INT FROM "INT.h";
+// base/Types/INT.h
+DEFINE DATATYPE INT FROM "base/Types/INT.h";
+DEFINE TINYINT AS INT;
+DEFINE SMALLINT AS INT;
+DEFINE INTEGER AS INT;
 
-DEFINE FUNCTION HString( STRING_LITERAL ) -> HString FROM "HString.h";
+// base/Types/IPV4ADDR.h
+DEFINE DATATYPE IPv4 FROM "base/Types/IPV4ADDR.h";
+DEFINE IPV4ADDR AS IPv4;
 
-DEFINE FUNCTION DATE( STRING_LITERAL ) -> DATE FROM "DATE.h";
-DEFINE FUNCTION DATE( INT, INT, INT ) -> DATE FROM "DATE.h";
+// base/Types/bool.h
+DEFINE DATATYPE bool FROM "base/Types/bool.h";
+DEFINE BOOL AS bool;
+DEFINE OPERATOR "==" ( bool, bool ) -> bool FROM "base/Types/bool.h";
+DEFINE OPERATOR "!=" ( bool, bool ) -> bool FROM "base/Types/bool.h";
+DEFINE OPERATOR "!" ( bool ) -> bool FROM "base/Types/bool.h";
+DEFINE OPERATOR "&&" ( bool, bool ) -> bool FROM "base/Types/bool.h";
+DEFINE OPERATOR "||" ( bool, bool ) -> bool FROM "base/Types/bool.h";
 
-DEFINE FUNCTION IPV4ADDR( STRING_LITERAL ) -> IPV4ADDR FROM "IPV4ADDR.h";
-DEFINE FUNCTION IPV4ADDR( INT, INT, INT, INT ) -> IPV4ADDR FROM "IPV4ADDR.h";
+// base/Functions/IPVRADDR-Funcs.h
+DEFINE FUNCTION IPv4 ( INT, INT, INT, INT  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION IPv4 ( STRING_LITERAL  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "<" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "<=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR ">" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR ">=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "==" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "!=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Domain ( IPv4  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Hash ( IPv4  ) -> BIGINT FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Between ( IPv4, IPv4, IPv4  ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
 
-DEFINE FUNCTION MACADDR( STRING_LITERAL ) -> MACADDR FROM "MACADDR.h";
+// base/Functions/Number-Funcs.h
+DEFINE FUNCTION DOUBLE ( FLOAT  ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION DOUBLE ( BIGINT  ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION DOUBLE ( INT  ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION FLOAT ( DOUBLE  ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION FLOAT ( BIGINT  ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION FLOAT ( INT  ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION BIGINT ( DOUBLE  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION BIGINT ( FLOAT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION BIGINT ( INT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION INT ( DOUBLE  ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION INT ( FLOAT  ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION INT ( BIGINT  ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "==" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "!=" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR ">=" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( DOUBLE, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( DOUBLE, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( DOUBLE, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( DOUBLE, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( FLOAT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( FLOAT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( FLOAT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( FLOAT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( BIGINT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( BIGINT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( BIGINT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( BIGINT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( INT, DOUBLE ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( INT, FLOAT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( INT, BIGINT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "<=" ( INT, INT ) -> bool FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( DOUBLE, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( DOUBLE, FLOAT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( DOUBLE, BIGINT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( DOUBLE, INT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( FLOAT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( FLOAT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( FLOAT, BIGINT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( FLOAT, INT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( BIGINT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( BIGINT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( BIGINT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( BIGINT, INT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( INT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( INT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( INT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( INT, INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( DOUBLE, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( DOUBLE, FLOAT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( DOUBLE, BIGINT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( DOUBLE, INT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( FLOAT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( FLOAT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( FLOAT, BIGINT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( FLOAT, INT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( BIGINT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( BIGINT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( BIGINT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( BIGINT, INT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( INT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( INT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( INT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( INT, INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( DOUBLE, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( DOUBLE, FLOAT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( DOUBLE, BIGINT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( DOUBLE, INT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( FLOAT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( FLOAT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( FLOAT, BIGINT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( FLOAT, INT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( BIGINT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( BIGINT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( BIGINT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( BIGINT, INT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( INT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( INT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( INT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "*" ( INT, INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( DOUBLE, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( DOUBLE, FLOAT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( DOUBLE, BIGINT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( DOUBLE, INT ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( FLOAT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( FLOAT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( FLOAT, BIGINT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( FLOAT, INT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( BIGINT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( BIGINT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( BIGINT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( BIGINT, INT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( INT, DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( INT, FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( INT, BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "/" ( INT, INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "+" ( INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( DOUBLE ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( FLOAT ) -> FLOAT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( BIGINT ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE OPERATOR "-" ( INT ) -> INT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION Hash ( DOUBLE  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION Hash ( FLOAT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION Hash ( BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION Hash ( INT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 
-// == operator
-DEFINE OPERATOR "==" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "==" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "==" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "==" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "==" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "==" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "==" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "==" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "==" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "==" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "==" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "==" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "==" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR "==" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR "==" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR "==" (INT, INT) -> bool FROM "INT.h";
+// base/Functions/DATE-Funcs.h
+DEFINE FUNCTION DATE ( INT  ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION DATE ( INT, INT, INT  ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION DATE ( INT, INT  ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION DATE ( STRING_LITERAL  ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR "==" ( DATE, DATE ) -> bool FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR "<" ( DATE, DATE ) -> bool FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR "<=" ( DATE, DATE ) -> bool FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR ">" ( DATE, DATE ) -> bool FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR ">=" ( DATE, DATE ) -> bool FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR "+" ( DATE, INT ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE OPERATOR "-" ( DATE, INT ) -> DATE FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetQuarter ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetMonth ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetDay ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetDayOfYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetWeekOfYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetYearForWeekOfYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetDayOfWeek ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+DEFINE FUNCTION GetJulianDay ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
 
-DEFINE OPERATOR "==" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR "==" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR "==" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
-DEFINE OPERATOR "==" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
+// base/Functions/HString-Funcs.h
+DEFINE FUNCTION HString ( STRING_LITERAL  ) -> HString FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR "==" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR "!=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR ">" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR "<" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR ">=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR "<=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
+DEFINE OPERATOR "+" ( HString, HString ) -> HString FROM "base/Functions/HString-Funcs.h";
+DEFINE FUNCTION Hash ( HString  ) -> BIGINT FROM "base/Functions/HString-Funcs.h";
 
-// != operator
-DEFINE OPERATOR "!=" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "!=" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "!=" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "!=" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "!=" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "!=" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "!=" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "!=" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "!=" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "!=" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "!=" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "!=" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "!=" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR "!=" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR "!=" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR "!=" (INT, INT) -> bool FROM "INT.h";
+// base/Functions/MACADDR-Funcs.h
+DEFINE FUNCTION macAddr ( STRING_LITERAL  ) -> macAddr FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "==" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "!=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "<" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "<=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR ">" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR ">=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE FUNCTION Hash ( macAddr  ) -> BIGINT FROM "base/Functions/MACADDR-Funcs.h";
 
-DEFINE OPERATOR "!=" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR "!=" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR "!=" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
-DEFINE OPERATOR "!=" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
+// base/GLAs/SumGLA.h
+DEFINE GLA Sum ( DOUBLE ) -> ( DOUBLE ) FROM "base/GLAs/SumGLA.h";
+DEFINE SumGLA AS Sum;
 
-// > operator
-DEFINE OPERATOR ">" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR ">" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR ">" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR ">" (INT, INT) -> bool FROM "INT.h";
+// base/GLAs/CountGLA.h
+DEFINE GLA Count ( INT ) -> ( BIGINT ) FROM "base/GLAs/CountGLA.h";
+DEFINE CountGLA AS Count;
 
-DEFINE OPERATOR ">" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR ">" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR ">" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
-DEFINE OPERATOR ">" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
+// base/GLAs/ExtremeTuplesGLA.h.m4
+DEFINE TEMPLATE GLA ExtremeTuples FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
+DEFINE TEMPLATE GLA ExtremeTuplesGLA FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
 
-// < operator
-DEFINE OPERATOR "<" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR "<" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR "<" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR "<" (INT, INT) -> bool FROM "INT.h";
+// base/GLAs/AverageGLA.h
+DEFINE GLA Average ( DOUBLE ) -> ( BIGINT, DOUBLE, DOUBLE ) FROM "base/GLAs/AverageGLA.h";
+DEFINE AverageGLA AS Average;
 
-DEFINE OPERATOR "<" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR "<" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR "<" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
-DEFINE OPERATOR "<" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
+// base/GLAs/Repeater.h.m4
+DEFINE TEMPLATE GLA Repeater FROM "base/GLAs/Repeater.h.m4";
 
-// >= operator
-DEFINE OPERATOR ">=" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">=" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">=" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">=" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR ">=" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">=" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">=" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">=" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR ">=" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">=" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">=" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">=" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR ">=" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR ">=" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR ">=" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR ">=" (INT, INT) -> bool FROM "INT.h";
+// base/GLAs/GroupByGLA.h.m4
+DEFINE TEMPLATE GLA GroupBy FROM "base/GLAs/GroupByGLA.h.m4";
+DEFINE TEMPLATE GLA GroupByGLA FROM "base/GLAs/GroupByGLA.h.m4";
 
-DEFINE OPERATOR ">=" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR ">=" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR ">=" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
-DEFINE OPERATOR ">=" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
+// base/GLAs/Segmented.h.m4
+DEFINE TEMPLATE GLA Segmented FROM "base/GLAs/Segmented.h.m4";
 
-// <= operator
-DEFINE OPERATOR "<=" (DOUBLE, DOUBLE) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<=" (DOUBLE, FLOAT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<=" (DOUBLE, BIGINT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<=" (DOUBLE, INT) -> bool FROM "DOUBLE.h";
-DEFINE OPERATOR "<=" (FLOAT, DOUBLE) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<=" (FLOAT, FLOAT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<=" (FLOAT, BIGINT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<=" (FLOAT, INT) -> bool FROM "FLOAT.h";
-DEFINE OPERATOR "<=" (BIGINT, DOUBLE) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<=" (BIGINT, FLOAT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<=" (BIGINT, BIGINT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<=" (BIGINT, INT) -> bool FROM "BIGINT.h";
-DEFINE OPERATOR "<=" (INT, DOUBLE) -> bool FROM "INT.h";
-DEFINE OPERATOR "<=" (INT, FLOAT) -> bool FROM "INT.h";
-DEFINE OPERATOR "<=" (INT, BIGINT) -> bool FROM "INT.h";
-DEFINE OPERATOR "<=" (INT, INT) -> bool FROM "INT.h";
+// base/GLAs/TopKGLA.h.m4
+DEFINE TEMPLATE GLA TopK FROM "base/GLAs/TopKGLA.h.m4";
+DEFINE TEMPLATE GLA TopKGLA FROM "base/GLAs/TopKGLA.h.m4";
 
-DEFINE OPERATOR "<=" (HString, HString) -> bool FROM "HString.h";
-DEFINE OPERATOR "<=" (DATE, DATE) -> bool FROM "DATE.h";
-DEFINE OPERATOR "<=" (MACADDR, MACADDR) -> bool FROM "MACADDR.h";
-DEFINE OPERATOR "<=" (IPV4ADDR, IPV4ADDR) -> bool FROM "IPV4ADDR.h";
+// base/GLAs/DistinctGLA.h.m4
+DEFINE TEMPLATE GLA Distinct FROM "base/GLAs/DistinctGLA.h.m4";
+DEFINE TEMPLATE GLA DistinctGLA FROM "base/GLAs/DistinctGLA.h.m4";
 
-// + operator
-DEFINE OPERATOR "+" (DOUBLE, DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "+" (DOUBLE, FLOAT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "+" (DOUBLE, BIGINT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "+" (DOUBLE, INT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "+" (FLOAT, DOUBLE) -> DOUBLE FROM "FLOAT.h";
-DEFINE OPERATOR "+" (FLOAT, FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "+" (FLOAT, BIGINT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "+" (FLOAT, INT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "+" (BIGINT, DOUBLE) -> DOUBLE FROM "BIGINT.h";
-DEFINE OPERATOR "+" (BIGINT, FLOAT) -> FLOAT FROM "BIGINT.h";
-DEFINE OPERATOR "+" (BIGINT, BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "+" (BIGINT, INT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "+" (INT, DOUBLE) -> DOUBLE FROM "INT.h";
-DEFINE OPERATOR "+" (INT, FLOAT) -> FLOAT FROM "INT.h";
-DEFINE OPERATOR "+" (INT, BIGINT) -> BIGINT FROM "INT.h";
-DEFINE OPERATOR "+" (INT, INT) -> INT FROM "INT.h";
+// base/GLAs/OrderByGLA.h.m4
+DEFINE TEMPLATE GLA OrderBy FROM "base/GLAs/OrderByGLA.h.m4";
+DEFINE TEMPLATE GLA OrderByGLA FROM "base/GLAs/OrderByGLA.h.m4";
 
-DEFINE OPERATOR "+" (DATE, INT) -> DATE FROM "DATE.h";
+// base/GLAs/Multiplexer.h.m4
+DEFINE TEMPLATE GLA Multiplexer FROM "base/GLAs/Multiplexer.h.m4";
 
-// - operator
-DEFINE OPERATOR "-" (DOUBLE, DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "-" (DOUBLE, FLOAT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "-" (DOUBLE, BIGINT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "-" (DOUBLE, INT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "-" (FLOAT, DOUBLE) -> DOUBLE FROM "FLOAT.h";
-DEFINE OPERATOR "-" (FLOAT, FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "-" (FLOAT, BIGINT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "-" (FLOAT, INT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "-" (BIGINT, DOUBLE) -> DOUBLE FROM "BIGINT.h";
-DEFINE OPERATOR "-" (BIGINT, FLOAT) -> FLOAT FROM "BIGINT.h";
-DEFINE OPERATOR "-" (BIGINT, BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "-" (BIGINT, INT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "-" (INT, DOUBLE) -> DOUBLE FROM "INT.h";
-DEFINE OPERATOR "-" (INT, FLOAT) -> FLOAT FROM "INT.h";
-DEFINE OPERATOR "-" (INT, BIGINT) -> BIGINT FROM "INT.h";
-DEFINE OPERATOR "-" (INT, INT) -> INT FROM "INT.h";
-
-DEFINE OPERATOR "-" (DATE, INT) -> DATE FROM "DATE.h";
-
-// / operator
-DEFINE OPERATOR "/" (DOUBLE, DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "/" (DOUBLE, FLOAT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "/" (DOUBLE, BIGINT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "/" (DOUBLE, INT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "/" (FLOAT, DOUBLE) -> DOUBLE FROM "FLOAT.h";
-DEFINE OPERATOR "/" (FLOAT, FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "/" (FLOAT, BIGINT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "/" (FLOAT, INT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "/" (BIGINT, DOUBLE) -> DOUBLE FROM "BIGINT.h";
-DEFINE OPERATOR "/" (BIGINT, FLOAT) -> FLOAT FROM "BIGINT.h";
-DEFINE OPERATOR "/" (BIGINT, BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "/" (BIGINT, INT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "/" (INT, DOUBLE) -> DOUBLE FROM "INT.h";
-DEFINE OPERATOR "/" (INT, FLOAT) -> FLOAT FROM "INT.h";
-DEFINE OPERATOR "/" (INT, BIGINT) -> BIGINT FROM "INT.h";
-DEFINE OPERATOR "/" (INT, INT) -> INT FROM "INT.h";
-
-// * operator
-DEFINE OPERATOR "*" (DOUBLE, DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "*" (DOUBLE, FLOAT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "*" (DOUBLE, BIGINT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "*" (DOUBLE, INT) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "*" (FLOAT, DOUBLE) -> DOUBLE FROM "FLOAT.h";
-DEFINE OPERATOR "*" (FLOAT, FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "*" (FLOAT, BIGINT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "*" (FLOAT, INT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "*" (BIGINT, DOUBLE) -> DOUBLE FROM "BIGINT.h";
-DEFINE OPERATOR "*" (BIGINT, FLOAT) -> FLOAT FROM "BIGINT.h";
-DEFINE OPERATOR "*" (BIGINT, BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "*" (BIGINT, INT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "*" (INT, DOUBLE) -> DOUBLE FROM "INT.h";
-DEFINE OPERATOR "*" (INT, FLOAT) -> FLOAT FROM "INT.h";
-DEFINE OPERATOR "*" (INT, BIGINT) -> BIGINT FROM "INT.h";
-DEFINE OPERATOR "*" (INT, INT) -> INT FROM "INT.h";
-
-// && operator
-DEFINE OPERATOR "&&" (bool, bool) -> bool FROM "bool.h";
-
-// || operator
-DEFINE OPERATOR "||" (bool, bool) -> bool FROM "bool.h";
-
-// ! operator
-DEFINE OPERATOR "!" (bool) -> bool FROM "bool.h";
-
-// Unary + operator
-DEFINE OPERATOR "+" (DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "+" (FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "+" (BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "+" (INT) -> INT FROM "INT.h";
-
-// Unary - operator
-DEFINE OPERATOR "-" (DOUBLE) -> DOUBLE FROM "DOUBLE.h";
-DEFINE OPERATOR "-" (FLOAT) -> FLOAT FROM "FLOAT.h";
-DEFINE OPERATOR "-" (BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE OPERATOR "-" (INT) -> INT FROM "INT.h";
-
-// Hash functions
-DEFINE FUNCTION Hash (DOUBLE) -> BIGINT FROM "DOUBLE.h";
-DEFINE FUNCTION Hash (FLOAT) -> BIGINT FROM "FLOAT.h";
-DEFINE FUNCTION Hash (BIGINT) -> BIGINT FROM "BIGINT.h";
-DEFINE FUNCTION Hash (INT) -> BIGINT FROM "INT.h";
-DEFINE FUNCTION Hash (HString) -> BIGINT FROM "HString.h";
-DEFINE FUNCTION Hash (DATE) -> BIGINT FROM "DATE.h";
-DEFINE FUNCTION Hash (IPV4ADDR) -> BIGINT FROM "IPV4ADDR.h";
-DEFINE FUNCTION Hash (MACADDR) -> BIGINT FROM "MACADDR.h";
-
-/***** GLAs *****/
-DEFINE GLA Count (DOUBLE) -> (BIGINT) FROM "CountGLA.h";
-DEFINE GLA Sum (DOUBLE) -> (DOUBLE) FROM "SumGLA.h";
-DEFINE GLA Average (DOUBLE) -> (BIGINT, DOUBLE) FROM "AverageGLA.h";
-
-// Synonyms for compatibility purposes
-DEFINE GLA:AverageGLA AS GLA : Average;
-DEFINE GLA:SumGLA AS GLA:Sum;
-DEFINE GLA:CountGLA AS GLA:Count;
-
-/***** Templated GLAs *****/
-DEFINE TEMPLATE GLA GroupBy FROM "GroupByGLA.h.m4";
-DEFINE TEMPLATE GLA TopK FROM "TopKGLA.h.m4";
-DEFINE TEMPLATE GLA Distinct FROM "DistinctGLA.h.m4";
-DEFINE TEMPLATE GLA ExtremeTuples FROM "ExtremeTuplesGLA.h.m4";
-DEFINE TEMPLATE GLA Multiplexer FROM "Multiplexer.h.m4";
-DEFINE TEMPLATE GLA Repeater FROM "Repeater.h.m4";
-DEFINE TEMPLATE GLA OrderBy FROM "OrderByGLA.h.m4";
-DEFINE TEMPLATE GLA Segmented FROM "Segmented.h.m4";
-
-// Synonyms for compatibility purposes
-DEFINE TEMPLATE GLA GroupByGLA FROM "GroupByGLA.h.m4";
-DEFINE TEMPLATE GLA TopKGLA FROM "TopKGLA.h.m4";
-DEFINE TEMPLATE GLA DistinctGLA FROM "DistinctGLA.h.m4";
-DEFINE TEMPLATE GLA ExtremeTuplesGLA FROM "ExtremeTuplesGLA.h.m4";
-DEFINE TEMPLATE GLA OrderByGLA FROM "OrderByGLA.h.m4";
-
-#endif
+// base/UDFs/AbsoluteValue.h.m4
+DEFINE TEMPLATE FUNCTION AbsoluteValue FROM "base/UDFs/AbsoluteValue.h.m4";
+#endif // _base_PGY_

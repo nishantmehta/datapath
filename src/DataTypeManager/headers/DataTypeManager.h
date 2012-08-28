@@ -590,7 +590,7 @@ void DataTypeManager :: AddFunc (string type, string fName, vector<string>& args
             {
                 // Identical type and parameter list found for this function
                 // name already.
-                cout << "\nError: Function/Operator already exists";
+                cout << "\nError: Function/Operator " << f->toString( fName ) << " already exists";
                 delete f;
                 return;
             }

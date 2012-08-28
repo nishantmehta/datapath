@@ -41,7 +41,6 @@ class ExprListInfo {
     };
 
     std::vector<Element> list;
-    std::vector<string> listTypes;
     bool isAllCT; // are all expressions constant?
     bool isAnyCT; // is any of the expr constant?
 
@@ -53,7 +52,6 @@ public:
 
     void Add(string sExpr, string type, bool isCT){
         list.push_back(Element(sExpr, type, isCT));
-        listTypes.push_back(type);
         isAllCT = isAllCT & isCT;
         isAnyCT = isAnyCT | isCT;
     }
@@ -65,17 +63,21 @@ public:
     string GetTypesDesc(void){
         string rez;
 
-        if( listTypes.size() > 0 )
-            rez += listTypes[0];
+        if( list.size() > 0 )
+            rez += list[0].type;
 
-        for( int i = 1; i < listTypes.size(); ++i ) {
-            rez += (", " + listTypes[i]);
+        for( int i = 1; i < list.size(); ++i ) {
+            rez += (", " + list[i].type);
         }
 
         return rez;
     }
 
-    std::vector<string>& GetListTypes(void){
+    std::vector<string> GetListTypes(void){
+        std::vector<string> listTypes;
+        for( size_t i = 0; i < list.size(); ++i ) {
+            listTypes.push_back(list[i].type);
+        }
         return listTypes;
     }
 

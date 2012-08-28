@@ -39,6 +39,7 @@
 
 */
 
+#if 0
 // all int types
 #include "INT.h"
 
@@ -64,13 +65,13 @@
 // the MAC addresses
 #include "MACADDR.h"
 
-#include <string.h>
-
 #include "STRING_LITERAL.h"
 
 // STATE datatype
 #include "STATE.h"
+#endif
 
+#include <string.h>
 
 /** The category should almost never be added to since they are much
 		harder to add to the system. A special category, CExactMatch is

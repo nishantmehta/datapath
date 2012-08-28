@@ -20,19 +20,25 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Type definition for the basic type INT */
+/** Type definition for the basic type INT
+ *
+ *  TYPE_DESC
+ *      NAME(</INT/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ *
+ *  SYN_DEF(</TINYINT/>, </INT/>)
+ *  SYN_DEF(</SMALLINT/>, </INT/>)
+ *  SYN_DEF(</INTEGER/>, </INT/>)
+ */
 
-// TYPE_DESC(</INT/>)
 typedef int INT; // use native int
 
 /////////////////
 // Aliases
 
-// SYN_DEF(</TINYINT/>, </INT/>)
 typedef INT TINYINT;
-// SYN_DEF(</SMALLINT/>, </INT/>)
 typedef INT SMALLINT;
-// SYN_DEF(</INTEGER/>, </INT/>)
 typedef INT INTEGER;
 
 //////////////

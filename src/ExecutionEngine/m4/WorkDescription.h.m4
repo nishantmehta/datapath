@@ -24,7 +24,7 @@ include(DataFunctions.m4)
 #include "Chunk.h"
 #include "AggStorageMap.h"
 #include "HashTable.h"
-#include "HString.h"
+/*#include "HString.h"*/
 #include "JoinWayPointID.h"
 #include "ExecEngineData.h"
 #include "GlobalGLAState.h"

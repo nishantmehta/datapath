@@ -16,7 +16,9 @@ dnl #
 m4_divert(-1)
 dnl # macro to determine the class of a type
 dnl # $1=type
-m4_define(</M4_DT_TYPE/>,</DT_TYPE_$1/>)
+m4_define(</M4_DT_TYPE/>,</dnl
+m4_ifdef(</DT_TYPE_$1/>, </m4_defn(</DT_TYPE_$1/>)/>, </m4_fatal(</Type $1 cannot be serialized/>)/>)<//>dnl
+/>)
 
 dnl # Macro to determine the class of the type of an attribute
 dnl # this is used by the serialize, deserialize code

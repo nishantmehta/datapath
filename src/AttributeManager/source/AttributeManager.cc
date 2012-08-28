@@ -18,6 +18,7 @@
 #include "QueryManager.h"
 #include "Catalog.h"
 #include "Errors.h"
+#include "DataTypeManager.h"
 
 #include <iostream>
 #include <fstream>
@@ -261,7 +262,7 @@ SlotID AttributeManager::AddSynthesizedAttribute(QueryID id, string attName,
 
 	//return the mutex
 	pthread_mutex_unlock (&attributeManagerMutex);
-	
+
 	return rez;
 }
 
@@ -348,13 +349,13 @@ void AttributeManager::GetAttributesSlots(string tableName, SlotContainer& where
 			where.Append(slot);
 			slotMap.Advance();
 		}
-		
+
 	}
 	else
 	{
 		FATAL("No map found for relation %s!",tableName.c_str());
 	}
-	
+
 	// done with critical region
 	pthread_mutex_unlock(&attributeManagerMutex);
 }
@@ -383,7 +384,7 @@ string AttributeManager::GetAttributeType(string longName){
 	pthread_mutex_unlock(&attributeManagerMutex);
 
 	return rez;
-	
+
 }
 
 
@@ -517,6 +518,8 @@ void AttributeManager::GenerateM4Files(string fullFileName) {
 
 	string m4_define = "m4_define";
 
+    DataTypeManager& dTM = DataTypeManager::GetDataTypeManager();
+
 	//first write information of base relations' attributes
 
 	//write attribute type information
@@ -524,6 +527,11 @@ void AttributeManager::GenerateM4Files(string fullFileName) {
 		it!=myAttributes.end(); it++){
 		AttributeInfoInternal* attributeInfo = (*it).second;
 		string attType = (*attributeInfo).Type();
+        // Make sure it's the base type!
+        // Don't really care if it is actually defined as a type right now
+        // as we might not be using the attributes that have not had their type
+        // defined. If we do try to do that, the parser will catch it.
+        dTM.IsType(attType);
 
 		attributesM4 << m4_define << "(" <<  "ATT_TYPE_" << (*attributeInfo).Name()
 			<< "," << attType  << ")" << endl;

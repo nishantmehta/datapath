@@ -66,7 +66,7 @@ public:
             );
 
     bool AddSelectionWP(WayPointID selWP);
-    bool AddJoinWP(WayPointID joinWP, SlotContainer& LHS_att);
+    bool AddJoinWP(WayPointID joinWP, SlotContainer& LHS_att, string defs);
     bool AddAggregateWP(WayPointID aggWP);
     bool AddPrintWP(WayPointID printWP);
     bool AddGLAWP(WayPointID glaWP);
@@ -126,7 +126,7 @@ public:
 
     // Join
     bool AddJoin(WayPointID wp, QueryID query, SlotContainer& RHS_atts /* right hand side attributes */,
-         JoinType type = Join_EQ);
+         JoinType type, string defs);
 
     // Print. Need a list of these
     bool AddPrint(WayPointID wp, QueryID query, SlotContainer& atts,

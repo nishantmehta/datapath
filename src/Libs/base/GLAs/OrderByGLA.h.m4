@@ -83,7 +83,7 @@ m4_foreach(</_A_/>,</TOPK_RANK/>,</dnl
 
     // This constructor uses the initialization list to construct each
     // element using its copy constructor to ensure a deep copy
-    TOPK_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) :
+    TOPK_NAME<//>_Tuple(TYPED_CONST_REF_ARGS(MY_INPUT)) :
 m4_undefine_full(</_TMP_/>)dnl
 m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
         m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
@@ -175,7 +175,7 @@ public:
     ~TOPK_NAME<//>() {}
 
     // function to add an intem
-    void AddItem(TYPED_ARGS(MY_INPUT));
+    void AddItem(TYPED_CONST_REF_ARGS(MY_INPUT));
 
     // take the state from other and incorporate it into this object
     // this is a + operator on TOPK_NAME
@@ -201,7 +201,7 @@ m4_foreach(</_A_/>,</MY_OUTPUT/>,</dnl
 
 };
 
-void TOPK_NAME::AddItem(TYPED_ARGS(MY_INPUT)) {
+void TOPK_NAME::AddItem(TYPED_CONST_REF_ARGS(MY_INPUT)) {
 
     TOPK_NAME<//>_Tuple tuple(ARGS(MY_INPUT));
 

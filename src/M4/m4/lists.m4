@@ -69,6 +69,17 @@ m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
 
 dnl # macro to list arguments with types
 dnl # $1=list of the form (var, type)
+dnl # result is const type& var, ...
+m4_define(</TYPED_CONST_REF_ARGS/>,</dnl
+m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl
+m4_foreach(</_A_/>,</$*/>,</dnl
+m4_append(</__TEMP__/>, const TYPE(_A_)& VAR(_A_),</</, />/>)dnl
+/>)dnl
+m4_ifdef(</__TEMP__/>, __TEMP__)<//>dnl
+/>)dnl
+
+dnl # macro to list arguments with types
+dnl # $1=list of the form (var, type)
 dnl # result is var, ...
 m4_define(</ARGS/>,</dnl
 m4_ifdef(</__TEMP__/>, </m4_undefine(</__TEMP__/>)/>)dnl

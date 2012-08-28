@@ -11,9 +11,17 @@
 #include "DOUBLE.h"
 #include "FLOAT.h"
 
-// TYPE_DESC(</MATRIX/>)
+/**
+ *  TYPE_DESC
+ *      NAME(</MATRIX/>)
+ *  END_DESC
+ */
 typedef Mat<DOUBLE> MATRIX;
-// TYPE_DESC(</FMATRIX/>)
+/**
+ *  TYPE_DESC
+ *      NAME(</FMATRIX/>)
+ *  END_DESC
+ */
 typedef Mat<FLOAT> FMATRIX;
 
 #endif // _ARMA_MATRIX_H_

@@ -20,9 +20,14 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Type definition for the basic type DOUBLE */
+/** Type definition for the basic type DOUBLE
+ *
+ *  TYPE_DESC
+ *      NAME(</DOUBLE/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ */
 
-// TYPE_DESC(</DOUBLE/>)
 typedef double DOUBLE; // use native int
 
 /////////////////

@@ -20,15 +20,20 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-/** Type definition for the basic type FLOAT */
-
-// TYPE_DESC(</FLOAT/>)
+/** Type definition for the basic type FLOAT
+ *
+ *  TYPE_DESC
+ *      NAME(</FLOAT/>)
+ *      SIMPLE_TYPE
+ *  END_DESC
+ *
+ *  SYN_DEF(</REAL/>, </FLOAT/>)
+ */
 typedef float FLOAT; // use native int
 
 /////////////////
 // Aliases
 
-// SYN_DEF(</REAL/>, </FLOAT/>)
 typedef FLOAT REAL;
 
 

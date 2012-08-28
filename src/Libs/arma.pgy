@@ -1,7 +1,7 @@
 #ifndef _arma_PGY_
 #define _arma_PGY_
 // Piggy description file for library arma
-// generated on Thursday, August 23, 2012 at 14:36 EDT
+// generated on Monday, August 27, 2012 at 17:05 EDT
 
 // arma/Types/VECTOR.h
 DEFINE DATATYPE VECTOR FROM "arma/Types/VECTOR.h";

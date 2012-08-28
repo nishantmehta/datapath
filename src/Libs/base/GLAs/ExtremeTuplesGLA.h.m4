@@ -75,7 +75,7 @@ m4_foreach(</_A_/>, </MIN_ATTS/>, </dnl
 />)dnl
     }
 
-    GLA_NAME<//>_Tuple(TYPED_REF_ARGS(MY_INPUT)) :
+    GLA_NAME<//>_Tuple(TYPED_CONST_REF_ARGS(MY_INPUT)) :
 m4_undefine_full(</_TMP_/>)dnl
 m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
         m4_ifndef(</_TMP_/>, </m4_define(</_TMP_/>)/>, </, />)dnl
@@ -92,20 +92,21 @@ m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
 
 };
 
-// Auxiliary function to compare tuples
-// Returns true if t1 is better than t2
-inline bool BetterThan( const GLA_NAME<//>_Tuple & t1, const GLA_NAME<//>_Tuple & t2 ) {
-m4_foreach(</_A_/>,</MIN_ATTS/>,</dnl
-    if( (TYPE(_A_)) t1.VAR(_A_) m4_if(ORDER(_A_), </MIN/>, <, >) (TYPE(_A_)) t2.VAR(_A_) )
-        return true;
-    else if( (TYPE(_A_)) t1.VAR(_A_) m4_if(ORDER(_A_), </MIN/>, >, <) (TYPE(_A_)) t2.VAR(_A_) )
-        return false;
-/>)dnl
-    return false;
-}
 
 class GLA_NAME {
 private:
+
+    // Auxiliary function to compare tuples
+    // Returns true if t1 is better than t2
+    static bool BetterThan( const GLA_NAME<//>_Tuple & t1, const GLA_NAME<//>_Tuple & t2 ) {
+m4_foreach(</_A_/>,</MIN_ATTS/>,</dnl
+        if( t1.VAR(_A_) m4_if(ORDER(_A_), </MIN/>, <, >) t2.VAR(_A_) )
+            return true;
+        else if( t1.VAR(_A_) m4_if(ORDER(_A_), </MIN/>, >, <) t2.VAR(_A_) )
+            return false;
+/>)dnl
+        return false;
+    }
 
     // Count number of tuples encountered
     uint64_t count;
@@ -133,7 +134,7 @@ public:
     ~GLA_NAME<//>() {}
 
     // function to add an item
-    void AddItem( TYPED_ARGS(MY_INPUT) );
+    void AddItem( TYPED_CONST_REF_ARGS(MY_INPUT) );
 
 
     // take the state from other and incorporate it into this object.
@@ -146,7 +147,7 @@ public:
     bool GetNextResult( TYPED_REF_ARGS(MY_OUTPUT) );
 };
 
-void GLA_NAME :: AddItem( TYPED_ARGS(MY_INPUT) ) {
+void GLA_NAME :: AddItem( TYPED_CONST_REF_ARGS(MY_INPUT) ) {
 
     ++count;
     if( tuples.size() > 0<//>dnl
@@ -228,5 +229,5 @@ m4_foreach(</_A_/>, </MY_OUTPUT/>, </dnl
 />)
 
 dnl # Synonym for compatibility reasons
-GLA_TEMPLATE_DESC(</ExtremeTuples/>)
+GLA_TEMPLATE_DESC(</ExtremeTuplesGLA/>)
 m4_define(</ExtremeTuplesGLA/>, m4_defn(</ExtremeTuples/>))

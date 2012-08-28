@@ -56,6 +56,11 @@ m4_define(</OP_DESC/>, </dnl
 <//>m4_redefine(</__META_TYPE/>, </FUNC/>)dnl
 />)dnl
 
+m4_define(</TYPE_DESC/>, </dnl
+<//></$0/>dnl
+<//>m4_redefine(</__META_TYPE/>, </DATATYPE/>)dnl
+/>)dnl
+
 m4_define(</END_DESC/>, </dnl
 <//></$0/>dnl
 <//>m4_undefine(</__META_TYPE/>)dnl
@@ -66,7 +71,7 @@ dnl # Macros used for generating descriptions of templates.
 m4_define(</GLA_TEMPLATE_DESC/>, <//>)dnl
 m4_define(</FUNC_TEMPLATE_DESC/>, <//>)dnl
 
-m4_define(</TYPE_DESC/>, <//>)dnl
+m4_define(</TYPE_DEF/>, <//>)dnl
 m4_define(</SYN_DEF/>, <//>)dnl
 m4_define(</FUNC_DEF/>), <//>)dnl
 m4_define(</OP_DEF/>, <//>)dnl
@@ -119,6 +124,21 @@ m4_define(</REQ_CONST_STATES/>, </dnl
 <//>m4_foreach(</__A__/>, </$2/>, </dnl
 <//><//>m4_autoincr(__META_NAME</_CONST_REC_NUM/>)dnl
 <//>/>)dnl
+/>)dnl
+
+dnl # Options for type descriptions.
+m4_define(</SIMPLE_TYPE/>, </dnl
+<//></$0/>dnl
+<//>m4_if(__META_TYPE, </DATATYPE/>, <//>, </m4_fatal(</Can only declare types as simple!/>[__META_TYPE])/>)dnl
+<//>m4_define(</DT_TYPE_/>__META_NAME, </DT_SIMPLE/>)dnl
+<//>m4_define(</DT_ITERATOR_/>__META_NAME, </ColumnIterator< />__META_NAME</ >/>)dnl
+/>)dnl
+
+m4_define(</COMPLEX_TYPE/>, </dnl
+<//></$0($@)/>dnl
+<//>m4_if(__META_TYPE, </DATATYPE/>, <//>, </m4_fatal(</Can only declare types as complex!/>)/>)dnl
+<//>m4_define(</DT_TYPE_/>__META_NAME, </DT_COMPLEX/>)dnl
+<//>m4_define(</DT_ITERATOR_/>__META_NAME, </$1/>)dnl
 />)dnl
 
 dnl # Macro for defining what libraries a GLA requires to be linked

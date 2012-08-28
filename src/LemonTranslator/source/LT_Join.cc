@@ -15,7 +15,9 @@
 //
 #include "LT_Join.h"
 #include "AttributeManager.h"
+#include "DataTypeManager.h"
 #include <assert.h>
+#include "Errors.h"
 
 extern HashTable centralHashTable;
 
@@ -264,6 +266,7 @@ void LT_Join::DeleteQuery(QueryID query)
     RHS.erase(query);
     LHS_copy.erase(query);
     RHS_copy.erase(query);
+    query_defs.erase(query);
 }
 
 void LT_Join::ClearAllDataStructure() {
@@ -273,9 +276,11 @@ void LT_Join::ClearAllDataStructure() {
     RHS_terminating.clear();
     LHS_copy.clear();
     RHS_copy.clear();
+    query_defs.clear();
+    global_defs.clear();
 }
 
-bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type) {
+bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinType type, string defs) {
     PDEBUG("LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts)");
     CheckQueryAndUpdate(query, RHS_atts, newQueryToSlotSetMap);
     CheckQueryAndUpdate(query, RHS_atts, RHS);
@@ -284,7 +289,7 @@ bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinTyp
     case LemonTranslator::Join_IN:
       ExistsTarget.Union(query);
       break;
-      
+
     case LemonTranslator::Join_NOTIN:
       NotExistsTarget.Union(query);
       break;
@@ -295,6 +300,10 @@ bool LT_Join::AddJoin(QueryID query, SlotSet& RHS_atts, LemonTranslator::JoinTyp
     PrintAllQueryAndAttributes(RHS);
     printf("\n"); fflush(stdout);
 #endif
+
+    QueryID key = query;
+    query_defs[key] = defs;
+
     return true;
 }
 
@@ -418,7 +427,7 @@ bool LT_Join::PropagateUp(QueryToSlotSet& result)
     CheckQueryAndUpdate(downAttributes, result);
     QueryIDSet exclude=ExistsTarget;
     exclude.Union(NotExistsTarget);
-    
+
     // Exists/IN queries cannot talk about RHS attributes
     for (QueryToSlotSet::const_iterator iter = RHS_terminating.begin();
 	 iter != RHS_terminating.end();
@@ -549,6 +558,54 @@ void LT_Join::WriteM4File(ostream& out) {
     GetId().getInfo(info);
     string wpname = info.getName();
 
+    // Print required definitions.
+    out << "m4_divert(0)" << endl;
+    out << "// global includes" << endl;
+    out << global_defs;
+
+    for( QueryIDToString::const_iterator it = query_defs.begin(); it != query_defs.end(); ++it ) {
+        string defs = it->second;
+        QueryID query = it->first;
+        out << "// Includes for Query " << query.GetStr() << endl;
+        out << defs;
+    }
+
+    AttributeManager& am = AttributeManager::GetAttributeManager();
+    DataTypeManager& dTM = DataTypeManager::GetDataTypeManager();
+
+    // Get includes for used attributes.
+    for( QueryToSlotSet::const_iterator it = LHS_copy.begin(); it != LHS_copy.end(); ++it ) {
+        const QueryID curID = it->first;
+        const SlotSet& curSet = it->second;
+        out << "// LHS Includes for Query " << curID.GetStr() << endl;
+
+        for( SlotSet::const_iterator iter = curSet.begin(); iter != curSet.end(); ++iter ) {
+            const SlotID& slot = *iter;
+            string name = am.GetAttributeName(slot);
+            string type = am.GetAttributeType(name);
+            FATALIF( !dTM.IsType( type ), "Join: Used attribute %s of unknown type %s!",
+                    name.c_str(), type.c_str());
+            string file = dTM.GetTypeFile(type);
+            out << "m4_include(</" << file << "/>)" << endl;
+        }
+    }
+
+    for( QueryToSlotSet::const_iterator it = RHS_copy.begin(); it != RHS_copy.end(); ++it ) {
+        const QueryID curID = it->first;
+        const SlotSet& curSet = it->second;
+        out << "// RHS Includes for Query " << curID.GetStr() << endl;
+
+        for( SlotSet::const_iterator iter = curSet.begin(); iter != curSet.end(); ++iter ) {
+            const SlotID& slot = *iter;
+            string name = am.GetAttributeName(slot);
+            string type = am.GetAttributeType(name);
+            FATALIF( !dTM.IsType( type ), "Join: Used attribute %s of unknown type %s!",
+                    name.c_str(), type.c_str());
+            string file = dTM.GetTypeFile(type);
+            out << "m4_include(</" << file << "/>)" << endl;
+        }
+    }
+
     out << "M4_JOIN_MODULE(" << wpname << ", ";
     //out << "\t";
 
@@ -627,7 +684,6 @@ void LT_Join::WriteM4File(ostream& out) {
                 out << ",";
             }
             firstTime = false;
-            AttributeManager& am = AttributeManager::GetAttributeManager();
             out << am.GetAttributeName(*iter);
         }
         out << ")";
@@ -740,7 +796,7 @@ void LT_Join::WriteM4File(ostream& out) {
         out << ")";
     }
     out << ")";
-    out << "/>," << ExistsTarget.GetInt64() << "," << NotExistsTarget.GetInt64(); 
+    out << "/>," << ExistsTarget.GetInt64() << "," << NotExistsTarget.GetInt64();
     // ----------------------------------------------------------------------------------
     out << ")";
     // -----------------------------------------------------------------------------------
