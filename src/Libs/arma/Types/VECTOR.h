@@ -8,20 +8,20 @@
 // This datatype requires the base library be loaded.
 
 #include <armadillo>
-#include "DOUBLE.h"
-#include "FLOAT.h"
+#include "base/Types/DOUBLE.h"
+#include "base/Types/FLOAT.h"
 
 /**
  *  TYPE_DESC
  *      NAME(</VECTOR/>)
  *  END_DESC
  */
-typedef Col<DOUBLE> VECTOR;
+typedef arma::Col<DOUBLE> VECTOR;
 /**
  *  TYPE_DESC
  *      NAME(</FVECTOR/>)
  *  END_DESC
  */
-typedef Col<FLOAT> FVECTOR;
+typedef arma::Col<FLOAT> FVECTOR;
 
 #endif // _ARMA_VECTOR_H_

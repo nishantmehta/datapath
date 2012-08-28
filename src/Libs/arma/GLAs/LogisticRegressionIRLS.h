@@ -1,6 +1,8 @@
 #include <armadillo>
 #include <math.h>
 #include <boost/math/distributions.hpp>
+#include "arma/Types/VECTOR.h"
+#include "arma/Types/MATRIX.h"
 
 #define ADD(x) x += other.x;
 
@@ -28,9 +30,6 @@
  */
 
 using namespace arma;
-
-typedef Col<DOUBLE> VECTOR;
-typedef Mat<DOUBLE> MATRIX;
 
 // Declaration
 class LogisticRegressionIRLS;

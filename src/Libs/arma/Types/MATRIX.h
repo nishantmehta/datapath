@@ -8,20 +8,20 @@
 // This datatype requires the base library be loaded.
 
 #include <armadillo>
-#include "DOUBLE.h"
-#include "FLOAT.h"
+#include "base/Types/DOUBLE.h"
+#include "base/Types/FLOAT.h"
 
 /**
  *  TYPE_DESC
  *      NAME(</MATRIX/>)
  *  END_DESC
  */
-typedef Mat<DOUBLE> MATRIX;
+typedef arma::Mat<DOUBLE> MATRIX;
 /**
  *  TYPE_DESC
  *      NAME(</FMATRIX/>)
  *  END_DESC
  */
-typedef Mat<FLOAT> FMATRIX;
+typedef arma::Mat<FLOAT> FMATRIX;
 
 #endif // _ARMA_MATRIX_H_

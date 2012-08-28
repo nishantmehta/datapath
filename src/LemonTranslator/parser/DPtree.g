@@ -552,6 +552,11 @@ glaRule
                string file = dTM.GetTypeFile(*it);
                ADD_INCLUDE(defs, file);
            }
+           // Make sure we have the definitions for the output types
+           for( vector<string>::const_iterator it = outTypes.begin(); it != outTypes.end(); ++it ) {
+               string file = dTM.GetTypeFile(*it);
+               ADD_INCLUDE(defs, file);
+           }
 #else
            lInfo.Prepare( cstStr );
 #endif
@@ -809,7 +814,7 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
 #endif
       $isCT = lInfo.IsListConstant() && funcPure;
       if( file != "" )
-          defs += "#include \"" + file + "\"\n";
+        ADD_INCLUDE(defs, file);
 
       std::vector<string> eVals = lInfo.Generate();
       $sExpr = "(";
@@ -849,7 +854,7 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
 #endif
       $isCT = lInfo.IsListConstant() && funcPure;
       if( file != "" )
-          defs += "#include \"" + file + "\"\n";
+        ADD_INCLUDE(defs, file);
 
       if( $rt.external )
         $type = $rt.type;

@@ -1,4 +1,6 @@
 #include <armadillo>
+#include "arma/Types/VECTOR.h"
+#include "arma/Types/MATRIX.h"
 
 /** Information for Meta-GLAs
  *
@@ -16,12 +18,10 @@ class SparsityMatrix {
 
     uint64_t tupleCount;
 
-    typedef Mat<DOUBLE> MATRIX;
     MATRIX sparsityMatrix;
 
     uint64_t curRow;
 
-    typedef Col<DOUBLE> VECTOR;
 public:
 
     SparsityMatrix<//>() : tupleCount(0), sparsityMatrix(NUM_ELEM, NUM_ELEM) {
