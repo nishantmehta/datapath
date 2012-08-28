@@ -25,7 +25,6 @@ include(DataFunctions.m4)
 #include "JoinWayPointID.h"
 #include "HashData.h"
 #include "GLAData.h"
-#include "GlobalGLAState.h"
 #include "HashTableSegment.h"
 #include "Tokens.h"
 #include <stdio.h>
@@ -94,10 +93,5 @@ M4_CREATE_DATA_TYPE(GLAStatesRez, ExecEngineData,
 M4_CREATE_DATA_TYPE(GLAStatesFrRez, ExecEngineData,
 <//>,
 </(glaStates, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (fragInfo, QueryIDToInt), (queriesToIterate, QueryIDSet)/>)
-
-/** Results containing GlobalGLAStates */
-M4_CREATE_DATA_TYPE( GlobalGLAStatesRez, ExecEngineData,
-<//>,
-</(glaStates, QueryToGlobalGLAPtrMap)/>)
 
 #endif

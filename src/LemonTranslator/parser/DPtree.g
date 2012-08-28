@@ -577,7 +577,7 @@ glaRule
 
            defs += $glaDef.defs;
 
-            lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
+           lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
     }
   ;
 
@@ -676,14 +676,8 @@ aggregateWP
   ;
 
 glaWP
-    @init {
-        bool isLarge = false;
-    }
-    : ^(GLA (PLUS {isLarge = true;})? {
-        if( isLarge )
-            lT->AddGLALargeWP(wp);
-        else
-            lT->AddGLAWP(wp);
+    : ^(GLA {
+        lT->AddGLAWP(wp);
     }
       connList )
   ;

@@ -37,7 +37,6 @@
 #include "WriterWayPointImp.h"
 #include "TileJoinWayPointImp.h"
 #include "GLASmallWayPointImp.h"
-#include "GLALargeWayPointImp.h"
 
 /* The only function. Takes a configuration objec as input
      and creates the waypoint of the correct type.
@@ -88,8 +87,6 @@ WayPointImp* WayPointFactory(const WayPointConfigureData &configData){
 
         case GLAConfigureData::type :
             return new GLASmallWayPointImp;
-        case GLALargeConfigureData::type :
-            return new GLALargeWayPointImp;
 
         default:
             FATAL ("Got some strange type of waypoint configuration. \n");

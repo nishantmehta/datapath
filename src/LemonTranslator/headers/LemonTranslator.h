@@ -70,7 +70,6 @@ public:
     bool AddAggregateWP(WayPointID aggWP);
     bool AddPrintWP(WayPointID printWP);
     bool AddGLAWP(WayPointID glaWP);
-    bool AddGLALargeWP(WayPointID glaWP);
 
     // Adding Edges to the graph (terminating or non-terminating)
     // The edge direction should be provided correctly, always bottom to top
@@ -113,13 +112,6 @@ public:
                             string glaDef, /* definitions to inject at top of file */
                 string constructorExp, /*expression in GLA constructor */
                 SlotContainer& atts, string expr, string initializer = "");
-
-    bool AddGLALarge(WayPointID wp, QueryID query,
-             SlotContainer& resultAtts, /*list of attributes produced as the result */
-             string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
-             string glaDef, /* definitions to inject at top of file */
-             string constructorExp, /*expression in GLA constructor */
-             SlotContainer& atts, string expr, string initializer = "");
 
     // Selection, Join. Queries added one by one
     bool AddBypass(WayPointID wp, QueryID query);

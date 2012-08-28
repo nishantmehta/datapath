@@ -69,10 +69,4 @@ M4_CREATE_DATA_TYPE(GLAPreFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAMergeStatesWorkFunc, WorkFuncWrapper, <//>, <//>)
 
-/** WorkFuncs for GLALarge */
-M4_CREATE_DATA_TYPE(GLALargeProcessChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
-M4_CREATE_DATA_TYPE(GLALargeFragmentCountWorkFunc, WorkFuncWrapper, <//>, <//>)
-M4_CREATE_DATA_TYPE(GLALargeFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
-M4_CREATE_DATA_TYPE(GLALargeDeallocateWorkFunc, WorkFuncWrapper, <//>, <//>)
-
 #endif

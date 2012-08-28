@@ -44,7 +44,6 @@ M4_CREATE_DATA_TYPE(AggregateConfigureData, WayPointConfigureData, <//>, <//>)
 M4_CREATE_DATA_TYPE(WriterConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(JoinMergeConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>, <//>)
-M4_CREATE_DATA_TYPE(GLALargeConfigureData, WayPointConfigureData, <//>, <//>)
 
 typedef Swapify< pair<string,string> > FileInfoObj;
 typedef EfficientMap< QueryID, FileInfoObj> QueryToFileInfoMap;

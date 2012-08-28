@@ -27,7 +27,6 @@ include(DataFunctions.m4)
 /*#include "HString.h"*/
 #include "JoinWayPointID.h"
 #include "ExecEngineData.h"
-#include "GlobalGLAState.h"
 
 // this is the base class for the hierarchy of types that one can send to a CPU
 // worker to describe the task that the worker is supposed to complete.  In more
@@ -160,34 +159,5 @@ M4_CREATE_DATA_TYPE(GLAPreFinalizeWD, WorkDescription,
 M4_CREATE_DATA_TYPE(GLAFinalizeWD, WorkDescription,
 </(fragmentNo, int)/>,
 </(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap)/>)
-
-
-
-/** work for GLALargeProcessChunkWorkFunc:
-
-    glaStates: a map and must have an element for each value in whichQueryExits
-               if the state exists.
-
-*/
-
-M4_CREATE_DATA_TYPE(GLALargeProcessChunkWD, WorkDescription,
-<//>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGlobalGLAPtrMap), (chunkToProcess, Chunk)/>)
-
-/** work for GLALargeDeallocateWorkFunc:
-    	 glaStates contains a list of states for each query
-*/
-M4_CREATE_DATA_TYPE(GLALargeFragmentCountWD, WorkDescription,
-<//>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGlobalGLAPtrMap), (segmentIDs, QueryIDToInt)/>)
-
-/** work for GLALargeDeallocateWorkFunc:
-    	 glaStates contains a list of states for each query
-*/
-
-M4_CREATE_DATA_TYPE(GLALargeDeallocateWD, WorkDescription,
-<//>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLASContMap)/>)
-
 
 #endif // WORK_DESCRIPTION_H

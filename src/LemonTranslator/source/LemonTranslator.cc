@@ -26,7 +26,6 @@
 #include "LT_Print.h"
 #include "LT_TextLoader.h"
 #include "LT_GLA.h"
-#include "LT_GLA_large.h"
 #include "AttributeManager.h"
 #include "QueryManager.h"
 #include "Errors.h"
@@ -323,14 +322,6 @@ bool LemonTranslator::AddGLAWP(WayPointID glaWPID)
     return AddGraphNode(glaWPID, GLAWaypoint, WP);
 }
 
-bool LemonTranslator::AddGLALargeWP(WayPointID glaWPID)
-{
-    PDEBUG("LemonTranslator::AddGLALargeWP(WayPointID glaWPID = %s)", glaWPID.getName().c_str());
-    FATALIF(!glaWPID.IsValid(), "Invalid WaypointID received in AddGLALargeWP");
-    LT_Waypoint* WP = new LT_GLA_large(glaWPID);
-    return AddGraphNode(glaWPID, GLALargeWaypoint, WP);
-}
-
 
 bool LemonTranslator::AddPrintWP(WayPointID printWPID)
 {
@@ -436,22 +427,6 @@ bool LemonTranslator::AddGLA(WayPointID wpID, QueryID query,
 {
     PDEBUG("LemonTranslator::AddGLA(WayPointID wpID = %s, QueryID query = %s, SlotContainer resultAtts = %s, string glaName = %s, string constructorExp = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(resultAtts)).c_str(), glaName.c_str(), constructorExp.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddAggregate");
-    LT_Waypoint* WP = NULL;
-    set<SlotID> attr;
-    if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddGLA(query, resultAtts, glaName, glaDef, constructorExp, attr, expr, initializer);
-}
-
-//GLA, one per query basis
-bool LemonTranslator::AddGLALarge(WayPointID wpID, QueryID query,
-            SlotContainer& resultAtts, /*list of attributes produced as the result */
-            string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
-            string glaDef,
-            string constructorExp, /*expression in GLA constructor */
-            SlotContainer& atts, string expr, string initializer)
-{
-    PDEBUG("LemonTranslator::AddGLALarge(WayPointID wpID = %s, QueryID query = %s, SlotContainer resultAtts = %s, string glaName = %s, string constructorExp = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(resultAtts)).c_str(), glaName.c_str(), constructorExp.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
-    FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddGLALarge");
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;

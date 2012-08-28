@@ -50,11 +50,6 @@ M4_CREATE_DATA_TYPE(GLAHistory, History,
  </(whichFragment, int)/>,
  <//>)
 
-// history specific to a GLALarge waypoint
-M4_CREATE_DATA_TYPE(GLALargeHistory, History,
- </(whichSegment, int), (whichFragment, int)/>,
- <//>)
- 
 // history specific to the hash table cleaner
 M4_CREATE_DATA_TYPE(HashCleanerHistory, History,
  </(whichSegment, int)/>,

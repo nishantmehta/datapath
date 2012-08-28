@@ -114,7 +114,7 @@ public:
         }
     }
 
-    void AddItem( TYPED_ARGS(MY_INPUT) ) {
+    void AddItem( TYPED_CONST_REF_ARGS(MY_INPUT) ) {
 m4_ifval(KEY_GEN, </dnl
         uint64_t segNum = keyGenerator.GetKey( ARGS(SEG_KEY) );
         segNum %= USE_FRAGMENTS;
