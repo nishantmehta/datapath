@@ -1,7 +1,7 @@
 #ifndef _base_PGY_
 #define _base_PGY_
 // Piggy description file for library base
-// generated on Tuesday, August 28, 2012 at 11:14 EDT
+// generated on Tuesday, August 28, 2012 at 14:38 EDT
 
 // base/Types/HString.h
 DEFINE DATATYPE HString FROM "base/Types/HString.h";
@@ -250,6 +250,7 @@ DEFINE FUNCTION Hash ( DOUBLE  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( FLOAT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( INT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
+DEFINE FUNCTION Hash ( BIGINT, BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 
 // base/Functions/DATE-Funcs.h
 DEFINE FUNCTION DATE ( INT  ) -> DATE FROM "base/Functions/DATE-Funcs.h";

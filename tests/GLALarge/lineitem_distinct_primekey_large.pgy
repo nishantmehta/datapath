@@ -15,12 +15,6 @@ RESULT_FILE(lineitem_distinct_primekey_large-results.csv)
 LOAD lineitem;
 
 /*
-linedist = GLA+:Distinct< [val1:BIGINT, val2:INT] >
-    FROM lineitem
-    USING lineitem.l_orderkey, lineitem.l_linenumber
-    AS orderkey:BIGINT, linenumber:INT;
-*/
-
 linedist = GLA:Segmented
 <
     [
@@ -40,6 +34,28 @@ FROM
 USING
     lineitem.l_orderkey,
     lineitem.l_linenumber,
+    lineitem.l_orderkey,
+    lineitem.l_linenumber
+AS
+    orderkey : BIGINT,
+    linenumber : INT;
+*/
+
+linedist = GLA:Segmented
+<
+    key : BIGINT,
+    GLA:Distinct
+    <
+        [
+            val1 : BIGINT,
+            val2 : INT
+        ]
+    >
+>
+FROM
+    lineitem
+USING
+    Hash( Hash( lineitem.l_orderkey ), Hash( lineitem.l_linenumber) ),
     lineitem.l_orderkey,
     lineitem.l_linenumber
 AS

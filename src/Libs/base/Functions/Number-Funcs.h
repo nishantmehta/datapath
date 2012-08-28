@@ -8,6 +8,7 @@
 #include "base/Types/FLOAT.h"
 #include "base/Types/DOUBLE.h"
 #include "base/Types/bool.h"
+#include "HashFunctions.h"
 
 // ***** Constructors *****
 // FUNC_DEF(</DOUBLE/>, </(val, FLOAT)/>, </DOUBLE/>)
@@ -220,5 +221,12 @@
 // FUNC_DEF(</Hash/>, </(val, FLOAT)/>, </BIGINT/>)
 // FUNC_DEF(</Hash/>, </(val, BIGINT)/>, </BIGINT/>)
 // FUNC_DEF(</Hash/>, </(val, INT)/>, </BIGINT/>)
+
+// Function to hash a new value into an existing hash
+// FUNC_DEF(</Hash/>, </(newVal, BIGINT), (hash, BIGINT)/>, </BIGINT/>)
+inline
+BIGINT Hash( const BIGINT newVal, const BIGINT hash ) {
+    return CongruentHash( newVal, hash );
+}
 
 #endif // _NUMBER_FUNCS_H_
