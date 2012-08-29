@@ -181,7 +181,7 @@ public:
         return false;
     }
 
-    virtual bool AddPrint(QueryID query, SlotSet& atts, string expr /* what to print */, string initializer, string name="", string type="", string file="", string defs = "", string separator=","){
+    virtual bool AddPrint(QueryID query, SlotSet& atts, string expr /* what to print */, string initializer, string header="", string file="", string defs = "", string separator=","){
         return false;
     }
 

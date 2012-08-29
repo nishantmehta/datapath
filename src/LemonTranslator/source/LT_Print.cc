@@ -54,10 +54,9 @@ bool LT_Print::GetConfig(WayPointConfigureData& where){
 #endif
 
         QueryToFileInfoMap info;
-        FOREACH_STL(el, colNames){
+        FOREACH_STL(el, headers){
             QueryID query = el.first;
             string header = el.second;
-            header += "\n"+colTypes[query]+"\n";
             string fileName = "RESULTS/";
             if( fileOut[query] == "" )
             {
@@ -109,7 +108,7 @@ void LT_Print::ClearAllDataStructure() {
     ClearAll();
     print.clear();
 }
-bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name, string type, string file, string defs, string separator)
+bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string header, string file, string defs, string separator)
 {
 
     cout << "Adding query " << GetQueryName(query) << endl;
@@ -118,15 +117,12 @@ bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initia
     print[query] += ","+expr;
     initializers[query] += initializer;
     definitions[query] += defs;
+    headers[query] = header;
 
     if (isNew){
-        colNames[query] = name;
-        colTypes[query] = type;
         fileOut[query] = file;
         separators[query] = separator;
     } else {
-        colNames[query] += separators[query]+name;
-        colTypes[query] += separators[query]+type;
     }
 
     queriesCovered.Union(query);

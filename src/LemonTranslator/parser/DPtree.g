@@ -245,7 +245,7 @@ scanner
             FOREACH_TWL(sID, attribs) {
                 string name = am.GetAttributeName( sID );
                 string type = am.GetAttributeType( name );
-                FATALIF(!dTM.IsType( type ), "Attempting to write relation \%s containing unknown type \%s, please ensure all required libraries are loaded.", rName.c_str(), type.c_str());
+                FATALIF(!dTM.IsType( type ), "Attempting to read relation \%s containing unknown type \%s, please ensure all required libraries are loaded.", rName.c_str(), type.c_str());
             } END_FOREACH;
 
             WayPointID scanner(sName);
@@ -254,6 +254,7 @@ scanner
     ;
 
 waypoint[bool isNew]
+    @after { wp = WayPointID(); }
     :    ^(WAYPOINT__ ID {
             if (isNew){
                 /*waypointIncludes.clear();*/
@@ -330,37 +331,60 @@ aggregateRule
 printRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
-      vector<string> names;
-      vector<string> types;
+      vector< vector< string > > header;
       string file;
       string defs; /* definitions needed by expressions */
       string separator = ",";
         }
-    : ^(PRINT expr[atts, cstStr, defs] printAtts[names, types] printFile[file] printSep[separator] )
+    : ^(PRINT expr[atts, cstStr, defs] printAtts[header] printFile[file] printSep[separator] )
     {
-        string printNames;
-        string printTypes;
+        string printHeader;
 
-        for(size_t i = 0; i < names.size(); ++i ) {
-            if( i > 0 )
-                printNames += separator;
+        for( size_t i = 0; i < header.size(); ++i ) {
+            for( size_t j = 0; j < header[i].size(); ++ j ) {
+                if( j > 0 )
+                    printHeader += separator;
 
-            printNames += names[i];
-        }
-        for(size_t i = 0; i < types.size(); ++i ) {
-            if( i > 0 )
-                printTypes += separator;
+                printHeader += header[i][j];
+            }
 
-            printTypes += types[i];
+            printHeader += "\n";
         }
 
-        lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, printNames, printTypes, file, defs, separator);
+        lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, printHeader, file, defs, separator);
     }
   ;
 
-printAtts[vector<string>& names, vector<string>& types]
+printAtts[vector< vector< string > >& header]
+    @init{
+        int level = -1;
+        int nAtts = 0;
+        int maxLevel = -1;
+    }
     : /*nothing*/
-    | ( ^(ATTWT n=ID t=ID) { names.push_back(STR($n)); types.push_back(STR($t)); } )+
+    | (
+        ^(ATTC {level=-1;}
+            (a=ID
+                {
+                    ++level;
+                    if( level > maxLevel ) {
+                        header.push_back(vector<string>(nAtts));
+                        maxLevel = level;
+                    }
+
+                    header[level].push_back(STR($a));
+                }
+            )+
+            {
+                // If we didn't get all the way up to max level this time,
+                // pad out the extra levels with empty strings.
+                while( level < maxLevel ) {
+                    ++level;
+                    header[level].push_back(string());
+                }
+            }
+        ) {++nAtts;}
+      )+
     ;
 
 ctAttList[string& ctArgs]
@@ -526,16 +550,17 @@ funcRetType returns [string type, bool external]
 
 attWT[string& args, string& defs]
     : ^(ATTWT att=ID type=ID) {
-      args+="(";
-      args+=(const char*) $att.text->chars;
-      args+=",";
-      args+=(const char*) $type.text->chars;
-      args+=")";
-
+      string name = STR($att);
       string t = STR($type);
       FATALIF(!dTM.IsType(t), "Attempted to use unknown type \%s", t.c_str());
       string file = dTM.GetTypeFile(t);
       ADD_INCLUDE(defs, file);
+
+      args+="(";
+      args+=name;
+      args+=",";
+      args+=t;
+      args+=")";
     }
     ;
 

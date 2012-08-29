@@ -122,7 +122,7 @@ public:
 
     // Print. Need a list of these
     bool AddPrint(WayPointID wp, QueryID query, SlotContainer& atts,
-                  string expr /* what to print */, string initializer="", string name="", string type="",
+                  string expr /* what to print */, string initializer="", string header="",
                   string file="", string defs = "", string separator=",");
 
     bool AddWriter(WayPointID wpID, QueryID query);
