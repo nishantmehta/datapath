@@ -152,4 +152,6 @@ AS
     o_orderdate    : DATE     ,
     o_shippriority : HString
 INTO
-    "TPCH-Q3-result.csv";
+    "TPCH-Q3-result.csv"
+SEPARATOR
+    "|";

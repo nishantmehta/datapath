@@ -463,7 +463,7 @@ bool LemonTranslator::AddJoin(WayPointID wpID, QueryID query,
 bool LemonTranslator::AddPrint(WayPointID wpID, QueryID query,
         SlotContainer& atts, string expr /* what to print */,
         string initializer, string name, string type, string file,
-        string defs)
+        string defs, string separator)
 {
     PDEBUG("LemonTranslator::AddPrint(WayPointID wpID = %s, QueryID query = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddPrint");
@@ -471,7 +471,7 @@ bool LemonTranslator::AddPrint(WayPointID wpID, QueryID query,
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
     queryToRootMap[query] = IDToNode[wpID];
-    return WP->AddPrint(query, attr, expr, initializer, name, type, file, defs);
+    return WP->AddPrint(query, attr, expr, initializer, name, type, file, defs, separator);
 }
 
 // Add writing capabilities to a scanner

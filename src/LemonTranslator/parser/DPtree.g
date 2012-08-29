@@ -57,9 +57,9 @@ options {
 #define ADD_CST(cstStr, cst) ((cstStr) += ("    " + (cst)))
 #endif
 #ifndef ADD_INCLUDE
-#define ADD_INCLUDE(defs, file) if( waypointIncludes.find(file) == waypointIncludes.end() ) { \
+#define ADD_INCLUDE(defs, file) if( waypointIncludes[wp].find(file) == waypointIncludes[wp].end() ) { \
     (defs) += ("m4_include(</" + (file) + "/>)\n"); \
-    waypointIncludes.insert(file); \
+    waypointIncludes[wp].insert(file); \
     }
 #endif
 }
@@ -88,7 +88,7 @@ static DataTypeManager& dTM = DataTypeManager::GetDataTypeManager();
 static Catalog& catalog = Catalog::GetCatalog();
 
 // Set of includes for the current waypoint, used to reduce redundant includes.
-static set<string> waypointIncludes;
+static map<WayPointID, set<string> > waypointIncludes;
 
 extern int tempCounter; // id for temporary variables}
 string StripQuotes(string str);
@@ -146,6 +146,7 @@ complexStatement
   | ^(TYPEDEF_GLA name=ID g=glaDef) {
         string glaName = $g.name;
         dTM.AddSynonymType(glaName, STR($name));
+        waypointIncludes[wp].clear();
       }
   | ^(FUNCTION ID (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
@@ -255,7 +256,7 @@ scanner
 waypoint[bool isNew]
     :    ^(WAYPOINT__ ID {
             if (isNew){
-                waypointIncludes.clear();
+                /*waypointIncludes.clear();*/
                 WayPointID nWp((const char*)$ID.text->chars);
                 wp = nWp;
             } else {
@@ -329,18 +330,37 @@ aggregateRule
 printRule
     @init {SlotContainer atts; /* the set of attributes */
       string cstStr; /* the constants used in the expression */
-      string names;
-      string types;
+      vector<string> names;
+      vector<string> types;
       string file;
       string defs; /* definitions needed by expressions */
+      string separator = ",";
         }
-    : ^(PRINT expr[atts, cstStr, defs] printAtts[names, types] printFile[file] ){ lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, names, types, file, defs); }
+    : ^(PRINT expr[atts, cstStr, defs] printAtts[names, types] printFile[file] printSep[separator] )
+    {
+        string printNames;
+        string printTypes;
+
+        for(size_t i = 0; i < names.size(); ++i ) {
+            if( i > 0 )
+                printNames += separator;
+
+            printNames += names[i];
+        }
+        for(size_t i = 0; i < types.size(); ++i ) {
+            if( i > 0 )
+                printTypes += separator;
+
+            printTypes += types[i];
+        }
+
+        lT->AddPrint(wp, qry, atts, $expr.sExpr, cstStr, printNames, printTypes, file, defs, separator);
+    }
   ;
 
-printAtts[string& names, string& types]
+printAtts[vector<string>& names, vector<string>& types]
     : /*nothing*/
-    | ^(ATTWT n=ID t=ID) { names+=TXT($n); types+=TXT($t); }
-      ( ^(ATTWT n=ID t=ID) { names+=","; names+=TXT($n); types+=","; types+=TXT($t); } )*
+    | ( ^(ATTWT n=ID t=ID) { names.push_back(STR($n)); types.push_back(STR($t)); } )+
     ;
 
 ctAttList[string& ctArgs]
@@ -355,6 +375,14 @@ ctAtt returns[string s]
 printFile[string& s]
     : /* nothing */
     | ^(LIST a=STRING ) {s=STRS(a);}
+    ;
+
+printSep[string& s]
+    : /* nothing */
+    | ^(SEPARATOR sep=STRING)
+    {
+        s = STRS($sep);
+    }
     ;
 
 /* accumulate arguments form GLA definitions and form m4 code to call it */

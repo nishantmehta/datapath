@@ -155,4 +155,6 @@ AS
     avg_disc       : DOUBLE  ,
     count_order    : BIGINT
 INTO
-    "TPCH-Q1-result.csv";
+    "TPCH-Q1-result.csv"
+SEPARATOR
+    "|";

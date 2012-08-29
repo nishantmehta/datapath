@@ -309,7 +309,7 @@ functionTemplateArg
 
 expressionList
     : /* nothing*/ ->
-    | expression (COMMA! expression)*// -> $a
+    | expression (COMMA! expression)* // -> $a
     ;
 
 constant

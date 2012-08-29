@@ -50,9 +50,10 @@ void PrintWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 #endif  // DEBUG
 
 		// Open the fine and write the header for the query
-		pair<string,string>& info = queriesInfo.Find(tempExit.query).GetData();
-		string& fName = info.first;
-		string& fHeader = info.second;
+		PrintFileInfo& info = queriesInfo.Find(tempExit.query).GetData();
+		string& fName = info.file;
+		string& fHeader = info.header;
+        string& fSeparator = info.separator;
 		FILE* str = fopen(fName.c_str(), "w");
 		if ( str==NULL){
 			printf( "File %s could not be opened in PRINT:", fName.c_str());
@@ -60,7 +61,8 @@ void PrintWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configDat
 			break;
 		}
 		fprintf(str, "%s", fHeader.c_str());
-		FileObj fileObj(str);
+        PrintFileObj pfo(str, fSeparator);
+		FileObj fileObj(pfo);
 		QueryID query=tempExit.query;
 		streams.Insert(query, fileObj);
 
@@ -113,7 +115,7 @@ void PrintWayPointImp :: ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &mess
 				QueryID dummy;
 				FileObj fileObj;
 				streams.Remove(tmp2, dummy, fileObj);
-				fclose(fileObj.GetData());
+				fclose(fileObj.GetData().file);
 			}
 		}END_FOREACH;
 

@@ -46,9 +46,9 @@ statement
   : a=ID EQUAL actionBody -> ^(NEWSTATEMENT ^(WAYPOINT__ $a actionBody) )
     /* above always creates a new waypoint.  */
   | LOAD a=ID (AS b=ID)? -> ^(NEWSTATEMENT ^(SCANNER__ $a $b) )
-  | PRINT a=ID USING exp=expressionList (AS attListWTypes) (INTO file=STRING)?
+  | PRINT a=ID USING exp=expressionList (AS attListWTypes) (INTO file=STRING)? (SEPARATOR sep=STRING)?
     -> ^(NEWSTATEMENT ^(WAYPOINT__ ID[$a, "print"] ^(PRINT TERMCONN $a)
-        ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp attListWTypes ^(LIST $file)? ) )))
+        ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp attListWTypes ^(LIST $file)? ^(SEPARATOR $sep)? ) )))
   | STORE a=ID INTO b=ID
     -> ^(NEWSTATEMENT ^(WRITER__ $b ID[$a, qry.c_str()] TERMCONN $a))
   | CREATE createStatement -> createStatement

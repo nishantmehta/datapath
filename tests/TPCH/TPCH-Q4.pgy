@@ -115,4 +115,5 @@ AS
     o_orderpriority : HString ,
     order_count     : BIGINT
 INTO
-    "TPCH-Q4-result.csv";
+    "TPCH-Q4-result.csv"
+SEPARATOR "|";

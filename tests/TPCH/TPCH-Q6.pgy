@@ -35,7 +35,8 @@ rev = GLA:Sum
 PRINT rev
     USING revenue
     AS revenue:DOUBLE
-    INTO "TPCH-Q6-result.csv";
+    INTO "TPCH-Q6-result.csv"
+    SEPARATOR "|";
 
 /*
 rev = GLA:Count

@@ -45,8 +45,15 @@ M4_CREATE_DATA_TYPE(SelectionWorkDescription, WorkDescription,
 </(chunkID, ChunkID)/>,
 </(whichQueryExits, QueryExitContainer), (chunkToProcess, Chunk)/>)
 
+struct PrintFileObj {
+    FILE* file;
+    string separator;
 
-typedef Swapify<FILE*> FileObj;
+    PrintFileObj() : file(NULL), separator("") {}
+    PrintFileObj(FILE* file, string separator) :
+        file(file), separator(separator) {}
+};
+typedef Swapify<PrintFileObj> FileObj;
 typedef EfficientMap<QueryID, FileObj> QueryToFileMap;
 
 // this is the work description for a print

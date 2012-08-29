@@ -45,7 +45,16 @@ M4_CREATE_DATA_TYPE(WriterConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(JoinMergeConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>, <//>)
 
-typedef Swapify< pair<string,string> > FileInfoObj;
+struct PrintFileInfo {
+    string file;
+    string header;
+    string separator;
+
+    PrintFileInfo() : file(""), header(""), separator("") {}
+    PrintFileInfo( string file, string header, string separator ) :
+        file(file), header(header), separator(separator) {}
+};
+typedef Swapify< PrintFileInfo > FileInfoObj;
 typedef EfficientMap< QueryID, FileInfoObj> QueryToFileInfoMap;
 
 M4_CREATE_DATA_TYPE(PrintConfigureData, WayPointConfigureData, <//>,

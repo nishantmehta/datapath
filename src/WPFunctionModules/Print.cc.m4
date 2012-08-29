@@ -38,13 +38,11 @@ dnl
 extern "C"
 int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
 
-    // TODO: Make this configurable
-    const char DELIM = '|';
-
     // get the work description
     PrintWorkDescription myWork;
     myWork.swap (workDescription);
     Chunk &input = myWork.get_chunkToPrint ();
+    QueryToFileMap& streams = myWork.get_streams();
 
 <//>M4_DECLARE_QUERYIDS(</M4_Print_List/>,</M4_Attribute_Queries/>)dnl
 
@@ -55,7 +53,9 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
 
     // for each query, define a stream variable
 <//>m4_foreach(</_Q_/>, </M4_Print_List/>, </dnl
-    FILE* file_<//>M4_QUERY_NAME(_Q_) = myWork.get_streams().Find(M4_QUERY_NAME(_Q_));
+    PrintFileObj& pfo_<//>M4_QUERY_NAME(_Q_) = streams.Find(M4_QUERY_NAME(_Q_)).GetData();
+    FILE* file_<//>M4_QUERY_NAME(_Q_) = pfo_<//>M4_QUERY_NAME(_Q_)<//>.file;
+    const char * DELIM_<//>M4_QUERY_NAME(_Q_) = pfo_<//>M4_QUERY_NAME(_Q_)<//>.separator.c_str();
 <//>/>)dnl
     // PRINTING
     char buffer[10000]; // ALIN, CHANGE THIS TO A DEFINED CONSTANT
@@ -77,7 +77,7 @@ dnl     qry.Print();
 
 <//><//>m4_foreach(</_A_/>, M4_PRINT_LIST(_Q_),</dnl
             curr+=ToString(M4_VAL_SUBST(_A_),buffer+curr);
-            buffer[curr-1] = DELIM;
+            curr += sprintf(buffer + (curr-1), DELIM_<//>M4_QUERY_NAME(_Q_)) - 1;
 
 <//><//>/>)dnl
             // now we print the buffer

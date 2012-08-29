@@ -296,4 +296,6 @@ AS
     s_phone   : HString ,
     s_comment : HString
 INTO
-    "TPCH-Q2-result.csv";
+    "TPCH-Q2-result.csv"
+SEPARATOR
+    "|";

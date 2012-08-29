@@ -161,4 +161,5 @@ AS
     n_name : HString,
     revenue : DOUBLE
 INTO
-    "TPCH-Q5-result.csv";
+    "TPCH-Q5-result.csv"
+SEPARATOR "|";

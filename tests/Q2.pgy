@@ -23,4 +23,5 @@ gl = GLA:Multiplexer< GLA:Sum, GLA:Sum, GLA:Sum, GLA:Count >
 PRINT gl
     USING eprice, discount, tax, count
     AS eprice:DOUBLE, discount:DOUBLE, tax:DOUBLE, count:BIGINT
-    INTO "Q2-result.csv";
+    INTO "Q2-result.csv"
+    SEPARATOR "|";

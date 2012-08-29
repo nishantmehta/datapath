@@ -30,6 +30,7 @@ private:
     QueryToPrintString colNames; // names of columns in header
     QueryToPrintString colTypes; // types for columns
     QueryToPrintString fileOut;     // name of file to print query reqsults
+    QueryToPrintString separators; // Separator to use between attributes
 
     QueryToPrintString definitions;
 
@@ -44,7 +45,7 @@ public:
 
     virtual void DeleteQuery(QueryID query);
 
-    virtual bool AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name = "tmp", string type="string", string file="", string defs = "");
+    virtual bool AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name = "tmp", string type="string", string file="", string defs = "", string separator=",");
 
     virtual bool PropagateDownTerminating(QueryID query, const SlotSet& atts/*blank*/, SlotSet& result, QueryExit qe);
 

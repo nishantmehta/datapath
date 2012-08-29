@@ -72,7 +72,8 @@ bool LT_Print::GetConfig(WayPointConfigureData& where){
             else {
                 fileName+=fileOut[query];
             }
-            pair<string,string> inf(fileName, header);
+
+            PrintFileInfo inf(fileName, header, separators[query]);
             FileInfoObj fInfo(inf);
             info.Insert(query, fInfo);
         }END_FOREACH;
@@ -108,7 +109,7 @@ void LT_Print::ClearAllDataStructure() {
     ClearAll();
     print.clear();
 }
-bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name, string type, string file, string defs)
+bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initializer, string name, string type, string file, string defs, string separator)
 {
 
     cout << "Adding query " << GetQueryName(query) << endl;
@@ -122,9 +123,10 @@ bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initia
         colNames[query] = name;
         colTypes[query] = type;
         fileOut[query] = file;
+        separators[query] = separator;
     } else {
-        colNames[query] += ","+name;
-        colTypes[query] += ","+type;
+        colNames[query] += separators[query]+name;
+        colTypes[query] += separators[query]+type;
     }
 
     queriesCovered.Union(query);
@@ -188,15 +190,16 @@ void LT_Print::WriteM4File(ostream& out) {
 
     // print module call
     out << "M4_PRINT_MODULE(" << wpname << ", ";
-        out << "\t</";
+        out << "</";
 
     // go through all queries and print the predicates
     // format "(Query, print), ..."
 
     for (QueryToPrintString::iterator it = print.begin();
              it != print.end();){
+        QueryID curQuery = it->first;
         out << "( " << GetQueryName(it->first)
-                 << it->second << " )";
+                 << it->second << ")";
         ++it;
         // do we need a comma?
         if (it!=print.end())
