@@ -55,7 +55,7 @@ bool LT_TextLoader :: GetConfig (WayPointConfigureData& where) {
 		files.push_back (tmp);
 	}
 
-	TextLoaderConfigureData loaderConfig( GetId(), myWorkFuncs, myEndingQueryExits, 
+	TextLoaderConfigureData loaderConfig( GetId(), myWorkFuncs, myEndingQueryExits,
 			myFlowThroughQueryExits, files, queryExits);
 
 	where.swap(loaderConfig);
@@ -84,6 +84,10 @@ void LT_TextLoader :: WriteM4File (ostream& out) {
   IDInfo info;
   GetId().getInfo(info);
   string wpname = info.getName();
+
+  // Write out required definitions.
+  out << "m4_divert(0)" << endl;
+  out << defs << endl;
 
 	// 1st argument
   out << "M4_TEXTLOADER_MODULE(" << wpname << ", ";

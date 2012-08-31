@@ -20,7 +20,7 @@
 #include "LT_Scanner.h"
 
 /** the internal translator class for TextLoaders
-		
+
 		We steal as much as possible from file Scanner
  */
 
@@ -28,10 +28,10 @@ class LT_TextLoader : public LT_Scanner {
 private:
 
 	/** NOTE: both of these are used only in M4 code generation*/
-	
+
 	/* the separator used in the text */
 	char separator;
-	
+
 	/* attributs to read from file, in order. if SlotID=Invalid, the
 			slot is skipped */
 	SlotContainer attributesInOrder;
@@ -40,13 +40,15 @@ private:
 
 	int count;
 
+    string defs;
+
 public:
 
-	LT_TextLoader(WayPointID id, SlotSet& atts, char _separator, 
-								SlotContainer& _attributesInOrder, string _pattern, int _count): 
-	LT_Scanner(id, id.getName(),atts), separator(_separator), 
-		pattern(_pattern), count(_count) {attributesInOrder.swap(_attributesInOrder);}
-	
+	LT_TextLoader(WayPointID id, SlotSet& atts, char _separator,
+								SlotContainer& _attributesInOrder, string _pattern, int _count, string defs):
+	LT_Scanner(id, id.getName(),atts), separator(_separator),
+		pattern(_pattern), count(_count), defs(defs) {attributesInOrder.swap(_attributesInOrder);}
+
 	virtual WaypointType GetType() {return TextLoaderWaypoint;}
 
 	virtual void WriteM4File(ostream& dir);

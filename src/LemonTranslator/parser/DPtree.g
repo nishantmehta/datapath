@@ -758,11 +758,29 @@ wayPointCN
     ;
 
 textloaderWP
-@init { SlotContainer attribs; char sep; string tablePattern; int count = 0;}
-@after { lT->AddTextLoaderWP(wp, attribs, sep, attribs, tablePattern, count); }
+@init {
+    SlotContainer attribs;
+    char sep;
+    string tablePattern;
+    int count = 0;
+    string defs;
+}
+@after {
+    lT->AddTextLoaderWP(wp, attribs, sep, attribs, tablePattern, count, defs);
+}
   :
     ^(TEXTLOADER__ (
-        ^(ATTFROM ID) { am.GetAttributesSlots(TXT($ID), attribs);}
+        ^(ATTFROM ID) {
+            am.GetAttributesSlots(TXT($ID), attribs);
+
+            FOREACH_TWL(sID, attribs) {
+                string name = am.GetAttributeName( sID );
+                string type = am.GetAttributeType( name );
+                FATALIF( !dTM.IsType( type ), "Attempting to read file \%s containing type \%s, please ensure all required libraries are loaded.", tablePattern.c_str(), type.c_str() );
+                string file = dTM.GetTypeFile( type );
+                ADD_INCLUDE(defs, file);
+            } END_FOREACH;
+        }
   | ^(SEPARATOR a=STRING) {sep = char(*(StripQuotes(TXT($a)).c_str()));}
   | ^(FILE__ b=STRING { tablePattern = TXTS($b); count=1; } (INT {count= atoi(TXT($INT));})? )
   )+ )

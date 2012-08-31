@@ -62,7 +62,8 @@ public:
                                                 read from file, in order. if SlotID=Invalid, the
                                                 slot is skipped */
             string pattern,
-            int count
+            int count,
+            string defs
             );
 
     bool AddSelectionWP(WayPointID selWP);

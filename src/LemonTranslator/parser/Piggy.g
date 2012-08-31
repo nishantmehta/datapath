@@ -92,21 +92,21 @@ inStmt
     ;
 
 actionBody
-  : JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt
-    ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN ^(ATTS $l2)))
-  | FILTER a=ID BY exp=expressionList
-    -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
+    : JOIN r1=ID BY l1=attEListAlt COMMA r2=ID BY l2=attEListAlt
+        ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN ^(ATTS $l2)))
+    | FILTER a=ID BY exp=expressionList
+        -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
     | FILTER r1=ID USING l1=attEListAlt inStmt r2=ID LPAREN l2=attEListAlt RPAREN
-    ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
+        ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
     | GLA gla=glaDef ct=constArgs (FROM? inp=ID) USING exp=expressionList (AS rez=attListWTypes)?
-    -> ^(GLA $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA $ct $gla $rez $exp))
-  | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
-    -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
-  | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
+        -> ^(GLA $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA $ct $gla $rez $exp))
+    | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
+        -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
+    | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
         -> ^(TEXTLOADER__ ^(ATTFROM $c) ^(SEPARATOR $s)?  ^(FILE__ $f $b) )
     | FOREACH a=ID GENERATE generateList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] generateList )
-  ;
+    ;
 
 generateItem
     : e=expression AS a=ID COLON t=ID -> ^(SYNTHESIZE__ $a $t $e) ;

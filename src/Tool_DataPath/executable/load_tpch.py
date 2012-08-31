@@ -113,7 +113,6 @@ dataDir = realpath(args.data)
 srcDir = realpath(args.source_dir)
 dpDir = os.path.join( srcDir, 'Tool_DataPath/executable')
 dpExec = os.path.join( dpDir, 'dp' )
-dtmiExec = realpath( os.path.join(srcDir, 'Tool_DataTypeManagerInitializer/executable/dtm_init'))
 
 tpchVersion = args.gen_version.replace('.', '_')
 tpchDir = os.path.join( dataDir, 'tpch_' + tpchVersion)
@@ -339,16 +338,6 @@ def loadData():
     if not foundFiles >= queryFiles:
         print "Error: unable to locate all necessary query files in query directory."
         sys.exit(7)
-
-    print "Loading types into database."
-
-    try:
-        subprocess.check_call(dtmiExec, cwd=dpDir)
-    except Exception as e:
-        print 'Error: unable to load types!'
-        print dtmiExec
-        print e
-        sys.exit(11)
 
     # TODO: Fix DataPath so that it will exit cleanly with the -q switch.
     # It currently does not save meta-data when bulkloading relations if
