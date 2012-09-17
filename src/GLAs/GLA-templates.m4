@@ -63,6 +63,9 @@ m4_define(</TYPE_DESC/>, </dnl
 
 m4_define(</END_DESC/>, </dnl
 <//></$0/>dnl
+<//>m4_ifndef(__META_NAME</_CONST_GEN/>, </m4_define(__META_NAME</_CONST_GEN/>, <//>)/>)<//>dnl
+<//>m4_ifndef(__META_NAME</_CONST_REC/>, </m4_define(__META_NAME</_CONST_REC/>, <//>)/>)<//>dnl
+<//>m4_define(__META_NAME</_CONST_STATE/>, m4_quote(GLUE_LISTS(m4_quote(m4_defn(__META_NAME</_CONST_GEN/>)), m4_quote(m4_defn(__META_NAME</_CONST_REC/>)))))<//>dnl
 <//>m4_undefine(</__META_TYPE/>)dnl
 <//>m4_undefine(</__META_NAME/>)dnl
 />)dnl
@@ -110,20 +113,19 @@ m4_define(</OPT_CHUNK_BOUNDARY/>, </dnl
 m4_define(</OPT_ITERABLE/>, </dnl
 <//></$0/>dnl
 <//><//>m4_define(</GLA_ITERABLE_/>__META_NAME, <//>)dnl
-<//><//>m4_define(__META_NAME</_CONST_STATE/>, </(myConstState, />__META_NAME</_ConstState)/>)dnl
 <//><//>m4_define(__META_NAME</_CONST_GEN/>, </(myConstState, />__META_NAME</_ConstState)/>)dnl
-<//><//>m4_define(__META_NAME</_CONST_REC/>, <//>)dnl
-<//><//>m4_define(__META_NAME</_CONST_REC_NUM/>, </0/>)dnl
 />)dnl
 
 m4_define(</REQ_CONST_STATES/>, </dnl
-<//></$0($@)/>dnl
-<//>m4_define(__META_NAME</_CONST_GEN/>, </$1/>)dnl
-<//>m4_define(__META_NAME</_CONST_REC/>, </$2/>)dnl
-<//>m4_define(__META_NAME</_CONST_REC_NUM/>, 0)dnl
-<//>m4_foreach(</__A__/>, </$2/>, </dnl
-<//><//>m4_autoincr(__META_NAME</_CONST_REC_NUM/>)dnl
-<//>/>)dnl
+<//></$0(</$*/>)/>dnl
+<//>m4_define(__META_NAME</_CONST_REC/>, </$*/>)dnl
+/>)dnl
+
+dnl # Designates that the GLA needs to have FinalizeState() called before being
+dnl # directly used.
+m4_define(</OPT_FINALIZE_AS_STATE/>, </dnl
+<//></$0/>dnl
+<//><//>m4_define(</GLA_FINALIZE_AS_STATE_/>__META_NAME, <//>)dnl
 />)dnl
 
 dnl # Options for type descriptions.

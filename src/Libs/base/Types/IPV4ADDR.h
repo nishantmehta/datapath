@@ -127,7 +127,7 @@ public:
         return (d1.addr.asInt!=d2.addr.asInt);
     }
 
-    friend uint64_t Hash(IPv4 d);
+    friend uint64_t Hash(const IPv4 d);
 
     friend IPv4 Domain(IPv4 x){
         IPv4 rez=x;
@@ -149,7 +149,7 @@ inline int ToString(const IPv4& x, char* text){
 }
 
 // hash function, just return the unsigned int inside
-inline uint64_t Hash(IPv4 d){ return d.addr.asInt; }
+inline uint64_t Hash(const IPv4 d){ return d.addr.asInt; }
 
 // compatibility with the other type definitions
 typedef IPv4 IPV4ADDR;

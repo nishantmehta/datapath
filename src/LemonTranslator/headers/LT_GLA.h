@@ -23,16 +23,22 @@ class LT_GLA : public LT_Waypoint {
 
 private:
 
+    typedef vector<WayPointID> StateSourceVec;
+
     struct GLAInfo {
         string name;
         string defs;
         string constructExp;
         string expression;
         string initializer;
+        StateSourceVec reqStates;
+        bool retState;
 
         GLAInfo() {} // ctor for map compatibility
-    GLAInfo(string _name, string _defs, string _constructExp, string _expression, string _initializer):
-        name(_name), defs(_defs), constructExp(_constructExp), expression(_expression), initializer(_initializer){}
+    GLAInfo(string _name, string _defs, string _constructExp, string _expression, string _initializer,
+            StateSourceVec _reqStates, bool _retState ):
+        name(_name), defs(_defs), constructExp(_constructExp), expression(_expression),
+        initializer(_initializer), reqStates(_reqStates), retState(_retState) {}
     };
 
     // map from query to output attributes
@@ -63,13 +69,17 @@ public:
 
     //GLA, one per query basis
     virtual bool AddGLA(QueryID query,
-                                            SlotContainer& resultAtts,
-                                            string glaName,
-                                            string glaDef,
-                                            string constructorExp, /*expression in GLA constructor */
-                                            SlotSet& atts, string expr, string initializer);
+                    SlotContainer& resultAtts,
+                    string glaName,
+                    string glaDef,
+                    string constructorExp, /*expression in GLA constructor */
+                    SlotSet& atts, string expr, string initializer,
+                    StateSourceVec reqStates,
+                    bool retState);
 
     virtual bool PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe);
+
+    virtual bool PropagateDownTerminating(QueryID query, const SlotSet& atts/*blank*/, SlotSet& result, QueryExit qe);
 
     virtual bool PropagateUp(QueryToSlotSet& result);
 

@@ -50,8 +50,8 @@ inline int ToString(const DOUBLE& x, char* text){
 
 // the hash function
 // reinterpret bits as 64 bit int
-inline uint64_t Hash(DOUBLE val){
-    return   *((uint64_t*)(&val));
+inline uint64_t Hash( const DOUBLE val){
+    return   *((const uint64_t*)(&val));
 }
 //////////////
 // Operators

@@ -55,7 +55,7 @@ inline int ToString(const INT& x, char* text){
 
 // The hash function
 // we just use conversion to unsigned int
-inline uint64_t Hash(INT x){ return x;}
+inline uint64_t Hash(const INT x){ return x;}
 
 //////////////
 // Operators

@@ -596,7 +596,7 @@ void DATE::InternalToDate() const
 }
 
 // Hash function
-inline uint64_t Hash( DATE val ) {
+inline uint64_t Hash( const DATE val ) {
     return val.GetJulianDay();
 }
 

@@ -9,9 +9,9 @@ hierarchy:
                         |
                      library
                         |
-    ---------------------------------------
-    |           |             |           |
-  Types      Functions       GLAs        UDFs
+    ------------------------------------------------
+    |           |             |           |        |
+  Types      Functions       GLAs        UDFs     GFs
 
 This script will create a file called library.pgy in the Libs folder, where
 library is replaced with the name of the library being built.
@@ -49,15 +49,18 @@ descFile.write('// generated on {0}\n'.format(curDate))
 
 for directory in directories:
     curDir = os.path.join(args.library, directory)
-    for f in os.listdir(curDir):
-        curFile = os.path.join(curDir, f)
-        descFile.write('\n// {0}\n'.format(curFile))
-        sourceDefine = '--define=SOURCE_FILE={0}'.format(curFile)
-        try:
-            output = subprocess.check_output([M4, '-I', m4Includes, sourceDefine, 'descfile.m4'])
-            descFile.write(output)
-        except subprocess.CalledProcessError as e:
-            print "Error running M4 on file", curFile
-            print e
+    if os.path.exists(curDir) and os.path.isdir(curDir):
+        for f in os.listdir(curDir):
+            curFile = os.path.join(curDir, f)
+            descFile.write('\n// {0}\n'.format(curFile))
+            sourceDefine = '--define=SOURCE_FILE={0}'.format(curFile)
+            try:
+                output = subprocess.check_output([M4, '-I', m4Includes, sourceDefine, 'descfile.m4'])
+                descFile.write(output)
+            except subprocess.CalledProcessError as e:
+                print "Error running M4 on file", curFile
+                print e
+    elif os.path.exists(curDir) and not os.path.isdir(curDir):
+        print 'Error: {0} is not a directory.'.format(curDir)
 
 descFile.write('#endif // _{0}_PGY_\n'.format(args.library))

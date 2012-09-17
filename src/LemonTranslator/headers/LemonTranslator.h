@@ -25,6 +25,7 @@
 #include "ScannerConfig.h"
 #include <lemon/list_graph.h>
 #include <set>
+#include <vector>
 
 using namespace lemon;
 class LT_Waypoint;
@@ -112,7 +113,9 @@ public:
                 string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
                             string glaDef, /* definitions to inject at top of file */
                 string constructorExp, /*expression in GLA constructor */
-                SlotContainer& atts, string expr, string initializer = "");
+                SlotContainer& atts, string expr, string initializer = "",
+                vector<WayPointID> reqStates = vector<WayPointID>(),
+                bool retState = false);
 
     // Selection, Join. Queries added one by one
     bool AddBypass(WayPointID wp, QueryID query);

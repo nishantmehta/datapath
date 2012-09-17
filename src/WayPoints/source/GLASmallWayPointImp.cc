@@ -31,7 +31,6 @@ GLASmallWayPointImp :: ~GLASmallWayPointImp () {
 
 void GLASmallWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configData) {
     PDEBUG ("GLASmallWayPointImp :: TypeSpecificConfigure ()");
-
     // load up the list where we will place done queries
     GLAConfigureData tempConfig;
     tempConfig.swap (configData);
@@ -56,6 +55,30 @@ void GLASmallWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &config
         // Don't add any queries to the ID sets, we'll do that after we
         // receive a start producing message for that query.
     } END_FOREACH
+
+    QueryToReqStates& reqStates = tempConfig.get_reqStates();
+
+    FOREACH_EM(query, list, reqStates) {
+        int index = 0;
+        GLAStateContainer myConstStates;
+        FOREACH_TWL(sourceWP, list) {
+            constStateIndex[query][sourceWP] = index++;
+            GLAState dummy;
+            myConstStates.Append(dummy);
+        } END_FOREACH;
+
+        QueryID key = query;
+        constStates.Insert(key, myConstStates);
+
+        key = query;
+        Swapify<int> numNeeded(index);
+        statesNeeded.Insert(key, numNeeded);
+
+    } END_FOREACH;
+
+    QueryIDToBool& retStates = tempConfig.get_resultIsState();
+    resultIsState.SuckUp(retStates);
+
 }
 
 bool GLASmallWayPointImp::PreProcessingPossible( CPUWorkToken& token ) {
@@ -243,26 +266,21 @@ bool GLASmallWayPointImp::FinalizePossible( CPUWorkToken& token ) {
     //whichOnes will contains only one query
 
     Bitstring qryOut = queryFragmentMap.GetBits(fragmentNo);
-    queryFragmentMap.Clear(fragmentNo); // queries out
+    qryOut = qryOut.GetFirst();
+    queryFragmentMap.Clear(fragmentNo, qryOut); // queries out
+
+    QueryExit whichOne = queryIdentityMap.Find( qryOut );
 
     QueryExitContainer whichOnes;
+    QueryExit whichOneCopy = whichOne;
+    whichOnes.Append(whichOneCopy);
 
-    QueryIDSet qryIter = qryOut;
-    while( !qryIter.IsEmpty() ) {
-        QueryID curID = qryIter.GetFirst();
-        QueryExit qe = queryIdentityMap.Find( curID );
-        whichOnes.Append(qe);
-    }
-
-    QueryExitContainer whichOnes1;
-    whichOnes1.copy (whichOnes);
-
-    //TODO: No need to send map, just send only one states corresponding to whichOnes
-    QueryToGLAStateMap tempMergedStates;
-    tempMergedStates.copy(mergedStates);
+    GLAState& myState = mergedStates.Find( qryOut );
+    GLAState stateCopy;
+    stateCopy.copy(myState);
 
     // this cleans up mergedStates
-    GLAFinalizeWD workDesc (fragmentNo, whichOnes1, tempMergedStates);
+    GLAFinalizeWD workDesc (fragmentNo, whichOne, stateCopy);
 
     // we now create a history list data object...
     GLAHistory hist (GetID (), fragmentNo);
@@ -270,7 +288,14 @@ bool GLASmallWayPointImp::FinalizePossible( CPUWorkToken& token ) {
     lineage.Insert(hist);
 
     WayPointID myID = GetID();
-    WorkFunc myFunc = GetWorkFunction( GLAFinalizeWorkFunc::type );
+    WorkFunc myFunc;
+
+    bool rezState = resultIsState.Find(qryOut).GetData();
+
+    if( rezState )
+        myFunc = GetWorkFunction( GLAFinalizeStateWorkFunc::type );
+    else
+        myFunc = GetWorkFunction( GLAFinalizeWorkFunc::type );
 
     myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
 
@@ -298,27 +323,48 @@ void GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes
     GLAPreProcessRez temp;
     temp.swap(data);
 
+    QueryExitContainer endAtMe;
+    GetEndingQueryExits(endAtMe);
+
+    // Any const states that were generated.
     QueryToGLASContMap& rezConstStates = temp.get_constStates();
-    QueryIDToInt& rezStatesNeeded = temp.get_statesNeeded();
 
     QueryExitContainer startProcessing;
+    QueryIDSet startTerminating;
 
     FOREACH_TWL( curQuery, whichOnes ) {
         QueryID curID = curQuery.query;
 
-        FATALIF( !rezStatesNeeded.IsThere( curID ), "Didn't get a value for the "
-                "number of state needed for a query we pre-processed!");
-        Swapify<int> tempVal = rezStatesNeeded.Find( curID );
+        FATALIF( !statesNeeded.IsThere( curID ), "Don't have a value for the number of states needed "
+                "for one of our queries!");
+        Swapify<int> tempVal = statesNeeded.Find( curID );
         int curStatesNeeded = tempVal.GetData();
 
         if( curStatesNeeded == 0 ) {
             QueryExit curQueryCopy = curQuery;
             startProcessing.Append(curQueryCopy);
+        } else {
+            startTerminating.Union(curQuery.query);
         }
     }END_FOREACH;
 
-    constStates.SuckUp(rezConstStates);
-    statesNeeded.SuckUp(rezStatesNeeded);
+    FOREACH_EM(curQuery, stateCont, rezConstStates) {
+        GLAStateContainer& curConstStates = constStates.Find(curQuery);
+        curConstStates.MoveToStart();
+        int numGen = 0;
+
+        // Prepend the generated states
+        FOREACH_TWL(curState, stateCont) {
+            curConstStates.Insert(curState);
+            curConstStates.Advance();
+            ++numGen;
+        } END_FOREACH;
+
+        for( map<WayPointID,int>::iterator it = constStateIndex[curQuery].begin();
+                it != constStateIndex[curQuery].end(); ++it ) {
+            it->second += numGen;
+        }
+    } END_FOREACH;
 
     FOREACH_TWL( curQuery, startProcessing ) {
         queriesProcessing.Union(curQuery.query);
@@ -329,6 +375,14 @@ void GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes
 
         SendHoppingUpstreamMsg( value );
     }END_FOREACH;
+
+    // If we have any queries that still require states, send the start producing
+    // messages to the terminating query exits.
+    FOREACH_TWL(qe, endAtMe) {
+        if( startTerminating.Overlaps(qe.query) ) {
+            SendStartProducingMsg(qe);
+        }
+    } END_FOREACH;
 }
 
 void GLASmallWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
@@ -469,7 +523,7 @@ void GLASmallWayPointImp :: GotState( StateContainer& state ) {
     QueryExit qe;
     state.get_whichQuery().swap(qe);
 
-    int whichIndex = state.get_whichIndex();
+    WayPointID source = state.get_source();
 
     GLAState myState;
     state.get_myState().swap(myState);
@@ -482,9 +536,11 @@ void GLASmallWayPointImp :: GotState( StateContainer& state ) {
     FATALIF( myStatesNeeded == 0, "Got a state for a query that doesn't need any more states!" );
 
     FATALIF( !constStates.IsThere( qe.query ), "Got a state container for a query we have no const states for!");
-    GLAStateContainer myConstStates;
+    GLAStateContainer& myConstStates = constStates.Find(qe.query);
 
     myConstStates.MoveToStart();
+
+    int whichIndex = constStateIndex[qe.query][source];
 
     for( int i = 0; i < whichIndex; ++i ) {
         myConstStates.Advance();

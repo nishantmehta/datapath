@@ -45,6 +45,7 @@ public:
 	Bitstring GetBits (int fragmentNo);
 
 	void Clear (int chunkNo);
+    void Clear (int chunkNo, Bitstring queries);
 
 	void ORAll (Bitstring newQ, int tillFragmentNo);
 	void OROne (int fragmentNo, Bitstring newQ);
@@ -69,6 +70,11 @@ Bitstring QueryFragmentMap::GetBits (int fragmentNo) {
 inline
 void QueryFragmentMap::Clear (int fragmentNo) {
 	qc[fragmentNo] = Bitstring(0,true);
+}
+
+inline
+void QueryFragmentMap::Clear (int fragmentNo, Bitstring queries) {
+    qc[fragmentNo].Difference(queries);
 }
 
 inline

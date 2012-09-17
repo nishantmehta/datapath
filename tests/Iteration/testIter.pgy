@@ -1,3 +1,5 @@
+#include "test.pgy"
+
 LOAD customer;
 
 iter = GLA:IterationTest

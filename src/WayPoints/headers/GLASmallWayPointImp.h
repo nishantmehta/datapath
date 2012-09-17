@@ -61,6 +61,14 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     // waiting on to being processing.
     QueryIDToInt statesNeeded;
 
+    // Used to keep track of which constant states go where in the constStates list.
+    typedef map< WayPointID, int > ConstStateIndexMap;
+    typedef map< QueryID, ConstStateIndexMap > QueryToConstStateIndexMap;
+    QueryToConstStateIndexMap constStateIndex;
+
+    // Keeps track of which queries produce their GLA as a state.
+    QueryIDToBool resultIsState;
+
     // Some QueryIDSets to keep track of which queries are in which state.
     QueryIDSet queriesToPreprocess;
     QueryIDSet queriesProcessing;

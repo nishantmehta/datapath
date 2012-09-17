@@ -169,7 +169,8 @@ public:
                         string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
                         string glaDef, /*the code that defines the gla */
                 string constructorExp, /*expression in GLA constructor */
-                SlotSet& atts, string expr, string initializer){
+                SlotSet& atts, string expr, string initializer,
+                vector<WayPointID> reqStates, bool retState ){
         return false;
     }
 

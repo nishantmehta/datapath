@@ -108,16 +108,12 @@ VAR(_A_)</(/> VAR(_A_) </)/>
     bool operator==(const Key_<//>GLA_NAME& o) const {
         return (true<//>dnl
 m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
-dnl # The reason the static casts are here is that for some bizarre reason,
-dnl # the c++ compiler will try to cast HStrings to const char * in the
-dnl # comparison for no apparent reason, and this will fail because the
-dnl # cast operator is private.
- && (TYPE(_A_)) VAR(_A_) == (TYPE(_A_)) o.VAR(_A_)<//>dnl
+ && VAR(_A_) == o.VAR(_A_)<//>dnl
 />)dnl
 );
     }
 
-    size_t hash_value() {
+    size_t hash_value() const {
         uint64_t hash= H_b;
 m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
         hash = CongruentHash(Hash(VAR(_A_)), hash);
@@ -128,8 +124,7 @@ m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
 
 struct HashKey_<//>GLA_NAME {
     size_t operator()(const Key_<//>GLA_NAME& o) const {
-        Key_<//>GLA_NAME& newObject = const_cast<Key_<//>GLA_NAME&>(o);
-        return newObject.hash_value();
+        return o.hash_value();
     }
 };
 
@@ -179,7 +174,7 @@ dnl         # put a pair of empty parentheses there, instead of calling the
 dnl         # default constructor (which is explicity defined!), gcc will just
 dnl         # freak out and think you're defining some other bizarre type.
             INNER_GLA gla<//>m4_ifval(ARGS(MY_INIT), </(/>ARGS(MY_INIT)</)/>, <//>);
-            Key_<//>GLA_NAME key(ARGS(GBY_ATTS));
+            // Key_<//>GLA_NAME key(ARGS(GBY_ATTS));
             groupByMap.insert(MapType::value_type(key, gla));
             it = groupByMap.find(key); // reposition
         }

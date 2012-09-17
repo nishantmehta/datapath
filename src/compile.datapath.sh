@@ -157,6 +157,10 @@ fi
 
 mv CONSTANTS_M4 Global/m4/Constants.h.m4
 
+# Remake the parser
+echo "Making parser."
+./parserMake.sh
+
 echo
 # Clean old stuff
 if [ -f maker ]; then

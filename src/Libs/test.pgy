@@ -1,0 +1,14 @@
+#ifndef _test_PGY_
+#define _test_PGY_
+// Piggy description file for library test
+// generated on Monday, September 17, 2012 at 17:33 EDT
+
+// test/GLAs/Multimap.m4
+DEFINE TEMPLATE GLA Multimap FROM "test/GLAs/Multimap.m4";
+
+// test/GLAs/IterationTest.h
+DEFINE GLA IterationTest ( DOUBLE ) -> ( BIGINT, DOUBLE ) FROM "test/GLAs/IterationTest.h";
+
+// test/GLAs/JoinGLA.m4
+DEFINE TEMPLATE GLA JoinGLA FROM "test/GLAs/JoinGLA.m4";
+#endif // _test_PGY_

@@ -32,6 +32,7 @@ dnl
 // module specific headers to allow separate compilation
 #include <iomanip>
 #include <assert.h>
+#include "Errors.h"
 
 dnl For each of the queries, we define an object that manipulates the global state
 dnl The global state is made of the individual states that make up the aggregaete
@@ -54,7 +55,6 @@ int GLAPreProcessWorkFunc_<//>M4_WPName
     QueryExitContainer& queries = myWork.get_whichQueryExits();
 
     QueryToGLASContMap constStates;
-    QueryIDToInt numStatesToReceive;
 
 <//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>, <//>)dnl
 
@@ -67,44 +67,29 @@ int GLAPreProcessWorkFunc_<//>M4_WPName
             GLAStateContainer myConstStates;
 
             // Generate needed constant states
-<//><//><//>m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
+            myConstStates.MoveToStart();
+
+<//><//><//>m4_foreach(</_S_/>, GLA_CONST_GENERATED(_Q_), </dnl
             {
                 TYPE(_S_) * GLA_STATE(_Q_)</_/>VAR(_S_) = new TYPE(_S_)<//>GLA_INIT_STATE(_Q_);
 
-                GLAPtr newPtr(0, (void *) GLA_STATE(_Q_)</_/>VAR(_S_) );
+                GLAPtr newPtr(M4_HASH_NAME(TYPE(_S_)), (void *) GLA_STATE(_Q_)</_/>VAR(_S_) );
 
                 myConstStates.Append(newPtr);
             }
 />)dnl
             QueryID key;
 
-            // Now get the number of states it needs to receive.
-            Swapify<int> numReceive(GLA_CONST_RECEIVE_NUM(_Q_));
-            key = iter.query;
-
-            numStatesToReceive.Insert(key, numReceive);
-
-            // Add a set of dummy GLAPtrs to the constStates list to be replaced
-            // with states received from other waypoints.
-            for( int i = 0; i < GLA_CONST_RECEIVE_NUM(_Q_); ++i ) {
-                GLAPtr dummy;
-                myConstStates.Append(dummy);
-            }
-
             key = iter.query;
             constStates.Insert( key, myConstStates );
 />, </dnl # this query doesn't need constant states
-            QueryID key = iter.query;
-            Swapify<int> value(0);
-
-            numStatesToReceive.Insert(key, value);
 <//><//><//>/>)dnl
         }
 <//><//>/>)dnl
 <//>/>)dnl
     } END_FOREACH;
 
-    GLAPreProcessRez myRez( constStates, numStatesToReceive );
+    GLAPreProcessRez myRez( constStates );
     myRez.swap(result);
 
     return -1; // for PreProcess
@@ -245,23 +230,23 @@ int GLAFinalizeWorkFunc_<//>M4_WPName
 
     GLAFinalizeWD myWork;
     myWork.swap (workDescription);
-    QueryToGLAStateMap& queryGLAMap = myWork.get_glaStates();
+    QueryExit whichOne = myWork.get_whichQueryExit();
+    GLAState& glaState = myWork.get_glaState();
 
 <//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
 
     // set up the output chunk
     Chunk output;
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+    QueryIDSet queriesToRun = whichOne.query;
 
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
     // do M4_QUERY_NAME(_Q_)
     GLA_TYPE(_Q_)* GLA_STATE(_Q_) = NULL;
-    if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
+    if (whichOne.query == M4_QUERY_NAME(_Q_)){
         // look for the state of M4_QUERY_NAME(_Q_)
         GLAPtr state;
-        GLAState& stateB = queryGLAMap.Find(M4_QUERY_NAME(_Q_));
-        state.swap(stateB);
+        state.swap(glaState);
         GLA_STATE(_Q_) = (GLA_TYPE(_Q_)*) state.get_glaPtr();
         FATALIF(GLA_STATE(_Q_) == NULL, "Why do not we have a state?");
     }
@@ -288,7 +273,8 @@ dnl # get the queries out of queriesToRun
 
     // Extract results
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
-    if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
+    if (whichOne.query == M4_QUERY_NAME(_Q_)){
+<//><//>m4_if(GLA_OUTPUT_TYPE(_Q_), chunk, </dnl
 <//><//>m4_case(GLA_KIND(_Q_),single,</dnl
         {
             // extract tuple
@@ -304,10 +290,14 @@ dnl # get the queries out of queriesToRun
 <//><//>/>,</state/>, </dnl
 <//><//>dnl we place the result in the first attribute	
 	{
-	    reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), 1);
+	    reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), M4_HASH_NAME(GLA_TYPE(_Q_)));
 <//><//>/>,</dnl
         {
             m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_));
+<//><//>/>)dnl
+<//><//>/>, </dnl
+        {
+        FATAL("Chunk finalize function called for query M4_QUERY_NAME(_Q_), has a result type of GLA_OUTPUT_TYPE(_Q_)");
 <//><//>/>)dnl
 dnl # write the tuple
             myOutBStringIter.Insert (M4_QUERY_NAME(_Q_));
@@ -327,7 +317,7 @@ dnl # write the tuple
     output.SwapBitmap(myOutBStringIter);
 // write columns
 <//>m4_foreach(</_Q_/>,</M4_GLADesc/>,</dnl
-    if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
+    if (whichOne.query == M4_QUERY_NAME(_Q_)){
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>m4_fifth(_Q_))),</dnl
         Column col_<//>_A_;
         _A_<//>_Column_Out.Done(col_<//>_A_);
@@ -338,6 +328,35 @@ dnl # write the tuple
     // and get outta here!
     ChunkContainer tempResult (output);
     tempResult.swap (result);
+    return 3; // for finalize
+}
+
+extern "C"
+int GLAFinalizeStateWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
+    GLAFinalizeWD myWork;
+    myWork.swap (workDescription);
+    QueryExit whichOne = myWork.get_whichQueryExit();
+    GLAState& glaState = myWork.get_glaState();
+
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+
+<//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
+<//><//>m4_if(GLA_FINALIZE_AS_STATE(_Q_), </dnl
+    // do M4_QUERY_NAME(_Q_)
+    if (whichOne.query == M4_QUERY_NAME(_Q_)){
+        // look for the state of M4_QUERY_NAME(_Q_)
+        GLAPtr state;
+        state.swap(glaState);
+        GLA_TYPE(_Q_)* GLA_STATE(_Q_) = (GLA_TYPE(_Q_)*) state.get_glaPtr();
+        GLA_STATE(_Q_)->FinalizeState();
+        state.swap(glaState);
+    }
+<//><//>/>, <//>)dnl
+<//>/>)dnl
+
+    WayPointID myID = WayPointID::GetIdByName("M4_WPName");
+    StateContainer stateCont( myID, whichOne, glaState );
+    stateCont.swap(result);
     return 3; // for finalize
 }
 
@@ -385,8 +404,7 @@ m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
     const TYPE(_S_) * GLA_STATE(_Q_)</_/>VAR(_S_) = NULL;
 <//>/>)dnl
 />)dnl
-    if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
-m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
+    if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){ m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
         if( constStates.IsThere(M4_QUERY_NAME(_Q_)) ) {
             GLAStateContainer& myCont = constStates.Find(M4_QUERY_NAME(_Q_));
             myCont.MoveToStart();
@@ -414,6 +432,7 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
             state.swap(tState); // put it back in container
         } else {
 m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
+            // Const states
             GLA_STATE(_Q_) = new GLA_TYPE(_Q_)</(/>dnl
 <//>m4_ifdef_undef(</_FIRST_/>)dnl
 <//>m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
@@ -422,6 +441,7 @@ m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
 <//>/>)dnl
 <//></);/>
 />, </dnl
+            // GLA_INIT_STATE
             GLA_STATE(_Q_) = new GLA_TYPE(_Q_)GLA_INIT_STATE(_Q_);
 />)dnl
             GLAPtr newPtr(0, (void*)GLA_STATE(_Q_));

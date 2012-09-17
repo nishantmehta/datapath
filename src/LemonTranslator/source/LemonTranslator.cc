@@ -423,14 +423,16 @@ bool LemonTranslator::AddGLA(WayPointID wpID, QueryID query,
         string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
         string glaDef,
         string constructorExp, /*expression in GLA constructor */
-        SlotContainer& atts, string expr, string initializer)
+        SlotContainer& atts, string expr, string initializer,
+        vector<WayPointID> reqStates,
+        bool retState)
 {
     PDEBUG("LemonTranslator::AddGLA(WayPointID wpID = %s, QueryID query = %s, SlotContainer resultAtts = %s, string glaName = %s, string constructorExp = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(resultAtts)).c_str(), glaName.c_str(), constructorExp.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
     FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddAggregate");
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddGLA(query, resultAtts, glaName, glaDef, constructorExp, attr, expr, initializer);
+    return WP->AddGLA(query, resultAtts, glaName, glaDef, constructorExp, attr, expr, initializer, reqStates, retState);
 }
 
 // Selection, Join. Queries added one by one

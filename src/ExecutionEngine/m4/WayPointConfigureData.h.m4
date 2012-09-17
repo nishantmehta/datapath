@@ -23,6 +23,7 @@ include(DataFunctions.m4)
 #include "ID.h"
 #include "WorkFuncs.h"
 #include "ContainerTypes.h"
+#include "GLAData.h"
 
 // this contains all of the info needed to configure a waypoint
 
@@ -43,7 +44,8 @@ M4_CREATE_DATA_TYPE(SelectionConfigureData, WayPointConfigureData, <//>, <//>)
 M4_CREATE_DATA_TYPE(AggregateConfigureData, WayPointConfigureData, <//>, <//>)
 M4_CREATE_DATA_TYPE(WriterConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(JoinMergeConfigureData, WayPointConfigureData, <//>,<//>)
-M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>, <//>)
+M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>,
+</(reqStates, QueryToReqStates), (resultIsState, QueryIDToBool)/>)
 
 struct PrintFileInfo {
     string file;

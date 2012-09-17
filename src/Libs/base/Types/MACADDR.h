@@ -176,7 +176,7 @@ class macAddr{
     return (mac1.mac.asInt >= mac2.mac.asInt);
   }
 
-  friend unsigned int Hash(macAddr mac1);
+  friend unsigned int Hash(const macAddr mac1);
 
 };
 
@@ -191,7 +191,7 @@ inline void FromString(macAddr& x, const char* text){
 
 typedef macAddr MACADDR;
 
-inline unsigned int Hash(macAddr mac1){
+inline unsigned int Hash(const macAddr mac1){
   return mac1.mac.asInt;
 }
 

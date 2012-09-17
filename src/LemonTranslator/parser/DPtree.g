@@ -22,6 +22,7 @@ options {
  #include <map>
  #include <vector>
  #include <set>
+ #include <utility>
 
  #include <antlr3.h>
  #include "DescLexer.h"
@@ -62,6 +63,7 @@ options {
     waypointIncludes[wp].insert(file); \
     }
 #endif
+
 }
 
 @members {
@@ -89,6 +91,9 @@ static Catalog& catalog = Catalog::GetCatalog();
 
 // Set of includes for the current waypoint, used to reduce redundant includes.
 static map<WayPointID, set<string> > waypointIncludes;
+
+// Keeps track of GLAs that return states and their types
+static map<QueryID, map<WayPointID, string> > glaStateType;
 
 extern int tempCounter; // id for temporary variables}
 string StripQuotes(string str);
@@ -570,6 +575,43 @@ attC[string& args]
         {args+=')';})
     ;
 
+stateArgs[string& defs, vector<WayPointID>& stateSources, vector<string>& stateTypes]
+    : /* nothing */
+    | (TERMCONN s=ID {
+            string sourceName = STR($s);
+            WayPointID sourceID = WayPointID::GetIdByName(sourceName.c_str());
+            if( glaStateType[qry].find(sourceID) != glaStateType[qry].end() ) {
+                lT->AddTerminatingEdge(sourceID, wp);
+
+                stateSources.push_back(sourceID);
+                stateTypes.push_back(glaStateType[qry][sourceID]);
+                glaStateType[qry].erase(sourceID);
+
+            }
+            else {
+                FATAL("State required from waypoint \%s, but that waypoint not registered as returning a state.", sourceName.c_str());
+            }
+        }
+    )+
+    ;
+
+glaRez[SlotContainer& outAtts, vector<string>& outTypes, string& defs, string& glaName] returns [bool retState]
+@init{ $retState = false; }
+    : attLWT[outAtts, outTypes, defs]*
+    | STATE__ {
+        outTypes.push_back("STATE");
+        $retState = true;
+
+        string attName = glaName + "_state";
+        string attType = "STATE";
+        SlotID attID = am.AddSynthesizedAttribute(qry, attName, attType);
+        outAtts.Append(attID);
+
+        string file = dTM.GetTypeFile(attType);
+        ADD_INCLUDE(defs, file);
+    }
+    ;
+
 glaRule
     @init {
             SlotContainer atts; /* the set of attributes */
@@ -580,8 +622,10 @@ glaRule
             string ctArgs="("; /* constructor arguments*/
             std::vector<std::string> outTypes;
             string defs; /* the definitions needed by the expressions */
+            vector<WayPointID> reqStateSources;
+            vector<string> reqStateTypes;
         }
-    : ^(GLA ctAttList[ctArgs] glaDef attLWT[outAtts, outTypes, defs]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+    : ^(GLA ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] glaDef res=glaRez[outAtts, outTypes, defs, $glaDef.name] (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
             string glaName = $glaDef.name;
             string file = $glaDef.name + ".h";
@@ -589,6 +633,7 @@ glaRule
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
+           // TODO: Make sure that the gLA also requires the constant states that were given.
            if (!dTM.IsGLA(glaName, paramTypes, outTypes, file, actArgs)) {
                printf("\nERROR: GLA \%s with arguments \%s do not exist",
                       glaName.c_str(), lInfo.GetTypesDesc().c_str());
@@ -610,6 +655,10 @@ glaRule
                string file = dTM.GetTypeFile(*it);
                ADD_INCLUDE(defs, file);
            }
+
+           if( $res.retState ) {
+                glaStateType[qry][wp] = glaName;
+           }
 #else
            lInfo.Prepare( cstStr );
 #endif
@@ -630,19 +679,19 @@ glaRule
 
            defs += $glaDef.defs;
 
-           lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr);
+           lT->AddGLA(wp,qry, outAtts, $glaDef.name, defs, ctArgs, atts, sExpr, cstStr, reqStateSources, $res.retState);
     }
   ;
 
 attLWT [SlotContainer& outAtts, vector<string> &outTypes, string& defs]
     : ^(ATTWT att=ID type=ID) {
-            SlotID glaID = am.AddSynthesizedAttribute(qry, (const char*)$att.text->chars,
-                                                      (const char*)$type.text->chars);
-            string t((const char*)($type.text->chars));
-
+            string name = STR($att);
+            string t = STR($type);
             FATALIF(!dTM.IsType( t ), "Attempted to use unknown type \%s", t.c_str());
             string file = dTM.GetTypeFile( t );
             ADD_INCLUDE(defs, file);
+
+            SlotID glaID = am.AddSynthesizedAttribute(qry, name, t);
 
             outTypes.push_back(t);
             outAtts.Append(glaID);

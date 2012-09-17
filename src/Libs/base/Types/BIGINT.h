@@ -51,7 +51,7 @@ inline int ToString(const BIGINT& x, char* text){
     return 1+sprintf(text,"%ld", (long int)x);
 }
 
-inline uint64_t Hash(BIGINT val){
+inline uint64_t Hash(const BIGINT val){
     return val;
 }
 

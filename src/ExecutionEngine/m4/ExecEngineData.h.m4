@@ -45,8 +45,8 @@ M4_CREATE_DATA_TYPE(ChunkContainer, ExecEngineData,
 
 // another type of EEData used to transport states between waypoints
 M4_CREATE_DATA_TYPE(StateContainer, ExecEngineData,
-</(whichIndex, int)/>,
-</(whichQuery, QueryExit), (myState, GLAState)/>)
+<//>,
+</(source, WayPointID), (whichQuery, QueryExit), (myState, GLAState)/>)
 
 // this is what is returned by a join worker that has put data into the hash table.
 // It lists a small sample of the collisions that were found to happen
@@ -82,7 +82,7 @@ dnl </(myChunksLHS, ContainerOfChunks),(myChunksRHS, ContainerOfChunks)/>)
 /** Results from preprocessing */
 M4_CREATE_DATA_TYPE(GLAPreProcessRez, ExecEngineData,
 <//>,
-</(constStates, QueryToGLASContMap), (statesNeeded, QueryIDToInt)/>)
+</(constStates, QueryToGLASContMap)/>)
 
 /** Results containing  GLAStates */
 M4_CREATE_DATA_TYPE(GLAStatesRez, ExecEngineData,

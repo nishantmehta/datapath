@@ -165,6 +165,6 @@ M4_CREATE_DATA_TYPE(GLAPreFinalizeWD, WorkDescription,
 */
 M4_CREATE_DATA_TYPE(GLAFinalizeWD, WorkDescription,
 </(fragmentNo, int)/>,
-</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap)/>)
+</(whichQueryExit, QueryExit), (glaState, GLAState)/>)
 
 #endif // WORK_DESCRIPTION_H

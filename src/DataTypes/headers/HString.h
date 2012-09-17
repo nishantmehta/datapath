@@ -358,7 +358,7 @@ public:
 
     // Add a Hash() function to bring it into line with all of the other
     // datatypes. Just returns mHash
-    friend uint64_t Hash( HString val );
+    friend uint64_t Hash( const HString val );
 
     // Method to safely inform the HString that it's value as been placed
     // in the dictionary.
@@ -646,7 +646,7 @@ inline HString HString :: operator +( const HString & input ) const {
 }
 
 // Hash function for use by GLAs and such.
-inline uint64_t Hash( HString val ) {
+inline uint64_t Hash( const  HString val ) {
     return MASK_HASH( val.mHash );
 }
 

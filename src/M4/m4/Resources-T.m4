@@ -97,4 +97,9 @@ m4_define(</COPYRIGHT_NOTICE/>,</dnl
 //  limitations under the License.
 //
 />)
+
+m4_define(</M4_HASH_NAME/>,</dnl
+<//>m4_esyscmd(</aux=`echo -n $1 | md5sum | cut -c 1-16`; echo 0x${aux}ULL />) dnl
+/>)dnl
+
 m4_divert(0)dnl

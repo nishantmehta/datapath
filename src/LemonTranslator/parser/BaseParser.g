@@ -44,6 +44,7 @@ tokens {
   CR_TMPL_FUNC;
   CR_TMPL_GLA;
   TYPEDEF_GLA;
+  STATE__;
 }
 
 

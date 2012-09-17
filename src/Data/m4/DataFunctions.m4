@@ -24,10 +24,7 @@ m4_divert(0)dnl
 	 BETTER NOT TO TOUCH -- looking is encouraged, though
 */
 m4_divert(-1)
-m4_define(</HashName/>,</dnl
-<//>m4_esyscmd(</aux=`echo -n $1 | md5sum | cut -c 1-16`; echo 0x${aux}ULL />) dnl
-/>)dnl
-
+m4_define(</HashName/>, m4_defn(</M4_HASH_NAME/>))
 dnl # HELPING MACROS
 dnl # --------------
 

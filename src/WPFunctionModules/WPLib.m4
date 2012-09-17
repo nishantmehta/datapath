@@ -344,7 +344,12 @@ m4_define(</GLA_KIND/>, </dnl
 
 dnl # the output of the GLA
 m4_define(</GLA_OUTPUTS/>, </dnl
-<//>m4_fifth(</$1/>)dnl
+<//>m4_fifth(</$1/>)<//>dnl
+/>)dnl
+
+dnl # the type of output container used by the GLA
+m4_define(</GLA_OUTPUT_TYPE/>, </dnl
+<//>m4_eighth(</$1/>)<//>dnl
 />)dnl
 
 dnl # determine if a GLA is iterable
@@ -354,7 +359,7 @@ m4_define(</GLA_ITERABLE/>, </dnl
 
 dnl # determine if a GLA requires constant states
 m4_define(</GLA_REQ_CONST_STATE/>, </dnl
-<//>m4_ifdef(GLA_TYPE(</$1/>)</_CONST_STATE/>, 1, 0)<//>dnl
+<//>m4_ifval(m4_quote(m4_defn(GLA_TYPE(</$1/>)</_CONST_STATE/>)), 1, 0)<//>dnl
 />)dnl
 
 dnl # the list of const states required by the GLA
@@ -375,6 +380,11 @@ m4_define(</GLA_CONST_RECEIVE/>, </dnl
 dnl # the number of const states that need to be received
 m4_define(</GLA_CONST_RECEIVE_NUM/>, </dnl
 <//>reval(GLA_TYPE(</$1/>)</_CONST_REC_NUM/>)<//>dnl
+/>)dnl
+
+dnl # Whether or not a gla needs to be finalized when being returned as itself
+m4_define(</GLA_FINALIZE_AS_STATE/>, </dnl
+<//>m4_ifdef(</GLA_FINALIZE_AS_STATE_/>GLA_TYPE(</$1/>), 1, 0)<//>dnl
 />)dnl
 
 dnl # form the name of the variable that has the GLA state based on query description.

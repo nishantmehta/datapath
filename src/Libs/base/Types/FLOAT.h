@@ -51,8 +51,8 @@ inline int ToString(const FLOAT& x, char* text){
 
 // the hash function
 // interpret as int (same size)
-inline uint64_t Hash(FLOAT val){
-    return *( (unsigned int*)(&val) );
+inline uint64_t Hash(const FLOAT val){
+    return *( (const unsigned int*)(&val) );
 }
 //////////////
 // Operators

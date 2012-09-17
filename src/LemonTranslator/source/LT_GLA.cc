@@ -16,6 +16,22 @@
 #include "LT_GLA.h"
 #include "AttributeManager.h"
 
+static string GetAllAttrAsString(const set<SlotID>& atts) {
+    AttributeManager& am = AttributeManager::GetAttributeManager();
+    string rez;
+    bool first = true;
+    for (set<SlotID>::iterator it = atts.begin(); it != atts.end(); it++) {
+        if (first)
+            first = false;
+        else
+            rez += ", ";
+
+        SlotID slot = *it;
+        rez += am.GetAttributeName(slot);
+    }
+    return rez;
+}
+
 bool LT_GLA::GetConfig(WayPointConfigureData& where){
 
     // get the ID
@@ -28,12 +44,14 @@ bool LT_GLA::GetConfig(WayPointConfigureData& where){
     GLAMergeStatesWorkFunc GLAMergeWF (NULL);
     GLAPreFinalizeWorkFunc GLAPreFinalizeWF(NULL);
     GLAFinalizeWorkFunc GLAFinalizeWF (NULL);
+    GLAFinalizeStateWorkFunc GLAFinalizeStateWF(NULL);
     WorkFuncContainer myGLAWorkFuncs;
     myGLAWorkFuncs.Insert (GLAPreProcessWF);
     myGLAWorkFuncs.Insert (GLAProcessChunkWF);
     myGLAWorkFuncs.Insert (GLAMergeWF);
     myGLAWorkFuncs.Insert (GLAPreFinalizeWF);
     myGLAWorkFuncs.Insert (GLAFinalizeWF);
+    myGLAWorkFuncs.Insert (GLAFinalizeStateWF);
 
     // this is the set of query exits that end at it, and flow through it
     QueryExitContainer myGLAEndingQueryExits;
@@ -56,9 +74,31 @@ bool LT_GLA::GetConfig(WayPointConfigureData& where){
         cout << endl;
 #endif
 
+    QueryToReqStates myReqStates;
+    QueryIDToBool myReturnStates;
+    for( GLAInfoMap::iterator it = glaInfoMap.begin(); it != glaInfoMap.end(); ++it ) {
+        QueryID curID = it->first;
+        StateSourceVec & reqStates = it->second.reqStates;
+
+        ReqStateList stateList;
+
+        for( StateSourceVec::iterator iter = reqStates.begin(); iter != reqStates.end(); ++iter  ) {
+            WayPointID curSource = *iter;
+            stateList.Append(curSource);
+        }
+
+        myReqStates.Insert( curID, stateList );
+
+        Swapify<bool> retState = it->second.retState;
+        curID = it->first;
+
+        myReturnStates.Insert( curID, retState );
+    }
+
 
     // here is the waypoint configuration data
-    GLAConfigureData glaConfigure (glaIDOne, myGLAWorkFuncs,  myGLAEndingQueryExits, myGLAFlowThroughQueryExits);
+    GLAConfigureData glaConfigure (glaIDOne, myGLAWorkFuncs,  myGLAEndingQueryExits, myGLAFlowThroughQueryExits,
+            myReqStates, myReturnStates);
 
     // and add it
     where.swap (glaConfigure);
@@ -87,7 +127,9 @@ bool LT_GLA::AddGLA(QueryID query,
         string glaName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
                                         string glaDef,
         string constructorExp, /*expression in GLA constructor */
-        SlotSet& atts, string expr, string initializer)
+        SlotSet& atts, string expr, string initializer,
+        StateSourceVec reqStates,
+        bool retState)
 {
     SlotSet attsSet;
     FOREACH_TWL(iter, resultAtts){
@@ -96,7 +138,7 @@ bool LT_GLA::AddGLA(QueryID query,
     QueryID qCopy = query;
     glaAttribs.Insert(qCopy, resultAtts);
 
-    GLAInfo glaInfo(glaName, glaDef, constructorExp, expr, initializer);
+    GLAInfo glaInfo(glaName, glaDef, constructorExp, expr, initializer, reqStates, retState);
     glaInfoMap[query] = glaInfo;
     CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
     queriesCovered.Union(query);
@@ -116,7 +158,11 @@ bool LT_GLA::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, 
     // atts coming from top should be subset of synthesized.
     if (!IsSubSet(atts, synthesized[query]))
     {
-        cout << "AggregateWP : Aggregate error: attributes coming from top and not subset of synthesized ones\n";
+        cerr << "GLAWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
+        cerr << "PropgateDown for Waypoint " << GetWPName() << endl;
+        cerr << "Query: " << query.ToString() << endl;
+        cerr << "atts: " << GetAllAttrAsString(atts) << endl;
+        cerr << "synthesized[query]: " << GetAllAttrAsString(synthesized[query]) << endl;
         return false;
     }
 
@@ -124,6 +170,25 @@ bool LT_GLA::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, 
     result.clear();
     result = used[query];
     queryExit.Insert (qe);
+    return true;
+}
+
+bool LT_GLA::PropagateDownTerminating(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe) {
+    // atts coming from top should be subset of synthesized.
+    if (!IsSubSet(atts, synthesized[query]))
+    {
+        cerr << "GLAWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
+        cerr << "PropgateDownTerminating for Waypoint " << GetWPName() << endl;
+        cerr << "Query: " << query.ToString() << endl;
+        cerr << "atts: " << GetAllAttrAsString(atts) << endl;
+        cerr << "synthesized[query]: " << GetAllAttrAsString(synthesized[query]) << endl;
+        return false;
+    }
+
+    //CheckQueryAndUpdate(newQueryToSlotSetMap, used);
+    //result.clear();
+    //result = used[query];
+    queryExitTerminating.Insert(qe);
     return true;
 }
 
@@ -193,35 +258,53 @@ void LT_GLA::WriteM4FileAux(ostream& out) {
 
     AttributeManager& am = AttributeManager::GetAttributeManager();
 
-
     out << wpname << ", ";
     out << "\t</";
 
     //GLADesc starts here.
     // go through the query to GLA attribute map
+    bool first_glaAttribs = true;
     FOREACH_EM(key, data, glaAttribs){
+        if( first_glaAttribs )
+            first_glaAttribs = false;
+        else
+            out << ", ";
+
         out << "( " << GetQueryName(key) << ", ";
         GLAInfo glaInfo = glaInfoMap[key];
 
         out << glaInfo.name << "," << "dummy" << ", </" << glaInfo.constructExp << "/>, </(";
+        bool first = true;
         FOREACH_TWL(iter, data){
-            out << am.GetAttributeName(iter) <<  ", ";
+            if( first )
+                first = false;
+            else
+                out << ", ";
+            out << am.GetAttributeName(iter);
         } END_FOREACH;
 
-        //remove last comma
-        out.seekp (-2, ios_base::cur);
         out << ")/>, </";
 
         //write already formatted expr
         out << glaInfo.expression << "/>, ";
 
         //write constantExpr
-        out << "</" << glaInfo.initializer << "/>)";
-        out << ", ";
+        out << "</" << glaInfo.initializer << "/>";
+
+        // write output type
+        out << ", </";
+
+        if( glaInfo.retState )
+            out << "state";
+        else
+            out << "chunk";
+
+        out << "/>";
+
+        // end of GLA description
+        out << ")";
     } END_FOREACH;
 
-    //remove last comma
-    out.seekp (-2, ios_base::cur);
     out << "/>,\t"; // end of GLADesc
 
     // format: (att_name, QueryIDSet_serialized), ..

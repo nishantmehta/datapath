@@ -24,9 +24,10 @@ include(DataFunctions.m4)
 #include "Chunk.h"
 #include "TwoWayList.h"
 #include "ID.h"
-#include "TwoWayList.cc"
 #include "ChunkID.h"
 #include "QueryID.h"
+#include "WayPointID.h"
+#include "EfficientMap.h"
 
 /** This header contains Data types useful for the GLA implementation */
 
@@ -46,6 +47,8 @@ typedef EfficientMap <QueryID, GLAStateContainer> QueryToGLASContMap;
 typedef EfficientMap< QueryID, Swapify<int> > QueryIDToInt;
 typedef EfficientMap< QueryID, Swapify<bool> > QueryIDToBool;
 
+typedef TwoWayList<WayPointID> ReqStateList;
+typedef EfficientMap<QueryID, ReqStateList> QueryToReqStates;
 
 /** GLAPointer stores a pointer to a GLA state. This is an in-memory
     pointer.
@@ -53,7 +56,6 @@ typedef EfficientMap< QueryID, Swapify<bool> > QueryIDToBool;
 
 M4_CREATE_DATA_TYPE(GLAPtr, GLAState,
 </(glaPtr, void*)/>,<//>)
-
 
 /******* Data containing QueryIDSet and Chunk **/
 M4_CREATE_BASE_DATA_TYPE(CacheData, DataC,
