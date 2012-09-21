@@ -1,0 +1,78 @@
+#include "test.pgy"
+
+LOAD nation;
+LOAD region;
+
+DEFINE
+    GLA:hash
+AS
+    GLA:Multimap
+    <
+        // Join attributes
+        [
+            r_regionkey : INT
+        ],
+        // Extra attributes
+        [
+            r_name : HString
+        ]
+    >
+;
+
+rhs =
+    GLA:hash
+FROM
+    region
+USING
+    region.r_regionkey,
+    region.r_name
+AS SELF;
+
+lhs =
+    GF:JoinLHS
+    <
+        GLA:hash,
+        // Join attributes
+        [
+            regionkey : INT
+        ],
+        // LHS attributes
+        [
+            n_nationkey : INT,
+            n_name : HString
+        ],
+        // RHS attributes
+        [
+            r_name : HString
+        ]
+    >
+FROM
+    nation
+REQUIRES
+    rhs
+USING
+    nation.n_regionkey,
+    nation.n_nationkey,
+    nation.n_name
+AS
+    regionkey : INT,
+    nationkey : INT,
+    nationname : HString,
+    regionname : HString
+;
+
+PRINT
+    lhs
+USING
+    regionkey,
+    regionname,
+    nationkey,
+    nationname
+AS
+    region_key : INT,
+    region_name : HString,
+    nation_key : INT,
+    nation_name : HString
+INTO
+    "join-gf.csv"
+;

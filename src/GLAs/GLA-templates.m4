@@ -46,6 +46,11 @@ m4_define(</GLA_DESC/>, </dnl
 <//>m4_redefine(</__META_TYPE/>, </GLA/>)dnl
 />)dnl
 
+m4_define(</GF_DESC/>, </dnl
+<//></$0/>dnl
+<//>m4_redefine(</__META_TYPE/>, </GF/>)dnl
+/>)dnl
+
 m4_define(</FUNC_DESC/>, </dnl
 <//></$0/>dnl
 <//>m4_redefine(</__META_TYPE/>, </FUNC/>)dnl
@@ -72,6 +77,7 @@ m4_define(</END_DESC/>, </dnl
 
 dnl # Macros used for generating descriptions of templates.
 m4_define(</GLA_TEMPLATE_DESC/>, <//>)dnl
+m4_define(</GF_TEMPLATE_DESC/>, <//>)dnl
 m4_define(</FUNC_TEMPLATE_DESC/>, <//>)dnl
 
 m4_define(</TYPE_DEF/>, <//>)dnl
@@ -96,7 +102,8 @@ m4_define(</OUTPUTS/>, </dnl
 
 m4_define(</RESULT_TYPE/>, </dnl
 <//></$0($@)/>dnl
-<//><//>m4_define(</GLA_REZTYPE_/>__META_NAME, </$1/>)dnl
+<//><//>m4_define(__META_TYPE</_REZTYPE_/>__META_NAME, </$1/>)dnl
+<//><//>m4_define(__META_NAME</_REZTYPE/>, </$1/>)dnl
 />)dnl
 
 m4_define(</CONSTRUCTOR/>, </dnl
@@ -107,7 +114,8 @@ m4_define(</CONSTRUCTOR/>, </dnl
 dnl # Macros to make it easier to add options to GLAs
 m4_define(</OPT_CHUNK_BOUNDARY/>, </dnl
 <//></$0/>dnl
-<//><//>m4_define(</GLA_CHUNKBOUNDARY_/>__META_NAME, <//>)dnl
+<//><//>m4_define(__META_TYPE</_CHUNKBOUNDARY_/>__META_NAME, <//>)dnl
+<//><//>m4_define(__META_NAME</_CHUNKBOUNDARY/>, <//>)dnl
 />)dnl
 
 m4_define(</OPT_ITERABLE/>, </dnl

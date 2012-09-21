@@ -36,7 +36,7 @@ args = parser.parse_args()
 M4 = 'm4'
 m4Includes = '../M4/m4'
 
-directories = ['Types', 'Functions', 'GLAs', 'UDFs']
+directories = ['Types', 'Functions', 'GLAs', 'UDFs', 'GFs']
 descFileName = args.library + '.pgy'
 
 descFile = open(descFileName, 'w')

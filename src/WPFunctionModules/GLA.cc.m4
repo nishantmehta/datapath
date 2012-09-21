@@ -421,7 +421,7 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
 />)dnl
         }
         else {
-            FATAL("Why did we receive no const state for an iterable GLA?");
+            FATAL("Why did we receive no const states for a GLA that requires them?");
         }
 />)dnl
         if (glaStates.IsThere(M4_QUERY_NAME(_Q_))) {

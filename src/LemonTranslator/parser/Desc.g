@@ -44,10 +44,12 @@ DATATYPE : 'datatype' | 'Datatype' | 'DATATYPE';
 SYNONYM : 'synonym' | 'Synonym' | 'SYNONYM';
 TEMPLATE : 'template' | 'Template' | 'TEMPLATE';
 GLA : 'gla' | 'Gla' | 'GLA';
+GF  : 'gf' | 'Gf' | 'GF';
 
 DEFINE : 'define' | 'Define' | 'DEFINE';
 FROM : 'from' | 'From' | 'FROM';
 AS : 'as' | 'As' | 'AS';
+REQUIRES : 'requires' | 'Requires' | 'REQUIRES';
 
 /* Base stuff */
 
@@ -137,6 +139,10 @@ defineStatement
     | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     {
         dTM.AddGLA( STR($n), $params.vect, $retList.vect, STRS($f) );
+    }
+    | GF n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    {
+        dTM.AddGF( STR($n), $params.vect, $retList.vect, STRS($f) );
     }
     | n=ID AS ty=ID
     {

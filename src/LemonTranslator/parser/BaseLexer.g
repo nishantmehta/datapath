@@ -4,6 +4,8 @@ lexer grammar BaseLexer;
 FILTER  :   'filter' | 'Filter' | 'FILTER' ;
 JOIN    :   'join' | 'Join' | 'JOIN' ;
 GLA     :   'gla' | 'Gla' | 'GLA';
+GF      :   'gf' | 'Gf' | 'GF';
+GIST    :   'gist' | 'Gist' | 'GIST';
 PRINT   :   'print' | 'Print' | 'PRINT' ;
 AGGREGATE : 'aggregate' | 'Aggregate' | 'AGGREGATE';
 

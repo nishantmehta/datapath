@@ -72,6 +72,7 @@ public:
     bool AddAggregateWP(WayPointID aggWP);
     bool AddPrintWP(WayPointID printWP);
     bool AddGLAWP(WayPointID glaWP);
+    bool AddGFWP(WayPointID gfWP);
 
     // Adding Edges to the graph (terminating or non-terminating)
     // The edge direction should be provided correctly, always bottom to top
@@ -116,6 +117,17 @@ public:
                 SlotContainer& atts, string expr, string initializer = "",
                 vector<WayPointID> reqStates = vector<WayPointID>(),
                 bool retState = false);
+
+    // GF, one per query basis
+    bool AddGF(WayPointID wp, QueryID query,
+            SlotContainer& resultAtts,  // list of attributes produced as the result
+            string gfName,              // name of the generalized filter
+            string gfDef,               // definitions to inject at the top of the file
+            string constructorExp,      // expression in GLA constructor
+            SlotContainer& atts,
+            string expr,
+            string initializer = "",
+            vector<WayPointID> reqStates = vector<WayPointID>());
 
     // Selection, Join. Queries added one by one
     bool AddBypass(WayPointID wp, QueryID query);

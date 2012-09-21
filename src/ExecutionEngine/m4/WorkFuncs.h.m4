@@ -70,4 +70,8 @@ M4_CREATE_DATA_TYPE(GLAFinalizeWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAFinalizeStateWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GLAMergeStatesWorkFunc, WorkFuncWrapper, <//>, <//>)
 
+/** WorkFuncs for GFs */
+M4_CREATE_DATA_TYPE(GFPreProcessWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GFProcessChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
+
 #endif

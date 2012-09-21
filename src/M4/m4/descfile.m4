@@ -34,6 +34,16 @@ m4_define(</GLA_DESC/>, </dnl
 <//>m4_divert_pop(D_FILE)dnl
 />)dnl
 
+m4_define(</GF_DESC/>, </dnl
+<//>m4_define(</DESC_TYPE/>, </GLA/>)
+<//>m4_divert_push(D_DEFINE)dnl
+<//>DEFINE GF<//>dnl
+<//>m4_divert_pop(D_DEFINE)dnl
+<//>m4_divert_push(D_FILE)dnl
+<//> FROM "SOURCE_FILE"<//>dnl
+<//>m4_divert_pop(D_FILE)dnl
+/>)dnl
+
 m4_define(</FUNC_DESC/>, </dnl
 <//>m4_define(</DESC_TYPE/>, </FUNC/>)
 <//>m4_divert_push(D_DEFINE)dnl
@@ -82,6 +92,12 @@ m4_define(</GLA_TEMPLATE_DESC/>, </dnl
 <//>m4_divert_pop(0)dnl
 />)dnl
 
+m4_define(</GF_TEMPLATE_DESC/>, </dnl
+<//>m4_divert_push(0)dnl
+<//>DEFINE TEMPLATE GF $1 FROM "SOURCE_FILE";
+<//>m4_divert_pop(0)dnl
+/>)dnl
+
 m4_define(</FUNC_TEMPLATE_DESC/>, </dnl
 <//>m4_divert_push(0)dnl
 <//>DEFINE TEMPLATE FUNCTION $1 FROM "SOURCE_FILE";
@@ -125,9 +141,9 @@ m4_define(</INPUTS/>, </dnl
 
 m4_define(</OUTPUTS/>, </dnl
 <//>m4_divert_push(D_RESULT)dnl
-<//> -> m4_if(DESC_TYPE, </GLA/>, </( />)dnl
+<//> -> m4_case(DESC_TYPE, </GLA/>, </( />, </GF/>, </( />)dnl
 <//>TYPES($@)<//>dnl
-<//>m4_if(DESC_TYPE, </GLA/>, </ )/>)<//>dnl
+<//>m4_case(DESC_TYPE, </GLA/>, </ )/>, </GF/>, </)/>)<//>dnl
 <//>m4_divert_pop(D_RESULT)dnl
 />)dnl
 

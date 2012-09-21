@@ -78,7 +78,7 @@ m4_foreach(</_A_/>, </MY_INPUT/>, </
         this->VAR(_A_) = VAR(_A_);
 />)dnl
 
-        MAP_NAME::Iterator it = map.LookUp(ARGS(KEY_ATTS));
+        curIt = map.LookUp(ARGS(KEY_ATTS));
     }
 
     bool GetNextResult( TYPED_REF_ARGS(MY_OUTPUT) ) {

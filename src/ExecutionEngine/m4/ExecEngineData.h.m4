@@ -94,4 +94,13 @@ M4_CREATE_DATA_TYPE(GLAStatesFrRez, ExecEngineData,
 <//>,
 </(glaStates, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (fragInfo, QueryIDToInt), (queriesToIterate, QueryIDSet)/>)
 
+/***** Return types for Generalized Filters *****/
+M4_CREATE_DATA_TYPE(GFPreProcessRez, ExecEngineData,
+<//>,
+</(constStates, QueryToGLASContMap)/>)
+
+M4_CREATE_DATA_TYPE(GFProcessChunkRez, ExecEngineData,
+<//>,
+</(filters, QueryToGLAStateMap), (chunk, Chunk)/>)
+
 #endif

@@ -149,6 +149,14 @@ class DataTypeManager {
         GLATemplateInfo() {}
     };
 
+    struct GFTemplateInfo {
+        string file;
+
+        GFTemplateInfo( string _file ) : file(_file) {}
+
+        GFTemplateInfo() {}
+    };
+
     typedef map<string, TypeInfo*> TypeToInfoMap;
     TypeToInfoMap mType;
 
@@ -164,6 +172,9 @@ class DataTypeManager {
     typedef map<string, GLATemplateInfo> GLATempToInfoMap;
     GLATempToInfoMap mTempGLA;
 
+    typedef map<string, GFTemplateInfo> GFTempToInfoMap;
+    GFTempToInfoMap mTempGF;
+
     // Synonym to base type
     map<string, string> mSynonymToBase;
 
@@ -178,6 +189,9 @@ class DataTypeManager {
 
     void AddGLATemp( string glaName, string file );
     bool GLATemplateExists( string glaName, string& file );
+
+    void AddGFTemp( string gfName, string file );
+    bool GFTemplateExists( string gfName, string& file );
 
     // Prefix for conversion functions. For example, if the conversion prefix was "_TO_", then
     // any function named "_TO_T" that take a single argument will be assumed to convert
@@ -287,6 +301,15 @@ public:
 
     void AddGLATemplate( string glaName, string filename );
     bool IsGLATemplate( string glaName, string& filename );
+
+    void AddGF(string gfName, vector<string>& typeargs, vector<string>& typeret, string filename );
+    bool IsGF( string& gfName, vector<string>& typeargs, vector<string>& typeret, string& file,
+            vector<ArgFormat>& /* out param */ actualArgs );
+
+    bool GFExists( string& gfName, string& file );
+
+    void AddGFTemplate( string gfName, string filename );
+    bool IsGFTemplate( string gfName, string& filename );
 
     // generate the set of includes for a given list of attributes
     // result should contain the #include statements
@@ -950,6 +973,40 @@ bool DataTypeManager :: GLATemplateExists( string glaName, string& file ) {
 }
 
 inline
+void DataTypeManager :: AddGFTemp( string gfName, string file ) {
+    GFTempToInfoMap::iterator it = mTempGF.find( gfName );
+
+    if( it != mTempGF.end() ) {
+        GFTemplateInfo & gInfo = it->second;
+
+        if( gInfo.file != file ) {
+            cout << "\nError adding templated GF " << gfName
+                << ", template exists with different definition.";
+        }
+
+        return;
+    }
+    else {
+        mTempGF[gfName] = GFTemplateInfo( file );
+    }
+}
+
+inline
+bool DataTypeManager :: GFTemplateExists( string gfName, string& file ) {
+    GFTempToInfoMap::iterator it = mTempGF.find( gfName );
+
+    if( it != mTempGF.end() ) {
+        GFTemplateInfo & gInfo = it->second;
+
+        file = gInfo.file;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+inline
 void DataTypeManager :: AddUnaryOperator(string op, string typearg, string rettype, string file, int priority, bool pure) {
 
     vector<string> vec;
@@ -1188,6 +1245,148 @@ bool DataTypeManager :: GLAExists( string& glaName, string& file ) {
         return false;
 
     file = GetTypeFile( glaName );
+
+    return true;
+}
+
+inline
+void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs,
+        vector<string>& typeret, string fileName ) {
+    if( !DoesTypeExist( gfName ) ) {
+        AddBaseType( gfName, fileName );
+    }
+    else {
+        // Duplicate definition.
+        cout << "\nWarning: Attempting to add a duplicate GF " << gfName;
+        return;
+    }
+
+    string fName_add = "AddItem_" + gfName;
+    string fName_ret = "GetResult_" + gfName;
+
+    string ret = "";
+
+    vector<string> args_vec(typeargs);
+    vector<string> ret_vec(typeret);
+
+    AddFunc( gfName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( gfName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
+}
+
+inline
+void DataTypeManager :: AddGFTemplate( string gfName, string filename ) {
+    AddGFTemp( gfName, filename );
+}
+
+inline
+bool DataTypeManager :: IsGFTemplate( string gfName, string& filename ) {
+    return GFTemplateExists(gfName, filename);
+}
+
+inline
+bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
+        vector<string>& typeret, string& file,
+        vector<ArgFormat>& /* out param */ actualArgs ) {
+
+    vector<string> arg_vec(typeargs);
+    vector<string> ret_vec(typeret);
+    string ret("");
+
+    if( !IsType( gfName ) ) {
+        cout << "\nError: No GF " << gfName << " known to system!";
+        return false;
+    }
+
+    //cerr << "GF: " << gfName << endl;
+
+    //cerr << "Number arguments " << typeargs.size() << endl;
+
+    //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
+
+    //cerr << "Number returns " << typeret.size() << endl;
+
+    //for( int i = 0; i < typeret.size(); ++i ) cerr << typeret[i] << endl;
+
+    string fName_add = "AddItem_" + gfName;
+    string fName_ret = "GetResult_" + gfName;
+
+    bool pure;
+
+    // Check the arguments and get any formatting necessary.
+    bool correct = IsCorrectFunc( gfName, fName_add, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
+
+    // If we didn't get a match for a concrete GF, see if a template with this
+    // name exists.
+    if( !correct ) {
+        return false;
+    }
+
+    // We don't want any transformations on the return arguments
+    // so check for an EXACT match for the results function.
+    for( int i = 0; i < ret_vec.size(); ++i ) {
+        ret_vec[i] = GetBaseType( ret_vec[i] );
+        if( !IsType( ret_vec[i] ) ) {
+            cout << "\nError: No type " << ret_vec[i] << " known to system!";
+            return false;
+        }
+    }
+
+    set<FuncInfo*> & possibleFuncs = mFunc[fName_ret];
+    for( set<FuncInfo*>::iterator it = possibleFuncs.begin(); it != possibleFuncs.end(); ++it ) {
+        FuncInfo *cur = *it;
+
+        /* cerr << "Current candidate:" << endl; */
+        /* cerr << "Type: " << cur->type << endl; */
+        /* cerr << "Args: "; */
+        /* for( int i = 0; i < cur->args.size(); ++i ) */
+        /*   cerr << cur->args[i] << " "; */
+        /* cerr << endl; */
+        /* cerr << "Return type: " << cur->returnType << endl; */
+
+        if( cur->type != gfName ) {
+            //cerr << "failed match on return function type name" << endl;
+            continue;
+        }
+
+        bool goodArgs = true;
+        // If same number of parameters, make sure that the parameters in order
+        // are of the same type or of convertible types.
+        vector<string>::const_iterator argIter = ret_vec.begin();
+        vector<string>::const_iterator fArgIter = cur->args.begin();
+        for( ; argIter != ret_vec.end() && fArgIter != cur->args.end(); ++argIter, ++fArgIter )
+        {
+            if( *argIter != *fArgIter )
+            {
+                //cerr << endl << "Failed to match on function arg " << *argIter << " expected " << *fArgIter << endl;
+                goodArgs = false;
+                break;
+            }
+        }
+
+        if( !goodArgs ) {
+            //cerr << "failed match on return function args" << endl;
+            continue;
+        }
+
+        if( cur->returnType != ret ) {
+            //cerr << "failed match on return function ret type" << endl;
+            continue;
+        }
+
+        // Don't need to check anything else really, we found an exact match.
+        return true;
+    }
+
+    // Didn't find a matching return function :(
+    return false;
+}
+
+inline
+bool DataTypeManager :: GFExists( string& gfName, string& file ) {
+    if( !IsType( gfName ) )
+        return false;
+
+    file = GetTypeFile( gfName );
 
     return true;
 }

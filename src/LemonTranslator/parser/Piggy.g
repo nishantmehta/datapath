@@ -70,12 +70,18 @@ defineStatement
     -> ^(OPDEF $n $f $ret $params)
   | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     -> ^(CRGLA $n $f ^(TPATT $retList) ^(TPATT $params))
+  | GF n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    -> ^(CRGF $n $f ^(TPATT $retList) ^(TPATT $params))
   | TEMPLATE FUNCTION n=ID FROM f=STRING
     -> ^(CR_TMPL_FUNC $n $f)
   | TEMPLATE GLA n=ID FROM f=STRING
     -> ^(CR_TMPL_GLA $n $f)
+  | TEMPLATE GF n=ID FROM f=STRING
+    -> ^(CR_TMPL_GF $n $f)
   | GLA COLON n=ID AS GLA glaDef
     -> ^(TYPEDEF_GLA $n glaDef)
+  | GF COLON n=ID AS GF gfDef
+    -> ^(TYPEDEF_GF $n gfDef)
   | n=ID AS ty=type
     -> ^(CRSYNONYM $ty $n)
   ;
@@ -102,6 +108,8 @@ actionBody
         ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
     | GLA gla=glaDef ct=constArgs (FROM? inp=ID) st=stateArgs USING exp=expressionList (AS rez=glaRez)?
         -> ^(GLA $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA $ct $st $gla $rez $exp))
+    | GF gf=gfDef ct=constArgs (FROM? inp=ID) st=stateArgs USING exp=expressionList (AS res=attListWTypes)
+        -> ^(GF__ $inp) ^(QUERRY__ ID[$inp, qry.c_str()] ^(GF__ $ct $st $gf $res $exp))
     | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
         -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
     | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
@@ -136,6 +144,20 @@ glaRez
     | SELF -> STATE__
     ;
 
+gfDef
+    : COLON ID def=gfTemplateDef? -> ID ^(GFTEMPLATE $def)?
+    ;
+
+gfTemplateDef
+    : '<'! gfTemplArg (COMMA! gfTemplArg)* '>'!
+    ;
+
+gfTemplArg
+    : LSQ attCList RSQ -> ^(LIST attCList)
+    | attC
+    | ctAtt
+    | GLA glaDef
+    ;
 
 /* constructor arguments */
 constArgs

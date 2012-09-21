@@ -33,6 +33,15 @@
 */
 class GLAWayPointImp : public WayPointImp {
 protected:
+    // Enumeration for work function exit codes.
+    enum ExitCode {
+        PREPROCESSING   = -1,
+        PROCESS_CHUNK   =  0,
+        POST_PROCESSING =  1,
+        PRE_FINALIZE    =  2,
+        FINALIZE        =  3,
+        POST_FINALIZE   =  4
+    };
 
     // This method is called when the waypoint has received a data message
     // containing a chunk to be processed and a work token has been acquired.
@@ -78,31 +87,31 @@ protected:
     /*************************************************************************/
 
     // Called when a Pre-Processing work function has finished.
-    virtual void PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+    virtual bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
 
     // Called when a ProcessChunk work function has finished.
     // An Ack message will automatically be sent after this function is called.
-    virtual void ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+    virtual bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
 
     // Called when a Post-Processing function has finished.
     // Token Requests will automatically be generated after this function is
     // called.
-    virtual void PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     // Called when a Pre-Finalize function has finished.
     // Token requests will automatically be generated after this function is
     // called.
-    virtual void PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     // Called when a Finalize function has finished.
     // Token Requests will automatically be generated after this function is
     // called.
-    virtual void FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     // Called when a Post-Finalize function has finished.
     // Token requests will automatically be generated after this function is
     // called.
-    virtual void PostFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool PostFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     /*************************************************************************/
     // The following methods are for handling other types of message received
@@ -122,6 +131,18 @@ protected:
     // additional tokens should be generated.
     virtual bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
+    /*************************************************************************/
+    // The following methods are used for configuring the GLAWayPoint
+    /*************************************************************************/
+
+    // This method sets which exit code in DoneProducing to forward on the data received.
+    // The data from any other return code is discarded.
+    void SetResultExitCode( ExitCode exitCode );
+
+private:
+
+    ExitCode resultExitCode = FINALIZE;
+
 public:
 
     // constructor and destructor
@@ -132,6 +153,7 @@ public:
     // these are just implementations of the standard WayPointImp functions
 
     /* Meaning of the return values:
+     * -1 - Preprocessing
      *  0 - Chunk Processed
      *  1 - Post Processing
      *  2 - Pre-Finalize
@@ -143,11 +165,6 @@ public:
     void ProcessHoppingDataMsg (HoppingDataMsg &data);
     void ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message);
     void ProcessHoppingUpstreamMsg( HoppingUpstreamMsg& message);
-
-    virtual void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage) = 0;
-    virtual void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage) = 0;
-    virtual void TypeSpecificConfigure (WayPointConfigureData &configData) = 0;
-
 };
 
 #endif

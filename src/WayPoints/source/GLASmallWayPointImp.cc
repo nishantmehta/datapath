@@ -317,7 +317,7 @@ bool GLASmallWayPointImp::MergeDone() {
 }
 #endif
 
-void GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data) {
+bool GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data) {
     PDEBUG("GLASMallWayPointImp :: PreProcessingComplete()");
 
     GLAPreProcessRez temp;
@@ -383,9 +383,11 @@ void GLASmallWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes
             SendStartProducingMsg(qe);
         }
     } END_FOREACH;
+
+    return true;
 }
 
-void GLASmallWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+bool GLASmallWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
     PDEBUG ("GLASmallWayPointImp :: ProcessChunkComplete()");
     // extract the states comming back
     GLAStatesRez temp;
@@ -399,9 +401,11 @@ void GLASmallWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes,
         GLAStateContainer& cont = myQueryToGLAStates.Find(key);
         cont.Insert(d);
     }END_FOREACH;
+
+    return true;
 }
 
-void GLASmallWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+bool GLASmallWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
     PDEBUG ("GLASmallWayPointImp :: PostProcessingComplete()");
     //      cout<<"\n"<<GetID().getName()<<" Merged recvd"<<endl;
     GLAStatesRez rez;
@@ -440,9 +444,11 @@ void GLASmallWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, 
             //            cout<<"cont Length after: "<<cont.Length()<<endl;
         }
     }
+
+    return true;
 }
 
-void GLASmallWayPointImp :: PreFinalizeComplete( QueryExitContainer & whichOnes, HistoryList & history, ExecEngineData& data) {
+bool GLASmallWayPointImp :: PreFinalizeComplete( QueryExitContainer & whichOnes, HistoryList & history, ExecEngineData& data) {
     PDEBUG("GLASmallWayPointImp :: PreFinalizeComplete()");
     GLAStatesFrRez rez;
     rez.swap(data);
@@ -469,9 +475,11 @@ void GLASmallWayPointImp :: PreFinalizeComplete( QueryExitContainer & whichOnes,
     if( !finished.IsEmpty() ) {
         FinishQueries( finished );
     }
+
+    return true;
 }
 
-void GLASmallWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+bool GLASmallWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
     PDEBUG ("GLASmallWayPointImp :: FinalizeComplete()");
     int frag;
 
@@ -484,6 +492,7 @@ void GLASmallWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, His
         //cout<<"Finalized recvd for fragmentNo: "<<frag<<endl;
     }
 
+    return true;
 }
 
 void GLASmallWayPointImp :: GotChunkToProcess ( CPUWorkToken & token, QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& lineage) {

@@ -26,6 +26,7 @@
 #include "LT_Print.h"
 #include "LT_TextLoader.h"
 #include "LT_GLA.h"
+#include "LT_GF.h"
 #include "AttributeManager.h"
 #include "QueryManager.h"
 #include "Errors.h"
@@ -322,6 +323,13 @@ bool LemonTranslator::AddGLAWP(WayPointID glaWPID)
     return AddGraphNode(glaWPID, GLAWaypoint, WP);
 }
 
+bool LemonTranslator::AddGFWP(WayPointID gfID) {
+    PDEBUG("LemonTranslator::AddGFWP(WayPointID gfId = %s)", gfID.getName().c_str());
+    FATALIF(!gfID.IsValid(), "Invalid WayPointID received in AddGFWP");
+    LT_Waypoint* WP = new LT_GF(gfID);
+    return AddGraphNode(gfID, GFWaypoint, WP);
+}
+
 
 bool LemonTranslator::AddPrintWP(WayPointID printWPID)
 {
@@ -433,6 +441,23 @@ bool LemonTranslator::AddGLA(WayPointID wpID, QueryID query,
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
     return WP->AddGLA(query, resultAtts, glaName, glaDef, constructorExp, attr, expr, initializer, reqStates, retState);
+}
+
+//GF, one per query basis
+bool LemonTranslator::AddGF(WayPointID wpID, QueryID query,
+        SlotContainer& resultAtts, /*list of attributes produced as the result */
+        string gfName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
+        string gfDef,
+        string constructorExp, /*expression in GLA constructor */
+        SlotContainer& atts, string expr, string initializer,
+        vector<WayPointID> reqStates)
+{
+    PDEBUG("LemonTranslator::AddGF(WayPointID wpID = %s, QueryID query = %s, SlotContainer resultAtts = %s, string gfName = %s, string constructorExp = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)", wpID.getName().c_str(), query.ToString().c_str(), (GetAllAttrAsString(resultAtts)).c_str(), gfName.c_str(), constructorExp.c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
+    FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddGF");
+    LT_Waypoint* WP = NULL;
+    set<SlotID> attr;
+    if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
+    return WP->AddGF(query, resultAtts, gfName, gfDef, constructorExp, attr, expr, initializer, reqStates);
 }
 
 // Selection, Join. Queries added one by one

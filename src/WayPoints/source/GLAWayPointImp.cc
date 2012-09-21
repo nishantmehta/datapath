@@ -46,28 +46,28 @@ bool GLAWayPointImp :: PostFinalizePossible( CPUWorkToken& token ) {
     return false;
 }
 
-void GLAWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
-void GLAWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
-void GLAWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
-void GLAWayPointImp :: PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
-void GLAWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
-void GLAWayPointImp :: PostFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    // Do nothing
+bool GLAWayPointImp :: PostFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    return false;
 }
 
 void GLAWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &history, int result, ExecEngineData& data) {
@@ -76,45 +76,49 @@ void GLAWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList
 
     // Notify that a token request was successful if we did anything other than
     // process a chunk.
-    if (result != 0 ){
+    if (result != PROCESS_CHUNK ){
         TokenRequestCompleted( CPUWorkToken::type );
     }
 
     // Pre-Processing complete
-    if( result == -1 ) {
+    if( result == PREPROCESSING ) {
         PreProcessingComplete( whichOnes, history, data );
     }
 
     // Chunk processing function complete
-    if (result == 0) {
-        ProcessChunkComplete( whichOnes, history, data );
-        SendAckMsg (whichOnes, history);
+    if (result == PROCESS_CHUNK) {
+        bool res = ProcessChunkComplete( whichOnes, history, data );
+        if (res)
+            SendAckMsg (whichOnes, history);
     }
 
     // Post Processing function complete
-    else if (result == 1){
-        PostProcessComplete( whichOnes, history, data );
-        GenerateTokenRequests();
+    else if (result == POST_PROCESSING){
+        bool res = PostProcessComplete( whichOnes, history, data );
+        if (res)
+            GenerateTokenRequests();
     }
 
     // Pre Finalize function complete
-    else if (result == 2) {
-        PreFinalizeComplete( whichOnes, history, data );
-        GenerateTokenRequests();
+    else if (result == PRE_FINALIZE) {
+        bool res = PreFinalizeComplete( whichOnes, history, data );
+        if (res)
+            GenerateTokenRequests();
     }
 
     // Finalize function complete
-    else if (result == 3 ) {
-        FinalizeComplete( whichOnes, history, data );
-        GenerateTokenRequests();
+    else if (result == FINALIZE ) {
+        bool res = FinalizeComplete( whichOnes, history, data );
+        if (res)
+            GenerateTokenRequests();
     }
 
     // Post Finalize function complete
-    else if (result == 4 ) {
+    else if (result == POST_FINALIZE ) {
         PostFinalizeComplete( whichOnes, history, data );
     }
 
-    if (result!=3){ // not finalize, kill the output since nothing gets to the top
+    if (result != resultExitCode){ // not finalize, kill the output since nothing gets to the top
         // zero-out data so the EE does not send it above
         ExecEngineData dummy;
         data.swap(dummy);
@@ -246,4 +250,8 @@ bool GLAWayPointImp :: ReceivedStartProducingMsg(HoppingUpstreamMsg& message, Qu
 
 void GLAWayPointImp :: GotState( StateContainer& state ) {
     FATAL("Don't know what to do with this!");
+}
+
+void GLAWayPointImp :: SetResultExitCode( ExitCode exitCode ) {
+    resultExitCode = exitCode;
 }

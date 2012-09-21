@@ -24,14 +24,14 @@
 #include "GLAHelpers.h"
 #include "Constants.h"
 
-//a constant just to allow changing number of states to be merged at a time
-#define MERGE_AT_A_TIME 2
-
 /** WARNING: The chunk processing function has to return 0 and the
         finalize function 1 otherwise acknowledgments are not sent
         properly in the system
 */
 class GLASmallWayPointImp : public GLAWayPointImp {
+    //a constant just to allow changing number of states to be merged at a time
+    static const int MERGE_AT_A_TIME = 2;
+
     // container for states
     QueryToGLASContMap myQueryToGLAStates;
 
@@ -58,7 +58,7 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     off_t lastFragmentId;
 
     // A counter for each query representing how many state objects that GLA is
-    // waiting on to being processing.
+    // waiting on to begin processing.
     QueryIDToInt statesNeeded;
 
     // Used to keep track of which constant states go where in the constStates list.
@@ -102,11 +102,11 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     bool PreFinalizePossible( CPUWorkToken& token );
     bool FinalizePossible( CPUWorkToken& token );
 
-    void PreProcessingComplete( QueryExitContainer& whichONes, HistoryList& history, ExecEngineData& data );
-    void ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
-    void PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
-    void PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
-    void FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+    bool PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );
     bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
