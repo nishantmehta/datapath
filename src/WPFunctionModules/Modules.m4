@@ -125,40 +125,22 @@ m4_define(</M4_GLA_MODULE/>, </dnl
 <//>m4_undefine(</M4_Attribute_Queries/>)
 />)
 
-dnl Definition of the GF Module
+dnl Definition of the GT Module
 dnl  $1 = ID of the waypoint where it is going to be placed 
-dnl  $2 = Query list, each element contains (qname, listGFdesc)
+dnl  $2 = Query list, each element contains (qname, listGTdesc)
 dnl    see file ... for description
 dnl  $3 = List of attrbutes with QuerySets for them
-m4_define(</M4_GF_MODULE/>, </dnl
+m4_define(</M4_GT_MODULE/>, </dnl
 <//>m4_define(</M4_WPName/>, </$1/>)
-<//>m4_define(</M4_GFDesc/>, </$2/>)
+<//>m4_define(</M4_GTDesc/>, </$2/>)
 <//>m4_define(</M4_Attribute_Queries/>, </$3/>)
 <//>m4_divert(0)
-<//>m4_include(GF.cc.m4)
+<//>m4_include(GT.cc.m4)
 <//>m4_divert(-1)
 <//>m4_undefine(</M4_WPName/>)
-<//>m4_undefine(</M4_GFDesc/>)
+<//>m4_undefine(</M4_GTDesc/>)
 <//>m4_undefine(</M4_Attribute_Queries/>)
 />)
-
-dnl Definition of the GLA Module
-dnl  $1 = ID of the waypoint where it is going to be placed 
-dnl  $2 = Query list, each element contains (qname, listGLAdesc)
-dnl    see file ... for description
-dnl  $3 = List of attrbutes with QuerySets for them
-m4_define(</M4_GLA_LARGE_MODULE/>, </dnl
-<//>m4_define(</M4_WPName/>, </$1/>)
-<//>m4_define(</M4_GLADesc/>, </$2/>)
-<//>m4_define(</M4_Attribute_Queries/>, </$3/>)
-<//>m4_divert(0)
-<//>m4_include(GLALarge.cc.m4)
-<//>m4_divert(-1)
-<//>m4_undefine(</M4_WPName/>)
-<//>m4_undefine(</M4_GLADesc/>)
-<//>m4_undefine(</M4_Attribute_Queries/>)
-/>)
-
 
 dnl Definition of the TextLoader Module
 dnl  $1 = ID of the waypoint where it is going to be placed 

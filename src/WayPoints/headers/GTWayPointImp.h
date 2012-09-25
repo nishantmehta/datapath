@@ -14,8 +14,8 @@
 //  limitations under the License.
 //
 
-#ifndef GF_WaY_POINT_IMP
-#define GF_WAY_POINT_IMP
+#ifndef GT_WaY_POINT_IMP
+#define GT_WAY_POINT_IMP
 
 #include "ID.h"
 #include "History.h"
@@ -26,7 +26,7 @@
 #include "Constants.h"
 #include "GLAWayPointImp.h"
 
-class GFWayPointImp : public GLAWayPointImp {
+class GTWayPointImp : public GLAWayPointImp {
 
     /*
      * Class Members
@@ -37,20 +37,8 @@ class GFWayPointImp : public GLAWayPointImp {
     QueryIDSet queriesProcessing;
     QueryIDSet queriesCompleted;
 
-    // container for cached GFs
-    QueryToGLASContMap queryToGFs;
-
-    // container for constant states
-    QueryToGLASContMap constStates;
-
-    // A counter for each query representing how many state objects the
-    // GF is waiting on to begin processing.
-    QueryIDToInt statesNeeded;
-
-    // Used to keep track of which constant states go where in the constStates list.
-    typedef map< WayPointID, int > ConstStateIndexMap;
-    typedef map< QueryID, ConstStateIndexMap > QueryToConstStateIndexMap;
-    QueryToConstStateIndexMap constStateIndex;
+    // container for cached GTs
+    QueryToGLASContMap queryToGTs;
 
     // Map of QueryID to QueryExit
     typedef EfficientMap<QueryID, QueryExit> QueryIDToExitMap;
@@ -64,7 +52,7 @@ class GFWayPointImp : public GLAWayPointImp {
     bool PreProcessingComplete( QueryExitContainer& whichOnes,
             HistoryList& history, ExecEngineData& data);
 
-    void GotState( StateContainer& state );
+    void GotAllStates( QueryID query );
 
     void GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
             ChunkContainer& chunk, HistoryList& history );
@@ -76,8 +64,8 @@ class GFWayPointImp : public GLAWayPointImp {
 public:
 
     // Constructor and destructor
-    GFWayPointImp ();
-    virtual ~GFWayPointImp ();
+    GTWayPointImp ();
+    virtual ~GTWayPointImp ();
 
     /*
      * Overridden WayPointImp functions
@@ -85,4 +73,4 @@ public:
     void TypeSpecificConfigure( WayPointConfigureData& configData );
 };
 
-#endif // GF_WAY_POINT_IMP
+#endif // GT_WAY_POINT_IMP

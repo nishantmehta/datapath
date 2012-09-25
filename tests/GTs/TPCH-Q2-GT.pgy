@@ -171,7 +171,7 @@ AS
     SELF;
 
 j4 =
-    GF:JoinLHS
+    GT:JoinLHS
     <
         GLA:j4_rh,
         // Join attributes
@@ -373,6 +373,6 @@ AS
     s_phone   : HString ,
     s_comment : HString
 INTO
-    "TPCH-Q2-GF-result.csv"
+    "TPCH-Q2-GT-result.csv"
 SEPARATOR
     "|";

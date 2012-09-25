@@ -30,7 +30,7 @@ tokens {
   GLATEMPLATE;
   LIST;
   CRGLA;
-  CRGF;
+  CRGT;
   CRRELATION;
   FLUSHTOKEN;
   QUITTOKEN;
@@ -44,12 +44,12 @@ tokens {
   TYPE_;
   CR_TMPL_FUNC;
   CR_TMPL_GLA;
-  CR_TMPL_GF;
+  CR_TMPL_GT;
   TYPEDEF_GLA;
-  TYPEDEF_GF;
+  TYPEDEF_GT;
   STATE__;
-  GF__;
-  GFTEMPLATE;
+  GT__;
+  GTTEMPLATE;
 }
 
 

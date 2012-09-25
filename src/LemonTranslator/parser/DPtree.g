@@ -153,18 +153,18 @@ complexStatement
         dTM.AddSynonymType(glaName, STR($name));
         waypointIncludes[wp].clear();
       }
-  | ^(TYPEDEF_GF name=ID gf=gfDef) {
-        string gfName = $gf.name;
-        dTM.AddSynonymType(gfName, STR($name));
+  | ^(TYPEDEF_GT name=ID gt=gtDef) {
+        string gtName = $gt.name;
+        dTM.AddSynonymType(gtName, STR($name));
         waypointIncludes[wp].clear();
   }
   | ^(FUNCTION ID (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(CRGLA ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
-  | ^(CRGF ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGF(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
+  | ^(CRGT ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGT(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
   | ^(CR_TMPL_FUNC name=ID file=STRING ) { dTM.AddFunctionTemplate( STR($name), STRS($file));}
   | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRS($file)); }
-  | ^(CR_TMPL_GF name=ID file=STRING) { dTM.AddGFTemplate( STR($name), STRS($file)); }
+  | ^(CR_TMPL_GT name=ID file=STRING) { dTM.AddGTTemplate( STR($name), STRS($file)); }
   | relationCR
   | FLUSHTOKEN {/*dTM.Save();*/ catalog.SaveCatalog();}
   | runStmt
@@ -305,7 +305,7 @@ rules :
   | printRule
   | joinRule
   | glaRule
-  | gfRule
+  | gtRule
   ;
 
 filterRule
@@ -427,8 +427,8 @@ glaDef returns [string name, string defs]
   : ID {$name=(const char*) $ID.text->chars;} glaTemplate[$name,$defs]
   ;
 
-gfDef returns [string name, string defs]
-  : ID {$name = TXT($ID); } gfTemplate[$name, $defs]
+gtDef returns [string name, string defs]
+  : ID {$name = TXT($ID); } gtTemplate[$name, $defs]
   ;
 
 glaTemplate[string& name, string& defs]
@@ -497,25 +497,25 @@ glaTemplArg[string& args, string& defs]
     | f=FLOAT { args+=TXT($f); }
     ;
 
-gfTemplate[string& name, string& defs]
+gtTemplate[string& name, string& defs]
 @init { string args;
 
     }
     : /* simpleGLA */
     {
         string file;
-        FATALIF( !dTM.GFExists( name, file ), "No GF named \%s known to the system!\n", name.c_str());
+        FATALIF( !dTM.GTExists( name, file ), "No GT named \%s known to the system!\n", name.c_str());
 
         ADD_INCLUDE(defs, file);
     }
-    | ^(GFTEMPLATE  ({args+=",";} gfTemplArg[args, defs] )* )
+    | ^(GTTEMPLATE  ({args+=",";} gtTemplArg[args, defs] )* )
         {
         string file;
-        if( !dTM.IsGFTemplate(name, file) ) {
-            FATAL("No GF Template called \%s known.", name.c_str());
+        if( !dTM.IsGTTemplate(name, file) ) {
+            FATAL("No GT Template called \%s known.", name.c_str());
         }
 
-         string tmp = "GF_\%d_" + name;
+         string tmp = "GT_\%d_" + name;
          string tempName = GenerateTemp(tmp.c_str());
          string m4File = "Generated/" + tempName + ".m4";
          string descFile = "Generated/" + tempName + ".desc";
@@ -539,7 +539,7 @@ gfTemplate[string& name, string& defs]
          // Run M4 on the temporary file
          string call = "./processTemp.sh " + tempName;
          int sysret = execute_command(call.c_str());
-         FATALIF(sysret != 0, "Failed to instantiate templated GF \%s", name.c_str());
+         FATALIF(sysret != 0, "Failed to instantiate templated GT \%s", name.c_str());
 
          parseDescFile(descFile);
 
@@ -549,7 +549,7 @@ gfTemplate[string& name, string& defs]
         }
     ;
 
-gfTemplArg[string& args, string& defs]
+gtTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
     | GLA glaDef {
@@ -761,7 +761,7 @@ glaRule
     }
   ;
 
-gfRule
+gtRule
     @init {
             SlotContainer atts; /* the set of attributes */
             SlotContainer outAtts; /**output attributes */
@@ -774,17 +774,18 @@ gfRule
             vector<WayPointID> reqStateSources;
             vector<string> reqStateTypes;
         }
-    : ^(GF__ ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] gfDef res=attLWT[outAtts, outTypes, defs]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+    : ^(GT__ ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] gtDef res=attLWT[outAtts, outTypes, defs]* (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
-            string gfName = $gfDef.name;
-            string file = $gfDef.name + ".h";
+            string gtName = $gtDef.name;
+            string file = $gtDef.name + ".h";
             vector<string> paramTypes = lInfo.GetListTypes();
+
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
-           if (!dTM.IsGF(gfName, paramTypes, outTypes, file, actArgs)) {
-               printf("\nERROR: GF \%s with arguments \%s do not exist",
-                      gfName.c_str(), lInfo.GetTypesDesc().c_str());
+           if (!dTM.IsGT(gtName, paramTypes, outTypes, file, actArgs)) {
+               printf("\nERROR: GT \%s with arguments \%s do not exist",
+                      gtName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {
                // Need to tell the expression info list about the actual types of the
                // arguments and any special formatting needed using the vector of
@@ -819,9 +820,9 @@ gfRule
 
            ctArgs+=")";
 
-           defs += $gfDef.defs;
+           defs += $gtDef.defs;
 
-           lT->AddGF(wp,qry, outAtts, $gfDef.name, defs, ctArgs, atts, sExpr, cstStr, reqStateSources);
+           lT->AddGT(wp,qry, outAtts, $gtDef.name, defs, ctArgs, atts, sExpr, cstStr, reqStateSources);
     }
   ;
 
@@ -926,9 +927,9 @@ glaWP
       connList )
   ;
 
-gfWP
-    : ^(GF__ {
-        lT->AddGFWP(wp);
+gtWP
+    : ^(GT__ {
+        lT->AddGTWP(wp);
     }
       connList )
   ;
@@ -991,7 +992,7 @@ wpDefinition
     | printWP
     | textloaderWP
     | glaWP
-    | gfWP
+    | gtWP
   ;
 
 expr[SlotContainer& atts, string& cstStr, string& defs] returns [string sExpr] :

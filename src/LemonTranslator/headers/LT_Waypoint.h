@@ -174,12 +174,12 @@ public:
         return false;
     }
 
-    //GF, one per query basis
-    virtual bool AddGF(QueryID query,
+    //GT, one per query basis
+    virtual bool AddGT(QueryID query,
                 SlotContainer& resultAtts, /*list of attributes produced as the result */
-                        string gfName, /*name of the GF */
+                        string gfName, /*name of the GT */
                         string gfDef, /*the code that defines the gf */
-                string constructorExp, /*expression in GF constructor */
+                string constructorExp, /*expression in GT constructor */
                 SlotSet& atts, string expr, string initializer,
                 vector<WayPointID> reqStates ){
         return false;

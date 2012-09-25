@@ -149,12 +149,12 @@ class DataTypeManager {
         GLATemplateInfo() {}
     };
 
-    struct GFTemplateInfo {
+    struct GTTemplateInfo {
         string file;
 
-        GFTemplateInfo( string _file ) : file(_file) {}
+        GTTemplateInfo( string _file ) : file(_file) {}
 
-        GFTemplateInfo() {}
+        GTTemplateInfo() {}
     };
 
     typedef map<string, TypeInfo*> TypeToInfoMap;
@@ -172,8 +172,8 @@ class DataTypeManager {
     typedef map<string, GLATemplateInfo> GLATempToInfoMap;
     GLATempToInfoMap mTempGLA;
 
-    typedef map<string, GFTemplateInfo> GFTempToInfoMap;
-    GFTempToInfoMap mTempGF;
+    typedef map<string, GTTemplateInfo> GTTempToInfoMap;
+    GTTempToInfoMap mTempGT;
 
     // Synonym to base type
     map<string, string> mSynonymToBase;
@@ -190,8 +190,8 @@ class DataTypeManager {
     void AddGLATemp( string glaName, string file );
     bool GLATemplateExists( string glaName, string& file );
 
-    void AddGFTemp( string gfName, string file );
-    bool GFTemplateExists( string gfName, string& file );
+    void AddGTTemp( string gtName, string file );
+    bool GTTemplateExists( string gtName, string& file );
 
     // Prefix for conversion functions. For example, if the conversion prefix was "_TO_", then
     // any function named "_TO_T" that take a single argument will be assumed to convert
@@ -302,14 +302,14 @@ public:
     void AddGLATemplate( string glaName, string filename );
     bool IsGLATemplate( string glaName, string& filename );
 
-    void AddGF(string gfName, vector<string>& typeargs, vector<string>& typeret, string filename );
-    bool IsGF( string& gfName, vector<string>& typeargs, vector<string>& typeret, string& file,
+    void AddGT(string gtName, vector<string>& typeargs, vector<string>& typeret, string filename );
+    bool IsGT( string& gtName, vector<string>& typeargs, vector<string>& typeret, string& file,
             vector<ArgFormat>& /* out param */ actualArgs );
 
-    bool GFExists( string& gfName, string& file );
+    bool GTExists( string& gtName, string& file );
 
-    void AddGFTemplate( string gfName, string filename );
-    bool IsGFTemplate( string gfName, string& filename );
+    void AddGTTemplate( string gtName, string filename );
+    bool IsGTTemplate( string gtName, string& filename );
 
     // generate the set of includes for a given list of attributes
     // result should contain the #include statements
@@ -973,30 +973,30 @@ bool DataTypeManager :: GLATemplateExists( string glaName, string& file ) {
 }
 
 inline
-void DataTypeManager :: AddGFTemp( string gfName, string file ) {
-    GFTempToInfoMap::iterator it = mTempGF.find( gfName );
+void DataTypeManager :: AddGTTemp( string gtName, string file ) {
+    GTTempToInfoMap::iterator it = mTempGT.find( gtName );
 
-    if( it != mTempGF.end() ) {
-        GFTemplateInfo & gInfo = it->second;
+    if( it != mTempGT.end() ) {
+        GTTemplateInfo & gInfo = it->second;
 
         if( gInfo.file != file ) {
-            cout << "\nError adding templated GF " << gfName
+            cout << "\nError adding templated GT " << gtName
                 << ", template exists with different definition.";
         }
 
         return;
     }
     else {
-        mTempGF[gfName] = GFTemplateInfo( file );
+        mTempGT[gtName] = GTTemplateInfo( file );
     }
 }
 
 inline
-bool DataTypeManager :: GFTemplateExists( string gfName, string& file ) {
-    GFTempToInfoMap::iterator it = mTempGF.find( gfName );
+bool DataTypeManager :: GTTemplateExists( string gtName, string& file ) {
+    GTTempToInfoMap::iterator it = mTempGT.find( gtName );
 
-    if( it != mTempGF.end() ) {
-        GFTemplateInfo & gInfo = it->second;
+    if( it != mTempGT.end() ) {
+        GTTemplateInfo & gInfo = it->second;
 
         file = gInfo.file;
         return true;
@@ -1250,41 +1250,41 @@ bool DataTypeManager :: GLAExists( string& glaName, string& file ) {
 }
 
 inline
-void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs,
+void DataTypeManager :: AddGT(string gtName, vector<string>& typeargs,
         vector<string>& typeret, string fileName ) {
-    if( !DoesTypeExist( gfName ) ) {
-        AddBaseType( gfName, fileName );
+    if( !DoesTypeExist( gtName ) ) {
+        AddBaseType( gtName, fileName );
     }
     else {
         // Duplicate definition.
-        cout << "\nWarning: Attempting to add a duplicate GF " << gfName;
+        cout << "\nWarning: Attempting to add a duplicate GT " << gtName;
         return;
     }
 
-    string fName_add = "AddItem_" + gfName;
-    string fName_ret = "GetResult_" + gfName;
+    string fName_add = "AddItem_" + gtName;
+    string fName_ret = "GetResult_" + gtName;
 
     string ret = "";
 
     vector<string> args_vec(typeargs);
     vector<string> ret_vec(typeret);
 
-    AddFunc( gfName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
-    AddFunc( gfName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( gtName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( gtName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
 }
 
 inline
-void DataTypeManager :: AddGFTemplate( string gfName, string filename ) {
-    AddGFTemp( gfName, filename );
+void DataTypeManager :: AddGTTemplate( string gtName, string filename ) {
+    AddGTTemp( gtName, filename );
 }
 
 inline
-bool DataTypeManager :: IsGFTemplate( string gfName, string& filename ) {
-    return GFTemplateExists(gfName, filename);
+bool DataTypeManager :: IsGTTemplate( string gtName, string& filename ) {
+    return GTTemplateExists(gtName, filename);
 }
 
 inline
-bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
+bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
         vector<string>& typeret, string& file,
         vector<ArgFormat>& /* out param */ actualArgs ) {
 
@@ -1292,12 +1292,12 @@ bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
     vector<string> ret_vec(typeret);
     string ret("");
 
-    if( !IsType( gfName ) ) {
-        cout << "\nError: No GF " << gfName << " known to system!";
+    if( !IsType( gtName ) ) {
+        cout << "\nError: No GT " << gtName << " known to system!";
         return false;
     }
 
-    //cerr << "GF: " << gfName << endl;
+    //cerr << "GT: " << gtName << endl;
 
     //cerr << "Number arguments " << typeargs.size() << endl;
 
@@ -1307,15 +1307,15 @@ bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
 
     //for( int i = 0; i < typeret.size(); ++i ) cerr << typeret[i] << endl;
 
-    string fName_add = "AddItem_" + gfName;
-    string fName_ret = "GetResult_" + gfName;
+    string fName_add = "AddItem_" + gtName;
+    string fName_ret = "GetResult_" + gtName;
 
     bool pure;
 
     // Check the arguments and get any formatting necessary.
-    bool correct = IsCorrectFunc( gfName, fName_add, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
+    bool correct = IsCorrectFunc( gtName, fName_add, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
 
-    // If we didn't get a match for a concrete GF, see if a template with this
+    // If we didn't get a match for a concrete GT, see if a template with this
     // name exists.
     if( !correct ) {
         return false;
@@ -1343,7 +1343,7 @@ bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
         /* cerr << endl; */
         /* cerr << "Return type: " << cur->returnType << endl; */
 
-        if( cur->type != gfName ) {
+        if( cur->type != gtName ) {
             //cerr << "failed match on return function type name" << endl;
             continue;
         }
@@ -1382,11 +1382,11 @@ bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
 }
 
 inline
-bool DataTypeManager :: GFExists( string& gfName, string& file ) {
-    if( !IsType( gfName ) )
+bool DataTypeManager :: GTExists( string& gtName, string& file ) {
+    if( !IsType( gtName ) )
         return false;
 
-    file = GetTypeFile( gfName );
+    file = GetTypeFile( gtName );
 
     return true;
 }

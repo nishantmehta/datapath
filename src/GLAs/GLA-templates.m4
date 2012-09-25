@@ -51,6 +51,11 @@ m4_define(</GF_DESC/>, </dnl
 <//>m4_redefine(</__META_TYPE/>, </GF/>)dnl
 />)dnl
 
+m4_define(</GT_DESC/>, </dnl
+<//></$0/>dnl
+<//>m4_redefine(</__META_TYPE/>, </GF/>)dnl
+/>)dnl
+
 m4_define(</FUNC_DESC/>, </dnl
 <//></$0/>dnl
 <//>m4_redefine(</__META_TYPE/>, </FUNC/>)dnl
@@ -78,6 +83,7 @@ m4_define(</END_DESC/>, </dnl
 dnl # Macros used for generating descriptions of templates.
 m4_define(</GLA_TEMPLATE_DESC/>, <//>)dnl
 m4_define(</GF_TEMPLATE_DESC/>, <//>)dnl
+m4_define(</GT_TEMPLATE_DESC/>, <//>)dnl
 m4_define(</FUNC_TEMPLATE_DESC/>, <//>)dnl
 
 m4_define(</TYPE_DEF/>, <//>)dnl

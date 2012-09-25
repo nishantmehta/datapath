@@ -41,7 +41,7 @@ enum WaypointType {
 	ScannerWaypoint,
 	TextLoaderWaypoint,
 	GLAWaypoint,
-    GFWaypoint
+    GTWaypoint
 };
 
 struct WPTypeTranslator {

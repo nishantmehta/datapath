@@ -25,14 +25,42 @@
 #include "GLAHelpers.h"
 #include "Constants.h"
 
-//a constant just to allow changing number of states to be merged at a time
-
 /** WARNING: The chunk processing function has to return 0 and the
         finalize function 3 otherwise acknowledgments are not sent
         properly in the system
 */
 class GLAWayPointImp : public WayPointImp {
+    // Constant states used by some Queries
+    QueryToGLASContMap constStates;
+
+    // A counter for each query representing how many state objects that GLA is
+    // waiting on to begin processing.
+    QueryIDToInt statesNeeded;
+
+    // Used to keep track of which constant states go where in the constStates list.
+    typedef map< WayPointID, int > ConstStateIndexMap;
+    typedef map< QueryID, ConstStateIndexMap > QueryToConstStateIndexMap;
+    QueryToConstStateIndexMap constStateIndex;
+
 protected:
+
+    /*************************************************************************/
+    // The following methods are used by subclasses to access information about
+    // constant states that are needed.
+    /*************************************************************************/
+
+    // Initializes information about constant states from configuration data.
+    void InitConstStates( QueryToReqStates& reqStates );
+
+    // Adds any generated states to the lists and adjusts indicies appropriately.
+    void AddGeneratedStates( QueryToGLASContMap& genStates );
+
+    // Returns the number of states needed for a particular query.
+    int NumStatesNeeded( QueryID query );
+
+    // Returns a copy of the constant states map.
+    QueryToGLASContMap GetConstStates();
+
     // Enumeration for work function exit codes.
     enum ExitCode {
         PREPROCESSING   = -1,
@@ -52,6 +80,12 @@ protected:
 
     // Called when a wayoint has received a state from another waypoint.
     virtual void GotState( StateContainer& state );
+
+    // Called when a waypoint has received all of the states it needs for a query.
+    virtual void GotAllStates( QueryID query ) = 0;
+
+    // Removes data pertaining to the specified queries from the waypoint.
+    void RemoveQueryData( QueryIDSet queries );
 
     /*************************************************************************/
     // The following methods are to be defined by subclasses to determine the

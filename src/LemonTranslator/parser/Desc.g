@@ -45,6 +45,7 @@ SYNONYM : 'synonym' | 'Synonym' | 'SYNONYM';
 TEMPLATE : 'template' | 'Template' | 'TEMPLATE';
 GLA : 'gla' | 'Gla' | 'GLA';
 GF  : 'gf' | 'Gf' | 'GF';
+GTRAN : 'gt' | 'Gt' | 'GT';
 
 DEFINE : 'define' | 'Define' | 'DEFINE';
 FROM : 'from' | 'From' | 'FROM';
@@ -140,9 +141,9 @@ defineStatement
     {
         dTM.AddGLA( STR($n), $params.vect, $retList.vect, STRS($f) );
     }
-    | GF n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    | GTRAN n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     {
-        dTM.AddGF( STR($n), $params.vect, $retList.vect, STRS($f) );
+        dTM.AddGT( STR($n), $params.vect, $retList.vect, STRS($f) );
     }
     | n=ID AS ty=ID
     {

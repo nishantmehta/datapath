@@ -47,7 +47,7 @@ M4_CREATE_DATA_TYPE(JoinMergeConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>,
 </(reqStates, QueryToReqStates), (resultIsState, QueryIDToBool)/>)
 
-M4_CREATE_DATA_TYPE(GFConfigureData, WayPointConfigureData, <//>,
+M4_CREATE_DATA_TYPE(GTConfigureData, WayPointConfigureData, <//>,
 </(reqStates, QueryToReqStates)/>)
 
 struct PrintFileInfo {

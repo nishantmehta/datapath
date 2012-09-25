@@ -13,19 +13,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-#ifndef _LT_GF_H_
-#define _LT_GF_H_
+#ifndef _LT_GT_H_
+#define _LT_GT_H_
 
 #include "LT_Waypoint.h"
 #include "GLAData.h"
 
-class LT_GF : public LT_Waypoint {
+class LT_GT : public LT_Waypoint {
 
 private:
 
     typedef vector<WayPointID> StateSourceVec;
 
-    struct GFInfo {
+    struct GTInfo {
         string name;
         string defs;
         string constructExp;
@@ -33,8 +33,8 @@ private:
         string initializer;
         StateSourceVec reqStates;
 
-        GFInfo() {} // ctor for map compatibility
-    GFInfo(string _name, string _defs, string _constructExp, string _expression, string _initializer,
+        GTInfo() {} // ctor for map compatibility
+    GTInfo(string _name, string _defs, string _constructExp, string _expression, string _initializer,
             StateSourceVec _reqStates ):
         name(_name), defs(_defs), constructExp(_constructExp), expression(_expression),
         initializer(_initializer), reqStates(_reqStates) {}
@@ -45,8 +45,8 @@ private:
     QueryToSlotContainer gfAttribs;
 
     // info for each GLA attribute-container
-    typedef map<QueryID, GFInfo> GFInfoMap;
-    GFInfoMap gfInfoMap;
+    typedef map<QueryID, GTInfo> GTInfoMap;
+    GTInfoMap gfInfoMap;
 
     QueryToSlotSet synthesized;
 
@@ -57,17 +57,17 @@ private:
 
 public:
 
-    LT_GF(WayPointID id): LT_Waypoint(id)
+    LT_GT(WayPointID id): LT_Waypoint(id)
     {}
 
-    virtual WaypointType GetType() {return GFWaypoint;}
+    virtual WaypointType GetType() {return GTWaypoint;}
 
     virtual void DeleteQuery(QueryID query);
 
     virtual void ClearAllDataStructure();
 
-    //GF, one per query basis
-    virtual bool AddGF(QueryID query,
+    //GT, one per query basis
+    virtual bool AddGT(QueryID query,
                     SlotContainer& resultAtts,
                     string glaName,
                     string glaDef,
@@ -87,4 +87,4 @@ public:
 
 };
 
-#endif // _LT_GF_H_
+#endif // _LT_GT_H_

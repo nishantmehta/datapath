@@ -14,7 +14,7 @@
 //  limitations under the License.
 //
 
-#include "GFWayPointImp.h"
+#include "GTWayPointImp.h"
 #include "CPUWorkerPool.h"
 #include "Logging.h"
 #include "Constants.h"
@@ -25,19 +25,19 @@
 // than they are declared in the header. This is because I wanted to arrange
 // the definitions in approximately the order the functions should be called.
 
-GFWayPointImp :: GFWayPointImp() {
-    PDEBUG( "GFWayPointImp :: GFWayPointImp()" );
+GTWayPointImp :: GTWayPointImp() {
+    PDEBUG( "GTWayPointImp :: GTWayPointImp()" );
     SetResultExitCode( PROCESS_CHUNK );
 }
 
-GFWayPointImp :: ~GFWayPointImp() {
-    PDEBUG( "GFWayPointImp :: ~GFWayPointImp()" );
+GTWayPointImp :: ~GTWayPointImp() {
+    PDEBUG( "GTWayPointImp :: ~GTWayPointImp()" );
 }
 
-void GFWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData ) {
-    PDEBUG( "GFWayPointImp :: TypeSpecificConfigure()" );
+void GTWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData ) {
+    PDEBUG( "GTWayPointImp :: TypeSpecificConfigure()" );
 
-    GFConfigureData myConfig;
+    GTConfigureData myConfig;
     myConfig.swap(configData);
 
     QueryExitContainer queries;
@@ -46,8 +46,8 @@ void GFWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData )
     FOREACH_TWL(iter, queries) {
         QueryID q=iter.query;
         GLAStateContainer cont; // empty container
-        if( !queryToGFs.IsThere(q) ) {
-            queryToGFs.Insert(q, cont);
+        if( !queryToGTs.IsThere(q) ) {
+            queryToGTs.Insert(q, cont);
         }
 
         q = iter.query;
@@ -58,27 +58,11 @@ void GFWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData )
 
     QueryToReqStates& reqStates = myConfig.get_reqStates();
 
-    FOREACH_EM(query, list, reqStates) {
-        int index = 0;
-        GLAStateContainer myConstStates;
-        FOREACH_TWL(sourceWP, list) {
-            constStateIndex[query][sourceWP] = index++;
-            GLAState dummy;
-            myConstStates.Append(dummy);
-        } END_FOREACH;
-
-        QueryID key = query;
-        constStates.Insert(key, myConstStates);
-
-        key = query;
-        Swapify<int> numNeeded(index);
-        statesNeeded.Insert(key, numNeeded);
-
-    } END_FOREACH;
+    InitConstStates( reqStates );
 }
 
-bool GFWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne ) {
-    PDEBUG( "GFWayPointImp :: ReceivedStartProducingMsg()" );
+bool GTWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne ) {
+    PDEBUG( "GTWayPointImp :: ReceivedStartProducingMsg()" );
 
     QueryID qID = whichOne.query;
 
@@ -96,8 +80,8 @@ bool GFWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, Qu
     return true;
 }
 
-bool GFWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
-    PDEBUG( "GFWayPointImp :: PreProcessingPossible()" );
+bool GTWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
+    PDEBUG( "GTWayPointImp :: PreProcessingPossible()" );
 
     if( queriesToPreprocess.IsEmpty() )
         return false;
@@ -122,21 +106,21 @@ bool GFWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
     QueryExitContainer whichOnes;
     whichOnes.copy(qExits);
 
-    GFPreProcessWD workDesc( qExits );
+    GTPreProcessWD workDesc( qExits );
 
     WayPointID myID = GetID();
-    WorkFunc myFunc = GetWorkFunction( GFPreProcessWorkFunc :: type );
+    WorkFunc myFunc = GetWorkFunction( GTPreProcessWorkFunc :: type );
 
     myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
 
     return true;
 }
 
-bool GFWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
+bool GTWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
         HistoryList& history, ExecEngineData& data ) {
-    PDEBUG( "GFWayPointImp :: PreProcessingComplete()" );
+    PDEBUG( "GTWayPointImp :: PreProcessingComplete()" );
 
-    GFPreProcessRez result;
+    GTPreProcessRez result;
     result.swap(data);
 
     QueryExitContainer endAtMe;
@@ -151,10 +135,7 @@ bool GFWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
     FOREACH_TWL( curQuery, whichOnes ) {
         QueryID curID = curQuery.query;
 
-        FATALIF( !statesNeeded.IsThere( curID ), "Don't have a value for the number of states needed "
-                "for one of our queries!");
-        Swapify<int> tempVal = statesNeeded.Find( curID );
-        int curStatesNeeded = tempVal.GetData();
+        int curStatesNeeded = NumStatesNeeded( curID );
 
         if( curStatesNeeded == 0 ) {
             QueryExit curQueryCopy = curQuery;
@@ -165,23 +146,7 @@ bool GFWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
         }
     } END_FOREACH;
 
-    FOREACH_EM(curQuery, stateCont, rezConstStates) {
-        GLAStateContainer& curConstStates = constStates.Find(curQuery);
-        curConstStates.MoveToStart();
-        int numGen = 0;
-
-        // Prepend the generated states
-        FOREACH_TWL(curState, stateCont) {
-            curConstStates.Insert(curState);
-            curConstStates.Advance();
-            ++numGen;
-        } END_FOREACH;
-
-        for( ConstStateIndexMap::iterator it = constStateIndex[curQuery].begin();
-                it != constStateIndex[curQuery].end(); ++it ) {
-            it->second += numGen;
-        }
-    } END_FOREACH;
+    AddGeneratedStates( rezConstStates );
 
     FOREACH_TWL( curQuery, startProcessing ) {
         queriesProcessing.Union(curQuery.query);
@@ -200,65 +165,24 @@ bool GFWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
     return true;
 }
 
-void GFWayPointImp :: GotState( StateContainer& state ) {
-    PDEBUG( "GFWayPointImp :: GotState()" );
+void GTWayPointImp :: GotAllStates( QueryID query ) {
+    // Got the last state we needed.
+    queriesProcessing.Union(query);
 
-    // Extract the information from the state container
-    QueryExit qe;
-    state.get_whichQuery().swap(qe);
-
-    WayPointID source = state.get_source();
-
-    GLAState myState;
-    state.get_myState().swap(myState);
-
-    // Get information we have about the query
-    FATALIF( !statesNeeded.IsThere( qe.query ), "Got a state container for a"
-            "query we don't know about!");
-    Swapify<int>& tempStatesNeeded = statesNeeded.Find(qe.query);
-    int myStatesNeeded = tempStatesNeeded.GetData();
-
-    FATALIF( myStatesNeeded == 0, "Got a state for a query that doesn't need "
-            "any more states!");
-
-    FATALIF( !constStates.IsThere( qe.query ), "Got a state container for a "
-            "query we have no const states for!");
-    GLAStateContainer& myConstStates = constStates.Find(qe.query);
-
-    myConstStates.MoveToStart();
-
-    int whichIndex = constStateIndex[qe.query][source];
-
-    for( int i = 0; i < whichIndex; ++i ) {
-        myConstStates.Advance();
-    }
-
-    GLAState& curState = myConstStates.Current();
-    myState.swap(curState);
-
-    --myStatesNeeded;
-    Swapify<int> tempVal(myStatesNeeded);
-    tempStatesNeeded.swap(tempVal);
-
-    if( myStatesNeeded == 0 ) {
-        // Got the last state we needed.
-        queriesProcessing.Union(qe.query);
-
-        QueryExit myExit = queryIdentityMap.Find(qe.query);
-        SendStartProducingMsg(myExit);
-    }
+    QueryExit myExit = queryIdentityMap.Find(query);
+    SendStartProducingMsg(myExit);
 }
 
-void GFWayPointImp :: GotChunkToProcess( CPUWorkToken& token,
+void GTWayPointImp :: GotChunkToProcess( CPUWorkToken& token,
         QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& history ) {
-    PDEBUG( "GFWayPointImp :: GotChunkToProcess()" );
+    PDEBUG( "GTWayPointImp :: GotChunkToProcess()" );
 
     // Build the work spec
     QueryToGLAStateMap qToFilter;
     FOREACH_TWL( qe, whichOnes ) {
         QueryID qID = qe.query;
-        FATALIF(!queryToGFs.IsThere(qID), "Did not find a filter container for a query!");
-        GLAStateContainer& cont = queryToGFs.Find(qID);
+        FATALIF(!queryToGTs.IsThere(qID), "Did not find a filter container for a query!");
+        GLAStateContainer& cont = queryToGTs.Find(qID);
         if( cont.Length() > 0 ) {
             GLAState state;
             cont.Remove(state);
@@ -269,29 +193,28 @@ void GFWayPointImp :: GotChunkToProcess( CPUWorkToken& token,
     QueryExitContainer whichOnesCopy;
     whichOnesCopy.copy( whichOnes );
 
-    QueryToGLASContMap qToConstState;
-    qToConstState.copy(constStates);
+    QueryToGLASContMap qToConstState = GetConstStates();
 
-    GFProcessChunkWD workDesc( whichOnes, qToFilter, qToConstState, chunk.get_myChunk());
+    GTProcessChunkWD workDesc( whichOnes, qToFilter, qToConstState, chunk.get_myChunk());
 
-    WorkFunc myFunc = GetWorkFunction( GFProcessChunkWorkFunc::type );
+    WorkFunc myFunc = GetWorkFunction( GTProcessChunkWorkFunc::type );
 
     WayPointID myID = GetID();
     myCPUWorkers.DoSomeWork( myID, history, whichOnesCopy, token, workDesc, myFunc );
 }
 
-bool GFWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes,
+bool GTWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes,
         HistoryList& history, ExecEngineData& data ) {
-    PDEBUG( "GFWayPointImp :: ProcessChunkComplete()" );
+    PDEBUG( "GTWayPointImp :: ProcessChunkComplete()" );
 
-    GFProcessChunkRez result;
+    GTProcessChunkRez result;
     result.swap(data);
 
     QueryToGLAStateMap& filters = result.get_filters();
 
     FOREACH_EM(key, filter, filters) {
-        FATALIF(!queryToGFs.IsThere(key), "Got back filters for a query we don't know about!");
-        GLAStateContainer& cont = queryToGFs.Find(key);
+        FATALIF(!queryToGTs.IsThere(key), "Got back filters for a query we don't know about!");
+        GLAStateContainer& cont = queryToGTs.Find(key);
         cont.Insert(filter);
     } END_FOREACH;
 
@@ -307,8 +230,8 @@ bool GFWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes,
     return false; // don't send ack
 }
 
-bool GFWayPointImp :: ReceivedQueryDoneMsg( QueryExitContainer& whichOnes ) {
-    PDEBUG( "GFWayPointImp :: ReceivedQueryDoneMsg()" );
+bool GTWayPointImp :: ReceivedQueryDoneMsg( QueryExitContainer& whichOnes ) {
+    PDEBUG( "GTWayPointImp :: ReceivedQueryDoneMsg()" );
 
     // Just forward it
     SendQueryDoneMsg( whichOnes );

@@ -25,7 +25,7 @@
 #include "Constants.h"
 
 /** WARNING: The chunk processing function has to return 0 and the
-        finalize function 1 otherwise acknowledgments are not sent
+        finalize function 3 otherwise acknowledgments are not sent
         properly in the system
 */
 class GLASmallWayPointImp : public GLAWayPointImp {
@@ -37,9 +37,6 @@ class GLASmallWayPointImp : public GLAWayPointImp {
 
     // States that were merged, need to finalize them
     QueryToGLAStateMap mergedStates;
-
-    // Constant states used by some GLAs
-    QueryToGLASContMap constStates;
 
     // States that need to be garbage collected.
     QueryToGLAStateMap garbageStates;
@@ -56,15 +53,6 @@ class GLASmallWayPointImp : public GLAWayPointImp {
 
     // last fragment we generated to ensure a circular list behavior
     off_t lastFragmentId;
-
-    // A counter for each query representing how many state objects that GLA is
-    // waiting on to begin processing.
-    QueryIDToInt statesNeeded;
-
-    // Used to keep track of which constant states go where in the constStates list.
-    typedef map< WayPointID, int > ConstStateIndexMap;
-    typedef map< QueryID, ConstStateIndexMap > QueryToConstStateIndexMap;
-    QueryToConstStateIndexMap constStateIndex;
 
     // Keeps track of which queries produce their GLA as a state.
     QueryIDToBool resultIsState;
@@ -95,7 +83,7 @@ class GLASmallWayPointImp : public GLAWayPointImp {
     // Overwritten virtual methods
     void GotChunkToProcess( CPUWorkToken & token, QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& lineage);
 
-    void GotState( StateContainer& state );
+    void GotAllStates( QueryID query );
 
     bool PreProcessingPossible( CPUWorkToken& token );
     bool PostProcessingPossible( CPUWorkToken& token );

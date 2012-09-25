@@ -29,7 +29,7 @@ USING
 AS SELF;
 
 lhs =
-    GF:JoinLHS
+    GT:JoinLHS
     <
         GLA:hash,
         // Join attributes
@@ -74,5 +74,5 @@ AS
     nation_key : INT,
     nation_name : HString
 INTO
-    "join-gf.csv"
+    "join-gt.csv"
 ;

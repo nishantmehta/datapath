@@ -24,7 +24,7 @@ dnl # $3=KEY_ATTS   the join attributes
 dnl # $4=LHS_ATTS   extra attributes from the LHS
 dnl # $5=RHS_ATTS   extra attributes from the RHS
 
-GF_TEMPLATE_DESC(</JoinLHS/>)
+GT_TEMPLATE_DESC(</JoinLHS/>)
 
 m4_define(</JoinLHS/>, </dnl
 m4_divert_push(-1)
@@ -43,7 +43,7 @@ m4_redefine(</MY_CONST_STATES/>, </(map, $2)/>)
 
 m4_divert_pop(-1)dnl
 /** Information for meta-GLAs
- *  GF_DESC
+ *  GT_DESC
  *      NAME(GF_NAME)
  *      INPUTS(MY_INPUT)
  *      OUTPUTS(MY_OUTPUT)

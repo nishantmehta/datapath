@@ -169,11 +169,11 @@ M4_CREATE_DATA_TYPE(GLAFinalizeWD, WorkDescription,
 
 /***** Generalized Filter Work Descriptions *****/
 
-M4_CREATE_DATA_TYPE(GFPreProcessWD, WorkDescription,
+M4_CREATE_DATA_TYPE(GTPreProcessWD, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer)/>)
 
-M4_CREATE_DATA_TYPE(GFProcessChunkWD, WorkDescription,
+M4_CREATE_DATA_TYPE(GTProcessChunkWD, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer), (filters, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (chunkToProcess, Chunk)/>)
 

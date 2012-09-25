@@ -26,6 +26,83 @@ GLAWayPointImp :: ~GLAWayPointImp () {
     PDEBUG ("GLAWayPointImp :: GLAWayPointImp ()");
 }
 
+void GLAWayPointImp :: InitConstStates( QueryToReqStates& reqStates ) {
+    PDEBUG ("GLAWayPointImp :: InitConstStates ()");
+    FOREACH_EM(query, list, reqStates) {
+        int index = 0;
+        GLAStateContainer myConstStates;
+        FOREACH_TWL(sourceWP, list) {
+            constStateIndex[query][sourceWP] = index++;
+            GLAState dummy;
+            myConstStates.Append(dummy);
+        } END_FOREACH;
+
+        QueryID key = query;
+        constStates.Insert(key, myConstStates);
+
+        key = query;
+        Swapify<int> numNeeded(index);
+        statesNeeded.Insert(key, numNeeded);
+
+    } END_FOREACH;
+}
+
+int GLAWayPointImp :: NumStatesNeeded( QueryID qID ) {
+    PDEBUG ("GLAWayPointImp :: NumStatesNeeded ()");
+    FATALIF( !statesNeeded.IsThere( qID ), "NumStatesNeeded: Don't know about query %s.", qID.GetStr().c_str());
+    return statesNeeded.Find( qID ).GetData();
+}
+
+void GLAWayPointImp :: AddGeneratedStates( QueryToGLASContMap& genStates ) {
+    PDEBUG ("GLAWayPointImp :: AddGeneratedStates ()");
+
+    FOREACH_EM(curQuery, stateCont, genStates) {
+        FATALIF( !constStates.IsThere( curQuery ),
+                "Unable to add generated states for unknown query %s.", curQuery.GetStr().c_str());
+        GLAStateContainer& curConstStates = constStates.Find(curQuery);
+        curConstStates.MoveToStart();
+        int numGen = 0;
+
+        // Prepend the generated states
+        FOREACH_TWL(curState, stateCont) {
+            curConstStates.Insert(curState);
+            curConstStates.Advance();
+            ++numGen;
+        } END_FOREACH;
+
+        for( map<WayPointID,int>::iterator it = constStateIndex[curQuery].begin();
+                it != constStateIndex[curQuery].end(); ++it ) {
+            it->second += numGen;
+        }
+    } END_FOREACH;
+}
+
+QueryToGLASContMap GLAWayPointImp :: GetConstStates() {
+    PDEBUG ("GLAWayPointImp :: GetConstStates()");
+    QueryToGLASContMap constStateCopy;
+    constStateCopy.copy( constStates );
+    return constStateCopy;
+}
+
+void GLAWayPointImp :: RemoveQueryData( QueryIDSet toEject ) {
+    PDEBUG ("GLAWayPointImp :: RemoveQueryData()");
+    QueryIDSet temp = toEject;
+    while( !temp.IsEmpty() ) {
+        QueryID curID = temp.GetFirst();
+
+        QueryID key;
+        GLAStateContainer stateVal;
+        if( constStates.IsThere( curID ) )
+            constStates.Remove( curID, key, stateVal );
+
+        Swapify<int> intVal;
+        if( statesNeeded.IsThere( curID ) )
+            statesNeeded.Remove( curID, key, intVal );
+
+        constStateIndex.erase( curID );
+    }
+}
+
 bool GLAWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
     return false;
 }
@@ -249,7 +326,44 @@ bool GLAWayPointImp :: ReceivedStartProducingMsg(HoppingUpstreamMsg& message, Qu
 }
 
 void GLAWayPointImp :: GotState( StateContainer& state ) {
-    FATAL("Don't know what to do with this!");
+    // Extract information from the state container.
+    QueryExit qe;
+    state.get_whichQuery().swap(qe);
+
+    WayPointID source = state.get_source();
+
+    GLAState myState;
+    state.get_myState().swap(myState);
+
+    // Get information we have about the query.
+    FATALIF( !statesNeeded.IsThere( qe.query ), "Got a state container for a query we don't know about!");
+    Swapify<int>& tempStatesNeeded = statesNeeded.Find(qe.query);
+    int myStatesNeeded = tempStatesNeeded.GetData();
+
+    FATALIF( myStatesNeeded == 0, "Got a state for a query that doesn't need any more states!" );
+
+    FATALIF( !constStates.IsThere( qe.query ), "Got a state container for a query we have no const states for!");
+    GLAStateContainer& myConstStates = constStates.Find(qe.query);
+
+    myConstStates.MoveToStart();
+
+    int whichIndex = constStateIndex[qe.query][source];
+
+    for( int i = 0; i < whichIndex; ++i ) {
+        myConstStates.Advance();
+    }
+
+    GLAState& curState = myConstStates.Current();
+    myState.swap(curState);
+
+    // Update the number of states needed
+    --myStatesNeeded;
+    Swapify<int> tempVal(myStatesNeeded);
+    tempStatesNeeded.swap(tempVal);
+
+    if( myStatesNeeded == 0 ) {
+        GotAllStates( qe.query );
+    }
 }
 
 void GLAWayPointImp :: SetResultExitCode( ExitCode exitCode ) {

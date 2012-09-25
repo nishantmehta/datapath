@@ -13,7 +13,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-#include "LT_GF.h"
+#include "LT_GT.h"
 #include "AttributeManager.h"
 
 static string GetAllAttrAsString(const set<SlotID>& atts) {
@@ -32,24 +32,24 @@ static string GetAllAttrAsString(const set<SlotID>& atts) {
     return rez;
 }
 
-bool LT_GF::GetConfig(WayPointConfigureData& where){
+bool LT_GT::GetConfig(WayPointConfigureData& where){
 
     // get the ID
     WayPointID gfIDOne = GetId ();
 
     // first, get the function we will send to it
     //    WorkFunc tempFunc = NULL;
-    GFPreProcessWorkFunc GFPreProcessWF(NULL);
-    GFProcessChunkWorkFunc GFProcessChunkWF (NULL);
+    GTPreProcessWorkFunc GTPreProcessWF(NULL);
+    GTProcessChunkWorkFunc GTProcessChunkWF (NULL);
     WorkFuncContainer myGLAWorkFuncs;
-    myGLAWorkFuncs.Insert (GFPreProcessWF);
-    myGLAWorkFuncs.Insert (GFProcessChunkWF);
+    myGLAWorkFuncs.Insert (GTPreProcessWF);
+    myGLAWorkFuncs.Insert (GTProcessChunkWF);
 
     // this is the set of query exits that end at it, and flow through it
     QueryExitContainer myGLAEndingQueryExits;
     QueryExitContainer myGLAFlowThroughQueryExits;
     GetQueryExits (myGLAFlowThroughQueryExits, myGLAEndingQueryExits);
-    PDEBUG("Printing query exits for GF WP ID = %s", gfIDOne.getName().c_str());
+    PDEBUG("Printing query exits for GT WP ID = %s", gfIDOne.getName().c_str());
 #ifdef DEBUG
         cout << "\nFlow through query exits\n" << flush;
         myGLAFlowThroughQueryExits.MoveToStart();
@@ -67,7 +67,7 @@ bool LT_GF::GetConfig(WayPointConfigureData& where){
 #endif
 
     QueryToReqStates myReqStates;
-    for( GFInfoMap::iterator it = gfInfoMap.begin(); it != gfInfoMap.end(); ++it ) {
+    for( GTInfoMap::iterator it = gfInfoMap.begin(); it != gfInfoMap.end(); ++it ) {
         QueryID curID = it->first;
         StateSourceVec & reqStates = it->second.reqStates;
 
@@ -83,7 +83,7 @@ bool LT_GF::GetConfig(WayPointConfigureData& where){
 
 
     // here is the waypoint configuration data
-    GFConfigureData gfConfigure (gfIDOne, myGLAWorkFuncs,  myGLAEndingQueryExits, myGLAFlowThroughQueryExits,
+    GTConfigureData gfConfigure (gfIDOne, myGLAWorkFuncs,  myGLAEndingQueryExits, myGLAFlowThroughQueryExits,
             myReqStates);
 
     // and add it
@@ -92,7 +92,7 @@ bool LT_GF::GetConfig(WayPointConfigureData& where){
     return true;
 }
 
-void LT_GF::DeleteQuery(QueryID query)
+void LT_GT::DeleteQuery(QueryID query)
 {
     DeleteQueryCommon(query); // common data
     synthesized.erase(query);
@@ -101,18 +101,18 @@ void LT_GF::DeleteQuery(QueryID query)
     gfAttribs.Remove(query, qID, slotCont);
 }
 
-void LT_GF::ClearAllDataStructure() {
+void LT_GT::ClearAllDataStructure() {
     ClearAll(); // common data
     gfAttribs.Clear();
     gfInfoMap.clear();
     synthesized.clear();
 }
 
-bool LT_GF::AddGF(QueryID query,
+bool LT_GT::AddGT(QueryID query,
         SlotContainer& resultAtts, /*list of attributes produced as the result */
-        string glaName, /*name of the GF */
+        string glaName, /*name of the GT */
                                         string glaDef,
-        string constructorExp, /*expression in GF constructor */
+        string constructorExp, /*expression in GT constructor */
         SlotSet& atts, string expr, string initializer,
         StateSourceVec reqStates)
 {
@@ -123,7 +123,7 @@ bool LT_GF::AddGF(QueryID query,
     QueryID qCopy = query;
     gfAttribs.Insert(qCopy, resultAtts);
 
-    GFInfo gfInfo(glaName, glaDef, constructorExp, expr, initializer, reqStates);
+    GTInfo gfInfo(glaName, glaDef, constructorExp, expr, initializer, reqStates);
     gfInfoMap[query] = gfInfo;
     CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
     queriesCovered.Union(query);
@@ -138,12 +138,12 @@ bool LT_GF::AddGF(QueryID query,
 // 1. used = used + new queries attributes filled after analysis
 // 2. result goes down = used
 // 3. Correctness : Atts coming from top is subset of synthesized
-bool LT_GF::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe)
+bool LT_GT::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe)
 {
     // atts coming from top should be subset of synthesized.
     if (!IsSubSet(atts, synthesized[query]))
     {
-        cerr << "GFWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
+        cerr << "GTWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
         cerr << "PropgateDown for Waypoint " << GetWPName() << endl;
         cerr << "Query: " << query.ToString() << endl;
         cerr << "atts: " << GetAllAttrAsString(atts) << endl;
@@ -158,11 +158,11 @@ bool LT_GF::PropagateDown(QueryID query, const SlotSet& atts, SlotSet& result, Q
     return true;
 }
 
-bool LT_GF::PropagateDownTerminating(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe) {
+bool LT_GT::PropagateDownTerminating(QueryID query, const SlotSet& atts, SlotSet& result, QueryExit qe) {
     // atts coming from top should be subset of synthesized.
     if (!IsSubSet(atts, synthesized[query]))
     {
-        cerr << "GFWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
+        cerr << "GTWP : Aggregate error: attributes coming from top are not subset of synthesized ones" << endl;
         cerr << "PropgateDownTerminating for Waypoint " << GetWPName() << endl;
         cerr << "Query: " << query.ToString() << endl;
         cerr << "atts: " << GetAllAttrAsString(atts) << endl;
@@ -183,7 +183,7 @@ bool LT_GF::PropagateDownTerminating(QueryID query, const SlotSet& atts, SlotSet
 // 3. result = NONE
 // 4. Print is last destination hence result is blank
 // 5. old used + new = used is good to check correctness if they are subset of down attributes
-bool LT_GF::PropagateUp(QueryToSlotSet& result)
+bool LT_GT::PropagateUp(QueryToSlotSet& result)
 {
     CheckQueryAndUpdate(newQueryToSlotSetMap, used);
     newQueryToSlotSetMap.clear();
@@ -194,13 +194,13 @@ bool LT_GF::PropagateUp(QueryToSlotSet& result)
     // used should be subset of what is coming from below
     if (!IsSubSet(used, downAttributes))
     {
-        cout <<  "GFWP : Attribute mismatch : used is not subset of attributes coming from below\n";
+        cout <<  "GTWP : Attribute mismatch : used is not subset of attributes coming from below\n";
         return false;
     }
     return true;
 }
 
-void LT_GF::WriteM4DataStructures(ostream& out) {
+void LT_GT::WriteM4DataStructures(ostream& out) {
 
     out << "m4_divert(0)" << endl;
 
@@ -212,26 +212,26 @@ void LT_GF::WriteM4DataStructures(ostream& out) {
     FOREACH_EM(key, data, gfAttribs){
         out << " /* Generating datastructures for query "
             << GetQueryName(key) << "*/" << endl;
-        GFInfo gfInfo = gfInfoMap[key];
+        GTInfo gfInfo = gfInfoMap[key];
         out << gfInfo.defs << endl;
     } END_FOREACH;
     //out << "}";
 }
 
-void LT_GF::WriteM4File(ostream& out) {
+void LT_GT::WriteM4File(ostream& out) {
 
     WriteM4DataStructures(out);
 
-    out << "M4_GF_MODULE(" ;
+    out << "M4_GT_MODULE(" ;
     WriteM4FileAux(out);
 }
 
 /**
    need to produce
-   M4_GF_MODULE( M4_WPName, M4_GFDesc, M4_Attribute_Queries)
+   M4_GT_MODULE( M4_WPName, M4_GTDesc, M4_Attribute_Queries)
  */
 
-void LT_GF::WriteM4FileAux(ostream& out) {
+void LT_GT::WriteM4FileAux(ostream& out) {
     IDInfo info;
     GetId().getInfo(info);
     string wpname = info.getName();
@@ -242,7 +242,7 @@ void LT_GF::WriteM4FileAux(ostream& out) {
     out << "\t</";
 
     //GLADesc starts here.
-    // go through the query to GF attribute map
+    // go through the query to GT attribute map
     bool first_gfAttribs = true;
     FOREACH_EM(key, data, gfAttribs){
         if( first_gfAttribs )
@@ -251,7 +251,7 @@ void LT_GF::WriteM4FileAux(ostream& out) {
             out << ", ";
 
         out << "( " << GetQueryName(key) << ", ";
-        GFInfo gfInfo = gfInfoMap[key];
+        GTInfo gfInfo = gfInfoMap[key];
 
         out << gfInfo.name << "," << "dummy" << ", </" << gfInfo.constructExp << "/>, </(";
         bool first = true;
@@ -271,11 +271,11 @@ void LT_GF::WriteM4FileAux(ostream& out) {
         //write constantExpr
         out << "</" << gfInfo.initializer << "/>";
 
-        // end of GF description
+        // end of GT description
         out << ")";
     } END_FOREACH;
 
-    out << "/>,\t"; // end of GFDesc
+    out << "/>,\t"; // end of GTDesc
 
     // format: (att_name, QueryIDSet_serialized), ..
     SlotToQuerySet reverse;
