@@ -89,7 +89,8 @@ public:
     // Selection
     bool AddFilter(WayPointID wp, QueryID query, SlotContainer& atts,
                                  string expr /*filter cond*/, string initializer = "",
-                                 string defs = "");
+                                 string defs = "", string name = "", string cArgs = "",
+                                 vector<WayPointID> reqStates = vector<WayPointID>());
 
     // Selection. Need a list of these
     bool AddSynthesized(WayPointID wp, QueryID query, SlotID attribute /** this is the synthesiezd attribute*/, SlotContainer& atts, string expr, string initializer, string defs);

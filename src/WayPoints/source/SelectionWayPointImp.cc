@@ -19,62 +19,143 @@
 #include "Logging.h"
 
 
-SelectionWayPointImp :: SelectionWayPointImp () {PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");}
+SelectionWayPointImp :: SelectionWayPointImp () {
+    PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");
+    SetResultExitCode( PROCESS_CHUNK );
+}
 SelectionWayPointImp :: ~SelectionWayPointImp () {PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");}
 
-void SelectionWayPointImp :: ProcessHoppingDataMsg (HoppingDataMsg &data) {
-	PDEBUG("SelectionWayPointImp :: ProcessHoppingDataMsg ()");
+bool SelectionWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne ) {
+    PDEBUG( "SelectionWayPointImp :: ReceivedStartProducingMsg ()" );
 
-	// this function simply tries to get a worker to process the message
-	GenericWorkToken returnVal;
-	if (!RequestTokenImmediate (CPUWorkToken::type, returnVal)) {
+    QueryID qID = whichOne.query;
 
-		// if we do not get one, then we will just return a drop message to the sender
-		SendDropMsg (data.get_dest (), data.get_lineage ());
-		return;
-	}
+    if( qID.Overlaps(queriesProcessing) ) {
+        // No need to preprocess, we should already have everything we need.
+        // Also forward the message
+        SendStartProducingMsg( whichOne );
+    }
+    else {
+        queriesToPreprocess.Union(qID);
+    }
 
-	// convert the token into the correct type
-	CPUWorkToken myToken;
-	myToken.swap (returnVal);
-
-
-	ChunkID chunkID; // which chunk is this. Needed for debugging
-
-	// if we have a chunk produced by a table waypoint log it
-	data.get_lineage().MoveToStart();
-	if (CHECK_DATA_TYPE(data.get_lineage().Current(), TableHistory)){
-		TableHistory hLin;
-		hLin.swap(data.get_lineage().Current());
-		
-		ChunkID& id = hLin.get_whichChunk();
-		chunkID=id; // remember it
-
-		TableScanInfo infoTS;
-		id.getInfo(infoTS);
-
-		LOG_ENTRY_P(2, "CHUNK %d of %s Processed by Selection",
-								id.GetInt(), infoTS.getName().c_str()) ;
-		
-		// put it back;
-		hLin.swap(data.get_lineage().Current());
-	}
-
-		// extract the chunk from the message
-	ChunkContainer temp;
-	data.get_data ().swap (temp);
-
-	// create the work spec and get it done!
-	QueryExitContainer myDestinations;
-	myDestinations.copy (data.get_dest ());
-	SelectionWorkDescription workDesc (chunkID, myDestinations, temp.get_myChunk ());
-
-	// and send off the work request
-	WayPointID myID;
-	myID = GetID ();
-	WorkFunc myFunc;
-	myFunc = GetWorkFunction (SelectionWorkFunc::type);
-	myCPUWorkers.DoSomeWork (myID, data.get_lineage (), data.get_dest (), myToken, workDesc, myFunc);
-
+    return true;
 }
-	
+
+bool SelectionWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
+    PDEBUG( "SelectionWayPointImp :: PreProcessingPossible()" );
+
+    if( queriesToPreprocess.IsEmpty() )
+        return false;
+
+    QueryIDSet curQueries = queriesToPreprocess;
+    // Clear out queriesToPreprocess
+    queriesToPreprocess.Difference(curQueries);
+
+    HistoryList lineage;
+
+    QueryExitContainer qExits;
+
+    while( !curQueries.IsEmpty() ) {
+        QueryID temp = curQueries.GetFirst();
+
+        QueryExit qe = GetExit( temp );
+        qExits.Append(qe);
+    }
+
+    QueryExitContainer whichOnes;
+    whichOnes.copy(qExits);
+
+    SelectionPreProcessWD workDesc( qExits );
+
+    WayPointID myID = GetID();
+    WorkFunc myFunc = GetWorkFunction( SelectionPreProcessWorkFunc :: type );
+
+    myCPUWorkers.DoSomeWork( myID, lineage, whichOnes, token, workDesc, myFunc );
+
+    return true;
+}
+
+bool SelectionWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
+        HistoryList& history, ExecEngineData& data ) {
+    PDEBUG( "SelectionWayPointImp :: PreProcessingComplete()" );
+
+    SelectionPreProcessRez result;
+    result.swap(data);
+
+    QueryExitContainer endAtMe;
+    GetEndingQueryExits(endAtMe);
+
+    // Any const states that were generated.
+    QueryToGLASContMap& rezConstStates = result.get_constStates();
+
+    QueryExitContainer startProcessing;
+    QueryIDSet startTerminating;
+
+    FOREACH_TWL( curQuery, whichOnes ) {
+        QueryID curID = curQuery.query;
+
+        int curStatesNeeded = NumStatesNeeded( curID );
+
+        if( curStatesNeeded == 0 ) {
+            QueryExit curQueryCopy = curQuery;
+            startProcessing.Append(curQueryCopy);
+        }
+        else {
+            startTerminating.Union(curID);
+        }
+    } END_FOREACH;
+
+    AddGeneratedStates( rezConstStates );
+
+    FOREACH_TWL( curQuery, startProcessing ) {
+        queriesProcessing.Union(curQuery.query);
+
+        SendStartProducingMsg(curQuery);
+    } END_FOREACH;
+
+    // If we have any queries that still require states, send the start producing
+    // messages to the terminating query exits.
+    FOREACH_TWL(qe, endAtMe) {
+        if( startTerminating.Overlaps(qe.query) ) {
+            SendStartProducingMsg(qe);
+        }
+    } END_FOREACH;
+
+    return true;
+}
+
+void SelectionWayPointImp :: GotAllStates( QueryID query ) {
+    PDEBUG( "SelectionWayPointImp :: GotAllStates ()");
+
+    // Got the last state we needed.
+    queriesProcessing.Union(query);
+
+    QueryExit myExit = GetExit( query );
+    SendStartProducingMsg(myExit);
+}
+
+void SelectionWayPointImp :: GotChunkToProcess( CPUWorkToken& token,
+        QueryExitContainer& whichOnes, ChunkContainer& chunk, HistoryList& history ) {
+    PDEBUG( "SelectionWayPointImp :: GotChunkToProcess()" );
+
+    ChunkID chunkID;
+
+    // if we have a chunk produced by a table waypoint log it
+    CHECK_FROM_TABLE_AND_LOG_WITH_ID(history, Selection, chunkID);
+
+    // create the work spec and get it done!
+    QueryExitContainer myDestinations;
+    myDestinations.copy (whichOnes);
+    QueryToGLASContMap constStates = GetConstStates();
+
+    SelectionProcessChunkWD workDesc (chunkID, myDestinations, chunk.get_myChunk(), constStates);
+
+    // and send off the work request
+    WayPointID myID;
+    myID = GetID ();
+    WorkFunc myFunc;
+    myFunc = GetWorkFunction (SelectionProcessChunkWorkFunc::type);
+    myCPUWorkers.DoSomeWork (myID, history, whichOnes, token, workDesc, myFunc);
+}
+

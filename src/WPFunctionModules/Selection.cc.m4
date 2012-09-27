@@ -22,24 +22,77 @@ dnl
 dnl M4_WPName -- name of the waypoint
 dnl
 dnl M4_QueryDesc -- list of elements of the form:
-dnl                             ( Query, Predicate, Constant_initializers, ( list synthesized ) )
+dnl     ( Query, FilterName, ( list synthesized ), <reserved>, constructor arguments, Predicate, constants )
 dnl listSynthesized: list of (attName, expression)
 dnl M4_Attribute_Queries -- the set of queries in which each attribute is used
 dnl                elements of the form: ( attribute, serialized_QueryIDSet )
 dnl
 // module specific headers to allow separate compilation
-// no includes for selection
+#include "GLAData.h"
+#include "Errors.h"
 
 #ifndef COUNT_TUPLES
 //#define COUNT_TUPLES
 #endif
 
 extern "C"
-int SelectionWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
+int SelectionPreProcessWorkFunc_<//>M4_WPName
+(WorkDescription& workDescription, ExecEngineData& result) {
+    SelectionPreProcessWD myWork;
+    myWork.swap(workDescription);
+
+    QueryExitContainer& queries = myWork.get_whichQueryExits();
+
+    QueryToGLASContMap constStates;
+
+<//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>, <//>)dnl
+
+    FOREACH_TWL(iter, queries) {
+<//>m4_foreach(</_Q_/>, </M4_QueryDesc/>, </dnl
+<//>m4_if(SEL_IS_GF(_Q_), 1, </dnl
+<//><//>m4_ifval( M4_QUERY_NAME(_Q_) , </dnl this is a valid query
+        if( iter.query == M4_QUERY_NAME(_Q_) ) {
+<//><//><//>m4_if(G_REQ_CONST_STATE(_Q_), 1, </dnl # this query needs constant states
+            // Create the container for the constant states.
+            GLAStateContainer myConstStates;
+
+            // Generate needed constant states
+            myConstStates.MoveToStart();
+
+<//><//><//>m4_foreach(</_S_/>, G_CONST_GENERATED(_Q_), </dnl
+            {
+                TYPE(_S_) * G_STATE(_Q_)</_/>VAR(_S_) = new TYPE(_S_)<//>G_INIT_STATE(_Q_);
+
+                GLAPtr newPtr(M4_HASH_NAME(TYPE(_S_)), (void *) G_STATE(_Q_)</_/>VAR(_S_) );
+
+                myConstStates.Append(newPtr);
+            }
+/>)dnl
+            QueryID key;
+
+            key = iter.query;
+            constStates.Insert( key, myConstStates );
+/>, </dnl # this query doesn't need constant states
+<//><//><//>/>)dnl
+        }
+<//><//>/>)dnl
+<//>/>)dnl
+<//>/>)dnl
+    } END_FOREACH;
+
+    SelectionPreProcessRez myRez( constStates );
+    myRez.swap(result);
+
+    return -1; // for PreProcess
+}
+
+extern "C"
+int SelectionProcessChunkWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
     // go to the work description and get the input chunk
-    SelectionWorkDescription myWork;
+    SelectionProcessChunkWD myWork;
     myWork.swap (workDescription);
     Chunk &input = myWork.get_chunkToProcess ();
+    QueryToGLASContMap& constStates = myWork.get_constStates();
 
 <//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>,</M4_Attribute_Queries/>)dnl
 
@@ -55,6 +108,46 @@ dnl # create syntesized columns
 <//><//><//>M4_CREATE_SYNTHESIZED(_P_)dnl
 <//><//>/>, <//>)dnl
 <//>/>)dnl
+
+dnl # Create any GFs that are needed.
+m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
+<//>m4_ifval( M4_QUERY_NAME(_P_), </dnl
+<//><//>m4_if(SEL_IS_GF(_P_), 1, </dnl
+<//><//><//>m4_if(G_REQ_CONST_STATE(_P_), 1, </dnl
+    // Extracting constant states for query M4_QUERY_NAME(_P_)
+    FATALIF(!constStates.IsThere(M4_QUERY_NAME(_P_)), "No constant state container found for query M4_QUERY_NAME(_P_).");
+    GLAStateContainer& curStates = constStates.Find(M4_QUERY_NAME(_P_));
+    curStates.MoveToStart();
+
+<//><//><//><//>m4_foreach(</_S_/>, m4_quote(G_CONST_STATES(_P_)), </dnl
+    const TYPE(_S_)* G_STATE(_P_)</_/>VAR(_S_) = NULL;
+    {
+        FATALIF(curStates.RightLength() < 1, "Not enough constant states available for query M4_QUERY_NAME(_P_)");
+        GLAState& tState = curStates.Current();
+        GLAPtr tPtr;
+        tPtr.swap(tState);
+        G_STATE(_P_)</_/>VAR(_S_) = tPtr.get_glaPtr();
+        tPtr.swap(tState);
+    }
+
+<//><//><//><//>/>)dnl
+<//><//><//>/>)dnl
+<//><//><//>m4_if(G_REQ_CONST_STATE(_P_), 1, </dnl
+    // Create state for query M4_QUERY_NAME(_P_) using constant state
+    G_TYPE(_P_) G_STATE(_P_) </(/> dnl
+<//><//><//><//>m4_ifdef_undef(</__FIRST__/>)dnl
+<//><//><//><//>m4_foreach(</_S_/>, m4_quote(G_CONST_STATES(_P_)), </dnl
+m4_ifndef(</__FIRST__/>, </m4_define(</__FIRST__/>, <//>)/>, </, />)<//>dnl
+G_STATE(_P_)</_/>VAR(_S_)<//>dnl
+<//><//><//><//>/>)dnl
+</);/>
+<//><//><//>/>, </dnl
+    // Create state for query M4_QUERY_NAME(_P_) using constant arguments
+    G_TYPE(_P_) G_STATE(_P_) G_INIT_STATE(_P_)<//>;
+<//><//><//>/>)dnl
+<//><//>/>)dnl
+<//>/>)dnl
+/>)dnl
 
 <//>M4_START_OUTPUT_BITMAP<//>dnl
 
@@ -114,5 +207,5 @@ dnl # now synthesized
     ChunkContainer tempResult (input);
     tempResult.swap (result);
 
-    return 1;
+    return 0; // For Process Chunk
 }

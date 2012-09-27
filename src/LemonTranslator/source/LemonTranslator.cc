@@ -378,7 +378,7 @@ bool LemonTranslator::AddTerminatingEdge(WayPointID start, WayPointID end)
 }
 
 // Selection, Join
-bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer& atts, string expr, string initializer, string defs)
+bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer& atts, string expr, string initializer, string defs, string name, string cArgs, vector<WayPointID> reqStates)
 {
     PDEBUG("LemonTranslator::AddFilter(WayPointID wpID = %s, QueryID queryID = %s, SlotContainer& atts = %s, string expr = %s, string initializer = %s)",
          wpID.getName().c_str(), queryID.ToString().c_str(), (GetAllAttrAsString(atts)).c_str(), expr.c_str(), initializer.c_str());
@@ -386,7 +386,7 @@ bool LemonTranslator::AddFilter(WayPointID wpID, QueryID queryID, SlotContainer&
     LT_Waypoint* WP = NULL;
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
-    return WP->AddFilter(queryID, attr, expr, initializer, defs);
+    return WP->AddFilter(queryID, attr, expr, initializer, defs, name, cArgs, reqStates);
 }
 
 bool LemonTranslator::AddSynthesized(WayPointID wpID, QueryID queryID, SlotID att,

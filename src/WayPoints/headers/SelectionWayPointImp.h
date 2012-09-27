@@ -14,17 +14,45 @@
 //  limitations under the License.
 //
 
+#ifndef SELECTION_WAY_POINT_IMP
+#define SELECTION_WAY_POINT_IMP
+
 #include "WayPointImp.h"
+#include "GPWayPointImp.h"
 
 // this class is super-simple, since selection can use the default implementation of almost everything
-class SelectionWayPointImp : public WayPointImp {
+class SelectionWayPointImp : public GPWayPointImp {
+
+    /*
+     * Class Members
+     */
+
+    // QueryIDSets for the various stages a query can be in.
+    QueryIDSet queriesToPreprocess;
+    QueryIDSet queriesProcessing;
+
+    /*
+     * Overridden GPWayPointImp functions
+     */
+
+    bool PreProcessingPossible( CPUWorkToken& token );
+    bool PreProcessingComplete( QueryExitContainer& whichOnes,
+            HistoryList& history, ExecEngineData& data);
+
+    void GotAllStates( QueryID query );
+
+    void GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
+            ChunkContainer& chunk, HistoryList& history );
+    // Don't need to override ProcessChunkComplete, we're just going to pass on the
+    // result anyways.
+
+    bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
 public:
 
-	// const and destr
-	SelectionWayPointImp ();
-	virtual ~SelectionWayPointImp ();
-
-	// this is the only method that the Selection actually needs to over-ride
-	void ProcessHoppingDataMsg (HoppingDataMsg &data);
+    // const and destr
+    SelectionWayPointImp ();
+    virtual ~SelectionWayPointImp ();
 };
+
+#endif // SELECTION_WAY_POINT_IMP

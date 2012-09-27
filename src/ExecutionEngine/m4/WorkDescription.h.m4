@@ -24,7 +24,6 @@ include(DataFunctions.m4)
 #include "Chunk.h"
 #include "AggStorageMap.h"
 #include "HashTable.h"
-/*#include "HString.h"*/
 #include "JoinWayPointID.h"
 #include "ExecEngineData.h"
 
@@ -39,11 +38,13 @@ include(DataFunctions.m4)
 M4_CREATE_BASE_DATA_TYPE(WorkDescription, Data,
 <//>, <//>)
 
-// this is the work description for a selection operation... all it has is the
-// data object that contains the chunk to process
-M4_CREATE_DATA_TYPE(SelectionWorkDescription, WorkDescription,
+M4_CREATE_DATA_TYPE(SelectionPreProcessWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer)/>)
+
+M4_CREATE_DATA_TYPE(SelectionProcessChunkWD, WorkDescription,
 </(chunkID, ChunkID)/>,
-</(whichQueryExits, QueryExitContainer), (chunkToProcess, Chunk)/>)
+</(whichQueryExits, QueryExitContainer), (chunkToProcess, Chunk), (constStates, QueryToGLASContMap)/>)
 
 struct PrintFileObj {
     FILE* file;

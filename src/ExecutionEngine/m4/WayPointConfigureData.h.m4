@@ -40,15 +40,19 @@ M4_CREATE_BASE_DATA_TYPE(WayPointConfigureData, Data,
 // we should have one of these for each of the types of waypoints in the system...
 // this contains all of the additional data that is needed to configure the waypoint,
 // above and beyond the data that is held in the basic WayPointConfigureData class.
-M4_CREATE_DATA_TYPE(SelectionConfigureData, WayPointConfigureData, <//>, <//>)
 M4_CREATE_DATA_TYPE(AggregateConfigureData, WayPointConfigureData, <//>, <//>)
 M4_CREATE_DATA_TYPE(WriterConfigureData, WayPointConfigureData, <//>,<//>)
 M4_CREATE_DATA_TYPE(JoinMergeConfigureData, WayPointConfigureData, <//>,<//>)
-M4_CREATE_DATA_TYPE(GLAConfigureData, WayPointConfigureData, <//>,
-</(reqStates, QueryToReqStates), (resultIsState, QueryIDToBool)/>)
 
-M4_CREATE_DATA_TYPE(GTConfigureData, WayPointConfigureData, <//>,
+// General Processing WayPoint configuration data.
+M4_CREATE_BASE_DATA_TYPE(GPWConfigureData, WayPointConfigureData, <//>,
 </(reqStates, QueryToReqStates)/>)
+
+M4_CREATE_DATA_TYPE(SelectionConfigureData, GPWConfigureData, <//>, <//>)
+M4_CREATE_DATA_TYPE(GLAConfigureData, GPWConfigureData, <//>,
+</(resultIsState, QueryIDToBool)/>)
+M4_CREATE_DATA_TYPE(GTConfigureData, GPWConfigureData, <//>,
+<//>)
 
 struct PrintFileInfo {
     string file;

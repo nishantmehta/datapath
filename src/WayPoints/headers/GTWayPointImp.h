@@ -24,9 +24,9 @@
 #include "GLAData.h"
 #include "GLAHelpers.h"
 #include "Constants.h"
-#include "GLAWayPointImp.h"
+#include "GPWayPointImp.h"
 
-class GTWayPointImp : public GLAWayPointImp {
+class GTWayPointImp : public GPWayPointImp {
 
     /*
      * Class Members
@@ -35,17 +35,12 @@ class GTWayPointImp : public GLAWayPointImp {
     // QueryIDSets for the various stages a query can be in.
     QueryIDSet queriesToPreprocess;
     QueryIDSet queriesProcessing;
-    QueryIDSet queriesCompleted;
 
     // container for cached GTs
     QueryToGLASContMap queryToGTs;
 
-    // Map of QueryID to QueryExit
-    typedef EfficientMap<QueryID, QueryExit> QueryIDToExitMap;
-    QueryIDToExitMap queryIdentityMap;
-
     /*
-     * Overridden GLAWayPointImp functions
+     * Overridden GPWayPointImp functions
      */
 
     bool PreProcessingPossible( CPUWorkToken& token );
@@ -58,7 +53,6 @@ class GTWayPointImp : public GLAWayPointImp {
             ChunkContainer& chunk, HistoryList& history );
     bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
 
-    bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );
     bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
 public:

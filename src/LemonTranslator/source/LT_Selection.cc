@@ -25,8 +25,10 @@ bool LT_Selection::GetConfig(WayPointConfigureData& where){
 
     // first, get the function we will send to it
     WorkFunc tempFunc = NULL; // NULL, will be populated in codeloader
-    SelectionWorkFunc mySelectionWorkFunc (tempFunc);
+    SelectionPreProcessWorkFunc myPreProcessWorkFunc(tempFunc);
+    SelectionProcessChunkWorkFunc mySelectionWorkFunc (tempFunc);
     WorkFuncContainer mySelectionWorkFuncs;
+    mySelectionWorkFuncs.Insert(myPreProcessWorkFunc);
     mySelectionWorkFuncs.Insert (mySelectionWorkFunc);
 
     // this is the set of query exits that end at it, and flow through it
@@ -50,9 +52,23 @@ bool LT_Selection::GetConfig(WayPointConfigureData& where){
         cout << endl;
 #endif
 
+    QueryToReqStates myReqStates;
+    for( QueryToWayPointIDs::iterator it = states.begin(); it != states.end(); ++it ) {
+        QueryID curID = it->first;
+        StateSourceVec & reqStates = it->second;
+
+        ReqStateList stateList;
+
+        for( StateSourceVec::iterator iter = reqStates.begin(); iter != reqStates.end(); ++iter  ) {
+            WayPointID curSource = *iter;
+            stateList.Append(curSource);
+        }
+
+        myReqStates.Insert( curID, stateList );
+    }
 
     // here is the waypoint configuration data
-    SelectionConfigureData selectionConfigure (selectionID, mySelectionWorkFuncs, mySelectionEndingQueryExits, mySelectionFlowThroughQueryExits);
+    SelectionConfigureData selectionConfigure (selectionID, mySelectionWorkFuncs, mySelectionEndingQueryExits, mySelectionFlowThroughQueryExits, myReqStates);
 
     where.swap (selectionConfigure);
 
@@ -76,7 +92,7 @@ void LT_Selection::ClearAllDataStructure() {
     synthesized.clear();
 }
 
-bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter cond*/, string initializer, string defs) {
+bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter cond*/, string initializer, string defs, string name, string cArgs, StateSourceVec reqStates) {
     CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
 
     // we want to deal with the situation in which the predicate is specified as a series
@@ -103,6 +119,10 @@ bool LT_Selection::AddFilter(QueryID query, SlotSet& atts, string expr /*filter 
         // add to filter
         definitions[query] += "\n" + defs;
     }
+
+    filterNames[query] = name;
+    constructors[query] = cArgs;
+    states[query] = reqStates;
 
     queriesCovered.Union(query);
     return true;
@@ -227,7 +247,7 @@ void LT_Selection::WriteM4File(ostream& out) {
     }
 
     out << "M4_SELECTION_MODULE(" << wpname << ", ";
-    out << "\t</";
+    out << "</";
 
     // go through all queries and print the predicates
     // format "(Query, filter), ..."
@@ -235,7 +255,7 @@ void LT_Selection::WriteM4File(ostream& out) {
              it != filters.end();){
         QueryID query = it->first;
         out << "( " << GetQueryName(query) << ", "
-                << it->second << " ,</" << initializers[query] << "/>,  </(";
+                << filterNames[query] << ", </( ";
 
         // go through the synthesized attributes
         SlotSet& sAtts = synthesized[query];
@@ -250,7 +270,9 @@ void LT_Selection::WriteM4File(ostream& out) {
             if (its!=sAtts.end())
                 out << ", ";
         }
-        out << ")/>";
+        out << ")/>, <//>, ";
+        out << constructors[query] << ", ";
+        out << it->second << " ,</" << initializers[query] << "/>";
 
         // close up the list
         out << " )";

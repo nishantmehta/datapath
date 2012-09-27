@@ -54,7 +54,8 @@ M4_CREATE_DATA_TYPE(WriterWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(AggOneChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(AggFinishUpWorkFunc, WorkFuncWrapper, <//>, <//>)
 // Selection
-M4_CREATE_DATA_TYPE(SelectionWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(SelectionPreProcessWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(SelectionProcessChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
 // Print
 M4_CREATE_DATA_TYPE(PrintWorkFunc, WorkFuncWrapper, <//>, <//>)
 // TableScan

@@ -37,8 +37,7 @@ GTWayPointImp :: ~GTWayPointImp() {
 void GTWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData ) {
     PDEBUG( "GTWayPointImp :: TypeSpecificConfigure()" );
 
-    GTConfigureData myConfig;
-    myConfig.swap(configData);
+    GPWayPointImp::TypeSpecificConfigure( configData );
 
     QueryExitContainer queries;
     GetFlowThruQueryExits(queries);
@@ -49,16 +48,7 @@ void GTWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData )
         if( !queryToGTs.IsThere(q) ) {
             queryToGTs.Insert(q, cont);
         }
-
-        q = iter.query;
-        QueryExit temp = iter;
-
-        queryIdentityMap.Insert(q, iter);
     } END_FOREACH;
-
-    QueryToReqStates& reqStates = myConfig.get_reqStates();
-
-    InitConstStates( reqStates );
 }
 
 bool GTWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne ) {
@@ -68,10 +58,10 @@ bool GTWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, Qu
 
     // Check to see if we are running this query for the first time or if we
     // are being asked to rerun a query.
-    if( qID.Overlaps(queriesCompleted) ) {
+    if( qID.Overlaps(queriesProcessing) ) {
         // No need to preprocess, we should already have everything we need
-        queriesCompleted.Difference(qID);
-        queriesProcessing.Union(qID);
+        // Also forward the message down so we get chunks to process.
+        SendStartProducingMsg( whichOne );
     }
     else {
         queriesToPreprocess.Union(qID);
@@ -97,9 +87,7 @@ bool GTWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
     while( !curQueries.IsEmpty() ) {
         QueryID temp = curQueries.GetFirst();
 
-        FATALIF( !queryIdentityMap.IsThere( temp ), "Told to preprocess a query that I don't know about." );
-
-        QueryExit qe = queryIdentityMap.Find( temp );
+        QueryExit qe = GetExit( temp );
         qExits.Append(qe);
     }
 
@@ -166,10 +154,11 @@ bool GTWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes,
 }
 
 void GTWayPointImp :: GotAllStates( QueryID query ) {
+    PDEBUG( "GTWayPointImp :: GotAllStates ()");
     // Got the last state we needed.
     queriesProcessing.Union(query);
 
-    QueryExit myExit = queryIdentityMap.Find(query);
+    QueryExit myExit = GetExit( query );
     SendStartProducingMsg(myExit);
 }
 
@@ -228,12 +217,5 @@ bool GTWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes,
     chunkCont.swap(data);
 
     return false; // don't send ack
-}
-
-bool GTWayPointImp :: ReceivedQueryDoneMsg( QueryExitContainer& whichOnes ) {
-    PDEBUG( "GTWayPointImp :: ReceivedQueryDoneMsg()" );
-
-    // Just forward it
-    SendQueryDoneMsg( whichOnes );
 }
 

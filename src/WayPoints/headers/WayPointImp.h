@@ -44,13 +44,15 @@
 
 // Checks to see if a given lineage contains a TableHistory at the end, and if
 // so, logs the fact that a chunk is being processed by "processor"
-#define CHECK_FROM_TABLE_AND_LOG(lineage, processor) \
+// Saves the chunk ID in a variable named by the third argument.
+#define CHECK_FROM_TABLE_AND_LOG_WITH_ID(lineage, processor, chunkID) \
     (lineage).MoveToFinish(); \
     (lineage).Retreat(); \
     if (CHECK_DATA_TYPE((lineage).Current(), TableHistory)) { \
         TableHistory hLin; \
         hLin.swap((lineage).Current()); \
         ChunkID& id = hLin.get_whichChunk(); \
+        chunkID = id; \
         TableScanInfo infoTS; \
         id.getInfo(infoTS); \
         \
@@ -58,6 +60,14 @@
                 id.GetInt(), infoTS.getName().c_str(), #processor) \
         hLin.swap((lineage).Current()); \
     }
+
+// If you don't care about getting the chunk ID
+#define CHECK_FROM_TABLE_AND_LOG(lineage, processor) \
+{ \
+    ChunkID dummy; \
+    CHECK_FROM_TABLE_AND_LOG_WITH_ID(lineage, processor, dummy); \
+}
+
 
 using namespace std;
 

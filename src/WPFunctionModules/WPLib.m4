@@ -263,12 +263,12 @@ m4_pushdef(</in_att/>,m4_defn(</M4_VAL_IDENT/>))$1<//>m4_popdef(</in_att/>)dnl
 
 dnl # extract the filter from $1
 m4_define(</_SEL_PREDICATE/>, </dnl
-<//>m4_second(</$1/>)dnl
+<//>m4_sixth(</$1/>)dnl
 />)dnl
 
 dnl # extract the initializer from $1
 m4_define(</_SEL_INITIALIZER/>, </dnl
-<//>m4_third(</$1/>)dnl
+<//>m4_seventh(</$1/>)dnl
 />)dnl
 
 dnl # extract the initializer from $1
@@ -410,6 +410,9 @@ m4_define(</G_STATE/>, </dnl
 
 m4_define(</GLA_STATE/>, m4_defn(</G_STATE/>))
 
+m4_define(</SEL_IS_GF/>, </dnl
+m4_ifval(G_TYPE(</$1/>), 1, 0)<//>dnl
+/>)
 
 
 dnl $1 = WPName
@@ -546,7 +549,7 @@ m4_define(</M4_COMPUTE_AGGREGATE/>,</dnl
 />)dnl
 
 dnl # variation of the above to be used with pure lists guarded by ()
-m4_define(</M4_SYNTH_LIST/>,</reval(</m4_args/>m4_fourth($1))/>)
+m4_define(</M4_SYNTH_LIST/>,</reval(</m4_args/>m4_third($1))/>)
 
 dnl # extract variable name
 m4_define(</M4_SYNTH_VAR/>, </m4_first($1)/>)

@@ -54,13 +54,13 @@ m4_define(</M4_CREATE_BASE_DATA_TYPE/>,</dnl
 dnl # we expect the macros with SubHierarchy to be already defined
 dnl # put lists of base class in first
 <//>m4_ifdef(</M4_$2_ListCopyConstructed/>, </dnl
-<//><//>m4_define(</M4_$1_ListCopyConstructed/>, M4_$2_ListCopyConstructed)/>)dnl
+<//><//>m4_define(</M4_$1_ListCopyConstructed/>, m4_quote(M4_$2_ListCopyConstructed))/>)dnl
 <//>m4_ifdef(</M4_$2_ListSwapped/>, </dnl
-<//><//>m4_define(</M4_$1_ListSwapped/>, M4_$2_ListSwapped)/>)dnl
+<//><//>m4_define(</M4_$1_ListSwapped/>, m4_quote(M4_$2_ListSwapped))/>)dnl
 <//>m4_ifdef(</M4_$2_ListArgsNoTypes/>, </dnl
-<//><//>m4_define(</M4_$1_ListArgsNoTypes/>, M4_$2_ListArgsNoTypes)/>)dnl
+<//><//>m4_define(</M4_$1_ListArgsNoTypes/>, m4_quote(M4_$2_ListArgsNoTypes))/>)dnl
 <//>m4_ifdef(</M4_$2_ListArgsWithTypes/>, </dnl
-<//><//>m4_define(</M4_$1_ListArgsWithTypes/>, M4_$2_ListArgsWithTypes)/>)dnl
+<//><//>m4_define(</M4_$1_ListArgsWithTypes/>, m4_quote(M4_$2_ListArgsWithTypes))/>)dnl
 dnl # add the current arguments
 <//>m4_foreach(</_C_/>, </$3/>,</dnl
 <//><//>m4_append(</M4_$1_ListCopyConstructed/>, _C_, </</, />/>)dnl
@@ -93,9 +93,9 @@ dnl # we define some macros so we do not write redundant code
 dnl # first we undefine these macros so we avoid interference
 dnl
 <//>m4_ifdef(</ARGS_WITH_TYPES_/>, </m4_undefine(</ARGS_WITH_TYPES_/>)/>)dnl
-<//>m4_ifdef(</M4_$2_ListArgsWithTypes/>, </m4_define(</ARGS_WITH_TYPES_/>, M4_$2_ListArgsWithTypes )/>)
+<//>m4_ifdef(</M4_$2_ListArgsWithTypes/>, </m4_define(</ARGS_WITH_TYPES_/>, m4_quote(M4_$2_ListArgsWithTypes))/>)
 <//>m4_ifdef(</ARGS_NO_TYPES_/>, </m4_undefine(</ARGS_NO_TYPES_/>)/>)dnl
-<//>m4_ifdef(</M4_$2_ListArgsNoTypes/>, </m4_define(</ARGS_NO_TYPES_/>, M4_$2_ListArgsNoTypes)/>)
+<//>m4_ifdef(</M4_$2_ListArgsNoTypes/>, </m4_define(</ARGS_NO_TYPES_/>, m4_quote(M4_$2_ListArgsNoTypes))/>)
 <//>m4_ifdef(</COPY_ARGS_DEF/>, </m4_undefine(</COPY_ARGS_DEF/>)/>)dnl
 dnl # now we define them
 dnl # we first get data from 

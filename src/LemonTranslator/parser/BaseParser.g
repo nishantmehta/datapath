@@ -50,6 +50,10 @@ tokens {
   STATE__;
   GT__;
   GTTEMPLATE;
+  GF__;
+  GFTEMPLATE;
+  CRGF;
+  CR_TMPL_GF;
 }
 
 

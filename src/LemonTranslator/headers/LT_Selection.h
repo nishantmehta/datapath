@@ -20,6 +20,7 @@
 
 class LT_Selection : public LT_Waypoint {
 private:
+    typedef vector<WayPointID> StateSourceVec;
 
     struct SynthInfo {
         SlotID att;
@@ -37,9 +38,14 @@ private:
     // query to filtering condition (string)
     typedef map<QueryID, string> QueryFilterToExpr;
 
+    QueryFilterToExpr filterNames;
     QueryFilterToExpr filters;
+    QueryFilterToExpr constructors;
     QueryFilterToExpr initializers;
     QueryFilterToExpr definitions;
+
+    typedef map<QueryID, StateSourceVec> QueryToWayPointIDs;
+    QueryToWayPointIDs states;
 
     QueryToSlotSet synthesized;
 
@@ -56,7 +62,7 @@ public:
 
     virtual void DeleteQuery(QueryID query);
 
-    virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer, string defs);
+    virtual bool AddFilter(QueryID query, SlotSet& atts, string expr, string initializer, string defs, string name = "", string cArgs = "", StateSourceVec reqStates = StateSourceVec());
 
     virtual bool AddSynthesized(QueryID query, SlotID att, SlotSet& atts, string expr, string initializer, string defs);
 

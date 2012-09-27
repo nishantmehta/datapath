@@ -146,7 +146,7 @@ public:
     virtual void ReceiveAttributesTerminating(QueryToSlotSet& atts) {}
 
     virtual bool AddFilter(QueryID query, SlotSet& atts, string expr /*filter cond*/, string initializer,
-            string defs) {
+            string defs, string name = "", string cArgs = "", vector<WayPointID> reqStates = vector<WayPointID>()) {
         return false;
     }
 

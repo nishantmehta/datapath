@@ -509,44 +509,44 @@ gtTemplate[string& name, string& defs]
         ADD_INCLUDE(defs, file);
     }
     | ^(GTTEMPLATE  ({args+=",";} gtTemplArg[args, defs] )* )
-        {
+    {
         string file;
         if( !dTM.IsGTTemplate(name, file) ) {
             FATAL("No GT Template called \%s known.", name.c_str());
         }
 
-         string tmp = "GT_\%d_" + name;
-         string tempName = GenerateTemp(tmp.c_str());
-         string m4File = "Generated/" + tempName + ".m4";
-         string descFile = "Generated/" + tempName + ".desc";
+        string tmp = "GT_\%d_" + name;
+        string tempName = GenerateTemp(tmp.c_str());
+        string m4File = "Generated/" + tempName + ".m4";
+        string descFile = "Generated/" + tempName + ".desc";
 
-         // Create temporary file.
-         ofstream outfile (m4File.c_str());
+        // Create temporary file.
+        ofstream outfile (m4File.c_str());
 
-         // Add necessary includes
-         outfile << "include(Resources-T.m4)dnl" << endl;
-         outfile << "m4_include(GLA-templates.m4)dnl" << endl;
-         outfile << endl;
-         outfile << defs << endl;
+        // Add necessary includes
+        outfile << "include(Resources-T.m4)dnl" << endl;
+        outfile << "m4_include(GLA-templates.m4)dnl" << endl;
+        outfile << endl;
+        outfile << defs << endl;
 
-         // form the template instantiation code and change name to temp
-         outfile << endl << "m4_include(</" << file << "/>)" << endl;
-         outfile << name << "(" << tempName << args << ")" << endl;
+        // form the template instantiation code and change name to temp
+        outfile << endl << "m4_include(</" << file << "/>)" << endl;
+        outfile << name << "(" << tempName << args << ")" << endl;
 
         // close the temporary file
-         outfile.close();
+        outfile.close();
 
-         // Run M4 on the temporary file
-         string call = "./processTemp.sh " + tempName;
-         int sysret = execute_command(call.c_str());
-         FATALIF(sysret != 0, "Failed to instantiate templated GT \%s", name.c_str());
+        // Run M4 on the temporary file
+        string call = "./processTemp.sh " + tempName;
+        int sysret = execute_command(call.c_str());
+        FATALIF(sysret != 0, "Failed to instantiate templated GT \%s", name.c_str());
 
-         parseDescFile(descFile);
+        parseDescFile(descFile);
 
-         name=tempName; // new name
-         defs.clear();
-         ADD_INCLUDE(defs, tempName + ".h");
-        }
+        name=tempName; // new name
+        defs.clear();
+        ADD_INCLUDE(defs, tempName + ".h");
+    }
     ;
 
 gtTemplArg[string& args, string& defs]

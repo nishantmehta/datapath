@@ -36,7 +36,7 @@
 #include "HashTableCleanerWayPointImp.h"
 #include "WriterWayPointImp.h"
 #include "TileJoinWayPointImp.h"
-#include "GLASmallWayPointImp.h"
+#include "GLAWayPointImp.h"
 #include "GTWayPointImp.h"
 
 /* The only function. Takes a configuration objec as input
@@ -87,7 +87,7 @@ WayPointImp* WayPointFactory(const WayPointConfigureData &configData){
             return new TileJoinWayPointImp;
 
         case GLAConfigureData::type :
-            return new GLASmallWayPointImp;
+            return new GLAWayPointImp;
 
         case GTConfigureData::type :
             return new GTWayPointImp;
