@@ -22,7 +22,7 @@ dnl
 dnl M4_WPName -- name of the waypoint
 dnl
 dnl M4_QueryDesc -- list of elements of the form:
-dnl     ( Query, FilterName, ( list synthesized ), <reserved>, constructor arguments, Predicate, constants )
+dnl     ( Query, FilterName, ( list synthesized ), constructor arguments, <reserved>, Predicate, constants )
 dnl listSynthesized: list of (attName, expression)
 dnl M4_Attribute_Queries -- the set of queries in which each attribute is used
 dnl                elements of the form: ( attribute, serialized_QueryIDSet )
@@ -171,7 +171,8 @@ dnl # definition of constants used in expressions
 <//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
         // do M4_QUERY_NAME(_P_)
 <//><//>M4_DECLARE_SYNTHESIZED(_P_)
-        if(qry.Overlaps(M4_QUERY_NAME(_P_)) && !(M4_EVAL_EXPR(_SEL_PREDICATE(_P_)) )){
+        if(qry.Overlaps(M4_QUERY_NAME(_P_)) && dnl
+!(m4_if(SEL_IS_GF(_P_), 1, </G_STATE(_P_).Filter/>)<//>M4_EVAL_EXPR(_SEL_PREDICATE(_P_)) )){
             qry.Difference(M4_QUERY_NAME(_P_));
         } else { // compute synthesized
 <//><//><//>M4_COMPUTE_SYNTHESIZED(_P_)dnl

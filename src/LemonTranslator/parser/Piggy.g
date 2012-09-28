@@ -72,16 +72,22 @@ defineStatement
     -> ^(CRGLA $n $f ^(TPATT $retList) ^(TPATT $params))
   | GTRAN n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     -> ^(CRGT $n $f ^(TPATT $retList) ^(TPATT $params))
+  | GF n=ID LPAREN params=typeList RPAREN FROM f=STRING
+    -> ^(CRGF $n $f ^(TPATT $params))
   | TEMPLATE FUNCTION n=ID FROM f=STRING
     -> ^(CR_TMPL_FUNC $n $f)
   | TEMPLATE GLA n=ID FROM f=STRING
     -> ^(CR_TMPL_GLA $n $f)
   | TEMPLATE GTRAN n=ID FROM f=STRING
     -> ^(CR_TMPL_GT $n $f)
+  | TEMPLATE GF n=ID FROM f=STRING
+    -> ^(CR_TMPL_GF $n $f)
   | GLA COLON n=ID AS GLA glaDef
     -> ^(TYPEDEF_GLA $n glaDef)
   | GTRAN COLON n=ID AS GTRAN gtDef
     -> ^(TYPEDEF_GT $n gtDef)
+  | GF COLON n=ID AS GF gfDef
+    -> ^(TYPEDEF_GF $n gfDef)
   | n=ID AS ty=type
     -> ^(CRSYNONYM $ty $n)
   ;
@@ -104,10 +110,12 @@ actionBody
         ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN ^(ATTS $l2)))
     | FILTER a=ID BY exp=expressionList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
+    | FILTER a=ID BY GF gf=gfDef ct=constArgs st=stateArgs USING exp=expressionList
+        -> ^(SELECT__ $a) ^(QUERRY__ ID[$a, qry.c_str()] ^(GF__ $ct $st $gf $exp))
     | FILTER r1=ID USING l1=attEListAlt inStmt r2=ID LPAREN l2=attEListAlt RPAREN
         ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
     | GLA gla=glaDef ct=constArgs (FROM? inp=ID) st=stateArgs USING exp=expressionList (AS rez=glaRez)?
-        -> ^(GLA $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA $ct $st $gla $rez $exp))
+        -> ^(GLA__ $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA__ $ct $st $gla $rez $exp))
     | GTRAN gt=gtDef ct=constArgs (FROM? inp=ID) st=stateArgs USING exp=expressionList AS res=attListWTypes
         -> ^(GT__ $inp) ^(QUERRY__ ID[$inp, qry.c_str()] ^(GT__ $ct $st $gt $res $exp))
     | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
@@ -125,7 +133,7 @@ generateList
     : generateItem (COMMA! generateItem)* ;
 
 glaDef
-  : COLON ID def=glaTemplateDef?  -> ID ^(GLATEMPLATE $def)?
+  : COLON ID def=glaTemplateDef?  -> ^(GLA_DEF  ID ^(GLATEMPLATE $def)?)
   ;
 
 glaTemplateDef
@@ -136,7 +144,7 @@ glaTemplArg
   : LSQ attCList RSQ -> ^(LIST attCList)
   | attC /* single typed argument */
   | ctAtt
-  | GLA glaDef
+  | GLA! glaDef
   ;
 
 glaRez
@@ -145,7 +153,7 @@ glaRez
     ;
 
 gtDef
-    : COLON ID def=gtTemplateDef? -> ID ^(GTTEMPLATE $def)?
+    : COLON ID def=gtTemplateDef? -> ^(GT_DEF ID ^(GTTEMPLATE $def)?)
     ;
 
 gtTemplateDef
@@ -156,7 +164,23 @@ gtTemplArg
     : LSQ attCList RSQ -> ^(LIST attCList)
     | attC
     | ctAtt
-    | GLA glaDef
+    | GLA! glaDef
+    ;
+
+gfDef
+    : COLON ID def=gfTemplateDef? -> ^(GF_DEF ID ^(GFTEMPLATE $def)?)
+    ;
+
+gfTemplateDef
+    : '<'! gfTemplArg (COMMA! gfTemplArg)* '>'!
+    ;
+
+gfTemplArg
+    : LSQ attCList RSQ -> ^(LIST attCList)
+    | attC
+    | ctAtt
+    | GLA! glaDef
+    | GF! gfDef
     ;
 
 /* constructor arguments */

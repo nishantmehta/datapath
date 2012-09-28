@@ -145,6 +145,10 @@ defineStatement
     {
         dTM.AddGT( STR($n), $params.vect, $retList.vect, STRS($f) );
     }
+    | GF n=ID LPAREN params=typeList RPAREN FROM f=STRING
+    {
+        dTM.AddGF( STR($n), $params.vect, STRS($f) );
+    }
     | n=ID AS ty=ID
     {
         dTM.AddSynonymType(STR($syn), STR($ty));

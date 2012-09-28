@@ -42,18 +42,25 @@
 // Macro to streamline scan of TwoWayLists
 // list "list" is scanned and element is local variable that is
 // instantiated as each element of the list
-// Usage Scenario: 
+// Usage Scenario:
 //   FOREACH_TWL(val, myList){
 //     do something with val
 //   }END_FOREACH
 //
 //
+#if __cplusplus >= 201103L // c++11
+#define FOREACH_TWL(el, list) \
+    for((list).MoveToStart(); !(list).AtEnd(); (list).Advance()) { \
+    auto & el = (list).Current();
+#else
 #define FOREACH_TWL(el, list)																		\
 	for((list).MoveToStart();	!(list).AtEnd(); (list).Advance()) {	\
-	typeof((list).Current())& el = (list).Current();									
-#ifndef END_FOREACH									
+	typeof((list).Current())& el = (list).Current();
+#endif
+
+#ifndef END_FOREACH
 #define END_FOREACH }
-#endif 
+#endif
 
 // This is a template for a doubly linked list
 // Type requires only the function swap ()...
@@ -204,7 +211,7 @@ public:
 	}
 
 	void copy (Swapify &fromMe) {
-		data = fromMe.data;		
+		data = fromMe.data;
 	}
 
 	Swapify (const Type castFromMe) {
@@ -239,7 +246,7 @@ public:
 	}
 
 	void copy (Keyify &fromMe) {
-		data = fromMe.data;		
+		data = fromMe.data;
 	}
 
 	operator Type() {

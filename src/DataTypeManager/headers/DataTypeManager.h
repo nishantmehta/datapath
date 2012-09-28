@@ -133,28 +133,23 @@ struct FuncInfo {
 
 class DataTypeManager {
 
-    struct FuncTemplateInfo {
-        string file;
-
-        FuncTemplateInfo( string file ) : file(file) {}
-
-        FuncTemplateInfo() {}
+    enum TemplateType {
+        T_INVALID,
+        T_FUNC,
+        T_GLA,
+        T_GT,
+        T_GF
     };
 
-    struct GLATemplateInfo {
+    // This struct will eventually also hold information about the types of
+    // template parameters this template allows.
+    struct TemplateInfo {
+        TemplateType type;
         string file;
 
-        GLATemplateInfo( string file ) : file(file) {}
+        TemplateInfo( TemplateType t, string file ) : type(t), file(file) {}
 
-        GLATemplateInfo() {}
-    };
-
-    struct GTTemplateInfo {
-        string file;
-
-        GTTemplateInfo( string _file ) : file(_file) {}
-
-        GTTemplateInfo() {}
+        TemplateInfo() : type(T_INVALID) {}
     };
 
     typedef map<string, TypeInfo*> TypeToInfoMap;
@@ -166,14 +161,8 @@ class DataTypeManager {
     typedef map<string, set<FuncInfo*> > FuncToInfoMap;
     FuncToInfoMap mFunc;
 
-    typedef map<string, FuncTemplateInfo> FuncTempToInfoMap;
-    FuncTempToInfoMap mTempFunc;
-
-    typedef map<string, GLATemplateInfo> GLATempToInfoMap;
-    GLATempToInfoMap mTempGLA;
-
-    typedef map<string, GTTemplateInfo> GTTempToInfoMap;
-    GTTempToInfoMap mTempGT;
+    typedef map<string, TemplateInfo> TempToInfoMap;
+    TempToInfoMap mTemp;
 
     // Synonym to base type
     map<string, string> mSynonymToBase;
@@ -184,14 +173,8 @@ class DataTypeManager {
     void AddFunc (string type, string fName, vector<string>& args, string returnType, string file, Associativity assoc, int priority, bool pure);
     bool IsCorrectFunc (string type, string fName, vector<string>& args, string& returnType, string& file, Associativity assoc, int priority, bool& pure, vector<ArgFormat>& actualArgs);
 
-    void AddFuncTemplate( string fName, string file );
-    bool FuncTemplateExists( string fName, string& file );
-
-    void AddGLATemp( string glaName, string file );
-    bool GLATemplateExists( string glaName, string& file );
-
-    void AddGTTemp( string gtName, string file );
-    bool GTTemplateExists( string gtName, string& file );
+    void AddTemplate( string name, TemplateType type, string file );
+    bool TemplateExists( string name, TemplateType type, string& file );
 
     // Prefix for conversion functions. For example, if the conversion prefix was "_TO_", then
     // any function named "_TO_T" that take a single argument will be assumed to convert
@@ -212,6 +195,10 @@ class DataTypeManager {
     // 4. The sole argument must be of type source.
     // 5. The return type must be of type dest.
     bool ConvertFuncExists( string source, string dest );
+
+    // Function to determine if a given function call is an exact match to a function
+    // registered with the system. Type conversions are not taken into account.
+    bool IsCorrectFuncExact (string type, string fName, vector<string>& args, string& returnType, string& file, Associativity assoc, int priority, bool& pure);
 
     // Due to the Singleton pattern, the constructor and destructor are private
     // and can only be called by the static methods of the class
@@ -311,6 +298,15 @@ public:
     void AddGTTemplate( string gtName, string filename );
     bool IsGTTemplate( string gtName, string& filename );
 
+    void AddGF(string gtName, vector<string>& typeargs, string filename );
+    bool IsGF( string& gtName, vector<string>& typeargs, string& file,
+            vector<ArgFormat>& /* out param */ actualArgs );
+
+    bool GFExists( string& gtName, string& file );
+
+    void AddGFTemplate( string gtName, string filename );
+    bool IsGFTemplate( string gtName, string& filename );
+
     // generate the set of includes for a given list of attributes
     // result should contain the #include statements
     void GenerateIncludes(vector<string>& types, string& result);
@@ -353,7 +349,9 @@ void DataTypeManager::Clear()
 
     mFunc.clear();
 
-    mTempFunc.clear();
+    mTemp.clear();
+
+    mSynonymToBase.clear();
 }
 
 inline
@@ -904,106 +902,131 @@ bool DataTypeManager :: IsCorrectFunc (string type, string fName, vector<string>
 }
 
 inline
-void DataTypeManager :: AddFuncTemplate( string fName, string file ) {
-    FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
+bool DataTypeManager :: IsCorrectFuncExact (string type, string fName, vector<string>& args, string& returnType, string& file, Associativity assoc, int priority, bool& pure) {
 
-    if( it != mTempFunc.end() ) {
-        FuncTemplateInfo & fInfo = it->second;
+    // Make sure we are dealing with base types.
+    if( type != "" && !IsType(type) ) {
+        cout << "\nError: type " << type << " not found";
+        return false;
+    }
 
-        if( fInfo.file != file ) {
-            cout << "\nError adding templated function " << fName
-                << ", function exists with different definition.";
+    for( int i = 0; i < args.size(); ++i )
+    {
+        if( !IsType( args[i] ) ) {
+            cout << "\nError: type " << args[i] << " not found";
+            return false;
+        }
+    }
+
+    // Check if function exists
+    FuncToInfoMap::const_iterator it = mFunc.find(fName);
+    if (it == mFunc.end()) {
+        return false;
+    }
+
+    FuncInfo* f;
+    set<FuncInfo*>::const_iterator iter = it->second.begin();
+    for( ; iter != it->second.end(); ++iter )
+    {
+        bool matchesSoFar = true;
+        f = *iter;
+
+        // Check if class type matches if function is method of class
+        if (type != f->type)
+        {
+            matchesSoFar = false;
+            continue;
         }
 
-        return;
+        // Check function signature
+
+        // Check to see if functions have same number of parameters
+        if( f->args.size() != args.size() )
+        {
+            matchesSoFar = false;
+            continue;
+        }
+
+        // If same number of parameters, make sure that the parameters in order
+        // are of the same type or of convertible types.
+        vector<string>::const_iterator argIter = args.begin();
+        vector<string>::const_iterator fArgIter = f->args.begin();
+        for( ; matchesSoFar && argIter != args.end() && fArgIter != f->args.end(); ++argIter, ++fArgIter )
+        {
+            if( *argIter != *fArgIter )
+            {
+                matchesSoFar = false;
+            }
+        }
+
+        // Check associativity if needed
+        if (assoc != NoAssoc) {
+            if (f->assoc != assoc)
+            {
+                matchesSoFar = false;
+                continue;
+            }
+        }
+
+        // Check priority if needed
+        if (priority != -1) {
+            if (f->priority != priority)
+            {
+                matchesSoFar = false;
+                continue;
+            }
+        }
+
+        // If the function has not been ruled out so far, add it as a possible
+        // match
+        if( matchesSoFar ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+inline
+void DataTypeManager :: AddTemplate( string name, TemplateType type, string file ) {
+    TempToInfoMap :: iterator it = mTemp.find(name);
+
+    if( it != mTemp.end() ) {
+        TemplateInfo& info = it->second;
+
+        if( info.type != type ) {
+            cout << "\nError adding template " << name
+                << ", a template of a different type already exists with that name." << endl;
+
+            return;
+        }
+
+        if( info.file != file ) {
+            cout << "\nError adding template " << name
+                << ", a template of the same type is already defined in a different file" << endl;
+        }
     }
     else {
-        mTempFunc[fName] = FuncTemplateInfo( file );
+        mTemp[name] = TemplateInfo( type, file );
     }
 }
 
 inline
-bool DataTypeManager :: FuncTemplateExists( string fName, string& file ) {
-    FuncTempToInfoMap::iterator it = mTempFunc.find( fName );
+bool DataTypeManager :: TemplateExists( string name, TemplateType type, string& file ) {
+    TempToInfoMap :: iterator it = mTemp.find( name );
 
-    if( it != mTempFunc.end() ) {
-        FuncTemplateInfo & fInfo = it->second;
+    if( it != mTemp.end() ) {
+        TemplateInfo & info = it->second;
 
-        file = fInfo.file;
+        if( info.type != type )
+            return false;
+
+        file = info.file;
 
         return true;
     }
-    else {
-        return false;
-    }
-}
 
-inline
-void DataTypeManager :: AddGLATemp( string glaName, string file ) {
-    GLATempToInfoMap::iterator it = mTempGLA.find( glaName );
-
-    if( it != mTempGLA.end() ) {
-        GLATemplateInfo & gInfo = it->second;
-
-        if( gInfo.file != file ) {
-            cout << "\nError adding templated GLA " << glaName
-                << ", template exists with different definition.";
-        }
-
-        return;
-    }
-    else {
-        mTempGLA[glaName] = GLATemplateInfo( file );
-    }
-}
-
-inline
-bool DataTypeManager :: GLATemplateExists( string glaName, string& file ) {
-    GLATempToInfoMap::iterator it = mTempGLA.find( glaName );
-
-    if( it != mTempGLA.end() ) {
-        GLATemplateInfo & gInfo = it->second;
-
-        file = gInfo.file;
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-inline
-void DataTypeManager :: AddGTTemp( string gtName, string file ) {
-    GTTempToInfoMap::iterator it = mTempGT.find( gtName );
-
-    if( it != mTempGT.end() ) {
-        GTTemplateInfo & gInfo = it->second;
-
-        if( gInfo.file != file ) {
-            cout << "\nError adding templated GT " << gtName
-                << ", template exists with different definition.";
-        }
-
-        return;
-    }
-    else {
-        mTempGT[gtName] = GTTemplateInfo( file );
-    }
-}
-
-inline
-bool DataTypeManager :: GTTemplateExists( string gtName, string& file ) {
-    GTTempToInfoMap::iterator it = mTempGT.find( gtName );
-
-    if( it != mTempGT.end() ) {
-        GTTemplateInfo & gInfo = it->second;
-
-        file = gInfo.file;
-        return true;
-    }
-    else {
-        return false;
-    }
+    return false;
 }
 
 inline
@@ -1056,7 +1079,7 @@ void DataTypeManager :: AddFunctions(string fName, vector<string>& types, string
 
 inline
 void DataTypeManager :: AddFunctionTemplate( string fName, string file ) {
-    AddFuncTemplate( fName, file );
+    AddTemplate( fName, T_FUNC, file );
 }
 
 inline
@@ -1070,7 +1093,7 @@ bool DataTypeManager :: IsFunction(string fName, vector<string>& types, string& 
 
 inline
 bool DataTypeManager :: IsFunctionTemplate( string fName, string& file ) {
-    return FuncTemplateExists( fName, file );
+    return TemplateExists( fName, T_FUNC, file );
 }
 
 inline
@@ -1133,12 +1156,12 @@ void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
 
 inline
 void DataTypeManager :: AddGLATemplate( string glaName, string filename ) {
-    AddGLATemp( glaName, filename );
+    AddTemplate( glaName, T_GLA, filename );
 }
 
 inline
 bool DataTypeManager :: IsGLATemplate( string glaName, string& filename ) {
-    return GLATemplateExists(glaName, filename);
+    return TemplateExists( glaName, T_GLA, filename );
 }
 
 inline
@@ -1155,16 +1178,6 @@ bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
         return false;
     }
 
-    //cerr << "GLA: " << glaName << endl;
-
-    //cerr << "Number arguments " << typeargs.size() << endl;
-
-    //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
-
-    //cerr << "Number returns " << typeret.size() << endl;
-
-    //for( int i = 0; i < typeret.size(); ++i ) cerr << typeret[i] << endl;
-
     string fName_add = "AddItem_" + glaName;
     string fName_ret = "GetResult_" + glaName;
 
@@ -1179,64 +1192,7 @@ bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
         return false;
     }
 
-    // We don't want any transformations on the return arguments
-    // so check for an EXACT match for the results function.
-    for( int i = 0; i < ret_vec.size(); ++i ) {
-        ret_vec[i] = GetBaseType( ret_vec[i] );
-        if( !IsType( ret_vec[i] ) ) {
-            cout << "\nError: No type " << ret_vec[i] << " known to system!";
-            return false;
-        }
-    }
-
-    set<FuncInfo*> & possibleFuncs = mFunc[fName_ret];
-    for( set<FuncInfo*>::iterator it = possibleFuncs.begin(); it != possibleFuncs.end(); ++it ) {
-        FuncInfo *cur = *it;
-
-        /* cerr << "Current candidate:" << endl; */
-        /* cerr << "Type: " << cur->type << endl; */
-        /* cerr << "Args: "; */
-        /* for( int i = 0; i < cur->args.size(); ++i ) */
-        /*   cerr << cur->args[i] << " "; */
-        /* cerr << endl; */
-        /* cerr << "Return type: " << cur->returnType << endl; */
-
-        if( cur->type != glaName ) {
-            //cerr << "failed match on return function type name" << endl;
-            continue;
-        }
-
-        bool goodArgs = true;
-        // If same number of parameters, make sure that the parameters in order
-        // are of the same type or of convertible types.
-        vector<string>::const_iterator argIter = ret_vec.begin();
-        vector<string>::const_iterator fArgIter = cur->args.begin();
-        for( ; argIter != ret_vec.end() && fArgIter != cur->args.end(); ++argIter, ++fArgIter )
-        {
-            if( *argIter != *fArgIter )
-            {
-                //cerr << endl << "Failed to match on function arg " << *argIter << " expected " << *fArgIter << endl;
-                goodArgs = false;
-                break;
-            }
-        }
-
-        if( !goodArgs ) {
-            //cerr << "failed match on return function args" << endl;
-            continue;
-        }
-
-        if( cur->returnType != ret ) {
-            //cerr << "failed match on return function ret type" << endl;
-            continue;
-        }
-
-        // Don't need to check anything else really, we found an exact match.
-        return true;
-    }
-
-    // Didn't find a matching return function :(
-    return false;
+    return IsCorrectFuncExact( glaName, fName_ret, ret_vec, ret, file, NoAssoc, -1, pure );
 }
 
 inline
@@ -1275,12 +1231,12 @@ void DataTypeManager :: AddGT(string gtName, vector<string>& typeargs,
 
 inline
 void DataTypeManager :: AddGTTemplate( string gtName, string filename ) {
-    AddGTTemp( gtName, filename );
+    AddTemplate( gtName, T_GT, filename );
 }
 
 inline
 bool DataTypeManager :: IsGTTemplate( string gtName, string& filename ) {
-    return GTTemplateExists(gtName, filename);
+    return TemplateExists( gtName, T_GT, filename );
 }
 
 inline
@@ -1297,16 +1253,6 @@ bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
         return false;
     }
 
-    //cerr << "GT: " << gtName << endl;
-
-    //cerr << "Number arguments " << typeargs.size() << endl;
-
-    //for( int i = 0; i < typeargs.size(); ++i ) cerr << typeargs[i] << endl;
-
-    //cerr << "Number returns " << typeret.size() << endl;
-
-    //for( int i = 0; i < typeret.size(); ++i ) cerr << typeret[i] << endl;
-
     string fName_add = "AddItem_" + gtName;
     string fName_ret = "GetResult_" + gtName;
 
@@ -1321,64 +1267,7 @@ bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
         return false;
     }
 
-    // We don't want any transformations on the return arguments
-    // so check for an EXACT match for the results function.
-    for( int i = 0; i < ret_vec.size(); ++i ) {
-        ret_vec[i] = GetBaseType( ret_vec[i] );
-        if( !IsType( ret_vec[i] ) ) {
-            cout << "\nError: No type " << ret_vec[i] << " known to system!";
-            return false;
-        }
-    }
-
-    set<FuncInfo*> & possibleFuncs = mFunc[fName_ret];
-    for( set<FuncInfo*>::iterator it = possibleFuncs.begin(); it != possibleFuncs.end(); ++it ) {
-        FuncInfo *cur = *it;
-
-        /* cerr << "Current candidate:" << endl; */
-        /* cerr << "Type: " << cur->type << endl; */
-        /* cerr << "Args: "; */
-        /* for( int i = 0; i < cur->args.size(); ++i ) */
-        /*   cerr << cur->args[i] << " "; */
-        /* cerr << endl; */
-        /* cerr << "Return type: " << cur->returnType << endl; */
-
-        if( cur->type != gtName ) {
-            //cerr << "failed match on return function type name" << endl;
-            continue;
-        }
-
-        bool goodArgs = true;
-        // If same number of parameters, make sure that the parameters in order
-        // are of the same type or of convertible types.
-        vector<string>::const_iterator argIter = ret_vec.begin();
-        vector<string>::const_iterator fArgIter = cur->args.begin();
-        for( ; argIter != ret_vec.end() && fArgIter != cur->args.end(); ++argIter, ++fArgIter )
-        {
-            if( *argIter != *fArgIter )
-            {
-                //cerr << endl << "Failed to match on function arg " << *argIter << " expected " << *fArgIter << endl;
-                goodArgs = false;
-                break;
-            }
-        }
-
-        if( !goodArgs ) {
-            //cerr << "failed match on return function args" << endl;
-            continue;
-        }
-
-        if( cur->returnType != ret ) {
-            //cerr << "failed match on return function ret type" << endl;
-            continue;
-        }
-
-        // Don't need to check anything else really, we found an exact match.
-        return true;
-    }
-
-    // Didn't find a matching return function :(
-    return false;
+    return IsCorrectFuncExact( gtName, fName_ret, ret_vec, ret, file, NoAssoc, -1, pure );
 }
 
 inline
@@ -1387,6 +1276,67 @@ bool DataTypeManager :: GTExists( string& gtName, string& file ) {
         return false;
 
     file = GetTypeFile( gtName );
+
+    return true;
+}
+
+inline
+void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs, string fileName ) {
+    if( !DoesTypeExist( gfName ) ) {
+        AddBaseType( gfName, fileName );
+    }
+    else {
+        // Duplicate definition.
+        cout << "\nWarning: Attempting to add a duplicate GF " << gfName;
+        return;
+    }
+
+    string fName = "Filter_" + gfName;
+
+    string ret = "bool";
+
+    vector<string> args_vec(typeargs);
+
+    AddFunc( gfName, fName, args_vec, ret, fileName, NoAssoc, -1, false );
+}
+
+inline
+void DataTypeManager :: AddGFTemplate( string gfName, string filename ) {
+    AddTemplate( gfName, T_GF, filename );
+}
+
+inline
+bool DataTypeManager :: IsGFTemplate( string gfName, string& filename ) {
+    return TemplateExists( gfName, T_GF, filename );
+}
+
+inline
+bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
+        string& file,
+        vector<ArgFormat>& /* out param */ actualArgs ) {
+
+    vector<string> arg_vec(typeargs);
+    string ret("bool");
+
+    if( !IsType( gfName ) ) {
+        cout << "\nError: No GF " << gfName << " known to system!";
+        return false;
+    }
+
+    string fName = "Filter_" + gfName;
+
+    bool pure;
+
+    // Check the arguments and get any formatting necessary.
+    return IsCorrectFunc( gfName, fName, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
+}
+
+inline
+bool DataTypeManager :: GFExists( string& gfName, string& file ) {
+    if( !IsType( gfName ) )
+        return false;
+
+    file = GetTypeFile( gfName );
 
     return true;
 }

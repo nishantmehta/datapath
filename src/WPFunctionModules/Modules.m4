@@ -47,7 +47,6 @@ m4_define(</M4_CODE_GENERATION_PREAMBLE/>,</dnl
 #include <limits.h>
 #include "QueryManager.h"
 #include <string.h>
-#include <PatternMatcher.h>
 #include "Logging.h" // for profiling facility
 #include "Profiling.h"
 <//>m4_divert(-1)

@@ -135,6 +135,45 @@ void parseDescFile( string path ) {
     FATALIF(errors, "Failed to parse description file \%s\n", path.c_str());
 }
 
+/*
+ *  Processes a template by generating an m4 file with the required includes,
+ *  definitions, and macro call. Then calls a script to run m4 on the generated
+ *  file to create the c++ header file for it, and also generate the description
+ *  file that is parsed to log the new object in the system.
+ *
+ *  macroName:  The name of the macro that has to be called to generate the object.
+ *  objName:    The name of the object being generated (first argument to macro)
+ *  defs:       Any definitions that are needed before the macro is called.
+ *  args:       Any additional arguments to the macro call.
+ */
+void ProcessTemplate( string macroName, string objName, string defs, string file, string args ) {
+     string m4File = "Generated/" + objName + ".m4";
+     string descFile = "Generated/" + objName + ".desc";
+
+     // Create temporary file.
+     ofstream outfile (m4File.c_str());
+
+     // Add necessary includes
+     outfile << "include(Resources-T.m4)dnl" << endl;
+     outfile << "m4_include(GLA-templates.m4)dnl" << endl;
+     outfile << endl;
+     outfile << defs << endl;
+
+     // form the template instantiation code and change name to temp
+     outfile << endl << "m4_include(</" << file << "/>)" << endl;
+     outfile << macroName << "(" << objName << args << ")" << endl;
+
+    // close the temporary file
+     outfile.close();
+
+     // Run M4 on the temporary file
+     string call = "./processTemp.sh " + objName;
+     int sysret = execute_command(call.c_str());
+     FATALIF(sysret != 0, "Failed to instantiate template \%s", macroName.c_str());
+
+     parseDescFile(descFile);
+}
+
 }
 
 parse[LemonTranslator* trans] : {
@@ -162,9 +201,11 @@ complexStatement
   | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(CRGLA ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
   | ^(CRGT ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGT(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
+  | ^(CRGF ID (s=STRING) ^(TPATT (args=lstArgsGLA))) { dTM.AddGF(STR($ID), $args.vecT, STRS($s) ); }
   | ^(CR_TMPL_FUNC name=ID file=STRING ) { dTM.AddFunctionTemplate( STR($name), STRS($file));}
   | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRS($file)); }
   | ^(CR_TMPL_GT name=ID file=STRING) { dTM.AddGTTemplate( STR($name), STRS($file)); }
+  | ^(CR_TMPL_GF name=ID file=STRING) { dTM.AddGFTemplate( STR($name), STRS($file)); }
   | relationCR
   | FLUSHTOKEN {/*dTM.Save();*/ catalog.SaveCatalog();}
   | runStmt
@@ -306,6 +347,7 @@ rules :
   | joinRule
   | glaRule
   | gtRule
+  | gfRule
   ;
 
 filterRule
@@ -424,12 +466,16 @@ printSep[string& s]
 
 /* accumulate arguments form GLA definitions and form m4 code to call it */
 glaDef returns [string name, string defs]
-  : ID {$name=(const char*) $ID.text->chars;} glaTemplate[$name,$defs]
+  : ^(GLA_DEF ID {$name=(const char*) $ID.text->chars;} glaTemplate[$name,$defs])
   ;
 
 gtDef returns [string name, string defs]
-  : ID {$name = TXT($ID); } gtTemplate[$name, $defs]
+  : ^(GT_DEF ID {$name = TXT($ID); } gtTemplate[$name, $defs])
   ;
+
+gfDef returns [string name, string defs]
+    : ^(GF_DEF ID {$name = TXT($ID); } gfTemplate[$name, $defs])
+    ;
 
 glaTemplate[string& name, string& defs]
 @init { string args;
@@ -443,50 +489,27 @@ glaTemplate[string& name, string& defs]
         ADD_INCLUDE(defs, file);
     }
     | ^(GLATEMPLATE  ({args+=",";} glaTemplArg[args, defs] )* )
-        {
+    {
         string file;
         if( !dTM.IsGLATemplate(name, file) ) {
             FATAL("No GLA Template called \%s known.", name.c_str());
         }
 
-         string tmp = "GLA_\%d_" + name;
-         string tempName = GenerateTemp(tmp.c_str());
-         string m4File = "Generated/" + tempName + ".m4";
-         string descFile = "Generated/" + tempName + ".desc";
+        string tmp = "GLA_\%d_" + name;
+        string tempName = GenerateTemp(tmp.c_str());
 
-         // Create temporary file.
-         ofstream outfile (m4File.c_str());
+        ProcessTemplate( name, tempName, defs, file, args );
 
-         // Add necessary includes
-         outfile << "include(Resources-T.m4)dnl" << endl;
-         outfile << "m4_include(GLA-templates.m4)dnl" << endl;
-         outfile << endl;
-         outfile << defs << endl;
-
-         // form the template instantiation code and change name to temp
-         outfile << endl << "m4_include(</" << file << "/>)" << endl;
-         outfile << name << "(" << tempName << args << ")" << endl;
-
-        // close the temporary file
-         outfile.close();
-
-         // Run M4 on the temporary file
-         string call = "./processTemp.sh " + tempName;
-         int sysret = execute_command(call.c_str());
-         FATALIF(sysret != 0, "Failed to instantiate templated GLA \%s", name.c_str());
-
-         parseDescFile(descFile);
-
-         name=tempName; // new name
-         defs.clear();
-         ADD_INCLUDE(defs, tempName + ".h");
-        }
+        name=tempName; // new name
+        defs.clear();
+        ADD_INCLUDE(defs, tempName + ".h");
+    }
     ;
 
 glaTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
-    | GLA glaDef {
+    | glaDef {
       // glue the definitions accumulated
       defs+=$glaDef.defs;
       // add the name to current definition
@@ -501,7 +524,7 @@ gtTemplate[string& name, string& defs]
 @init { string args;
 
     }
-    : /* simpleGLA */
+    : /* simpleGT */
     {
         string file;
         FATALIF( !dTM.GTExists( name, file ), "No GT named \%s known to the system!\n", name.c_str());
@@ -517,31 +540,8 @@ gtTemplate[string& name, string& defs]
 
         string tmp = "GT_\%d_" + name;
         string tempName = GenerateTemp(tmp.c_str());
-        string m4File = "Generated/" + tempName + ".m4";
-        string descFile = "Generated/" + tempName + ".desc";
 
-        // Create temporary file.
-        ofstream outfile (m4File.c_str());
-
-        // Add necessary includes
-        outfile << "include(Resources-T.m4)dnl" << endl;
-        outfile << "m4_include(GLA-templates.m4)dnl" << endl;
-        outfile << endl;
-        outfile << defs << endl;
-
-        // form the template instantiation code and change name to temp
-        outfile << endl << "m4_include(</" << file << "/>)" << endl;
-        outfile << name << "(" << tempName << args << ")" << endl;
-
-        // close the temporary file
-        outfile.close();
-
-        // Run M4 on the temporary file
-        string call = "./processTemp.sh " + tempName;
-        int sysret = execute_command(call.c_str());
-        FATALIF(sysret != 0, "Failed to instantiate templated GT \%s", name.c_str());
-
-        parseDescFile(descFile);
+        ProcessTemplate( name, tempName, defs, file, args );
 
         name=tempName; // new name
         defs.clear();
@@ -552,11 +552,58 @@ gtTemplate[string& name, string& defs]
 gtTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
-    | GLA glaDef {
+    | glaDef {
       // glue the definitions accumulated
       defs+=$glaDef.defs;
       // add the name to current definition
       args+=$glaDef.name;
+    }
+    | s=STRING { args+=TXTN($s); }
+    | i=INT { args+=TXT($i); }
+    | f=FLOAT { args+=TXT($f); }
+    ;
+
+gfTemplate[string& name, string& defs]
+@init { string args;
+
+    }
+    : /* simpleGF */
+    {
+        string file;
+        FATALIF( !dTM.GFExists( name, file ), "No GF named \%s known to the system!\n", name.c_str());
+
+        ADD_INCLUDE(defs, file);
+    }
+    | ^(GFTEMPLATE  ({args+=",";} gfTemplArg[args, defs] )* )
+    {
+        string file;
+        if( !dTM.IsGFTemplate(name, file) ) {
+            FATAL("No GF Template called \%s known.", name.c_str());
+        }
+
+        string tmp = "GF_\%d_" + name;
+        string tempName = GenerateTemp(tmp.c_str());
+
+        ProcessTemplate( name, tempName, defs, file, args );
+
+        name=tempName; // new name
+        defs.clear();
+        ADD_INCLUDE(defs, tempName + ".h");
+    }
+    ;
+
+gfTemplArg[string& args, string& defs]
+    : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
+    | attC[args] /* single typed argument */
+    | glaDef {
+      // glue the definitions accumulated
+      defs+=$glaDef.defs;
+      // add the name to current definition
+      args+=$glaDef.name;
+    }
+    | gfDef {
+        defs += $gfDef.defs;
+        args += $gfDef.name;
     }
     | s=STRING { args+=TXTN($s); }
     | i=INT { args+=TXT($i); }
@@ -581,31 +628,8 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
 
             string tmp = "FUNC_\%d_" + fName;
             string tempName = GenerateTemp(tmp.c_str());
-            string m4File = "Generated/" + tempName + ".m4";
-            string descFile = "Generated/" + tempName + ".desc";
 
-            // Create temporary file.
-            ofstream outfile (m4File.c_str());
-
-            // Add necessary includes
-            outfile << "include(Resources-T.m4)dnl" << endl;
-            outfile << "m4_include(GLA-templates.m4)dnl" << endl;
-            outfile << endl;
-            outfile << defs << endl;
-
-            // form the template instantiation code and change name to temp
-            outfile << endl << "m4_include(</" << file << "/>)" << endl;
-            outfile << name << "(" << tempName << args << ")" << endl;
-
-            // close the temporary file
-            outfile.close();
-
-            // Run M4 on the temporary file
-            string call = "./processTemp.sh " + tempName;
-            int sysret = execute_command(call.c_str());
-            FATALIF(sysret != 0, "Failed to instantiate templated function \%s", fName.c_str());
-
-            parseDescFile(descFile);
+            ProcessTemplate( name, tempName, defs, file, args );
 
             defs.clear();
             $name=tempName; // new name
@@ -615,7 +639,7 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
 funcTemplateArg[string& args, string & defs]
     : ^(LIST {args += "</";} attC[args] ({args += ",";} attC[args])* {args += "/>";})
     | attC[args]
-    | GLA glaDef {
+    | glaDef {
       // glue the definitions accumulated
       defs+=$glaDef.defs;
       // add the name to current definition
@@ -703,7 +727,7 @@ glaRule
             vector<WayPointID> reqStateSources;
             vector<string> reqStateTypes;
         }
-    : ^(GLA ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] glaDef res=glaRez[outAtts, outTypes, defs, $glaDef.name] (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+    : ^(GLA__ ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] glaDef res=glaRez[outAtts, outTypes, defs, $glaDef.name] (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
         // This is we get in return
             string glaName = $glaDef.name;
             string file = $glaDef.name + ".h";
@@ -826,6 +850,66 @@ gtRule
     }
   ;
 
+gfRule
+    @init {
+            SlotContainer atts; /* the set of attributes */
+            string cstStr; /* the constants used in the expression */
+            string sExpr; // the entire expression representing the arguments
+            ExprListInfo lInfo;
+            string ctArgs="("; /* constructor arguments*/
+            string defs; /* the definitions needed by the expressions */
+            vector<WayPointID> reqStateSources;
+            vector<string> reqStateTypes;
+        }
+    : ^(GF__ ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] gfDef (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )* ) {
+        // This is we get in return
+            string gfName = $gfDef.name;
+            string file = $gfDef.name + ".h";
+            vector<string> paramTypes = lInfo.GetListTypes();
+
+            // Check if operator exists
+#ifdef ENFORCE_GLA_TYPES
+           vector<ArgFormat> actArgs;
+           if (!dTM.IsGF(gfName, paramTypes, file, actArgs)) {
+               printf("\nERROR: GT \%s with arguments \%s do not exist",
+                      gfName.c_str(), lInfo.GetTypesDesc().c_str());
+           } else {
+               // Need to tell the expression info list about the actual types of the
+               // arguments and any special formatting needed using the vector of
+               // ArgFormats.
+               lInfo.Prepare( cstStr, actArgs );
+           }
+           // Update the parameter types after the data type manager's information has been
+           // considered.
+           paramTypes = lInfo.GetListTypes();
+           for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+               string file = dTM.GetTypeFile(*it);
+               ADD_INCLUDE(defs, file);
+           }
+#else
+           lInfo.Prepare( cstStr );
+#endif
+           bool isCT = lInfo.IsListConstant();
+
+           sExpr = "(";
+           std::vector<string> eVals = lInfo.Generate();
+           for (int i=0; i<eVals.size(); i++){
+               if (i>0) {
+                   sExpr += ",";
+               }
+
+               sExpr += eVals[i];
+           }
+           sExpr += ")";
+
+           ctArgs+=")";
+
+           defs += $gfDef.defs;
+
+           lT->AddFilter(wp, qry, atts, sExpr, cstStr, defs, $gfDef.name, ctArgs, reqStateSources);
+    }
+  ;
+
 attLWT [SlotContainer& outAtts, vector<string> &outTypes, string& defs]
     : ^(ATTWT att=ID type=ID) {
             string name = STR($att);
@@ -921,7 +1005,7 @@ aggregateWP
   ;
 
 glaWP
-    : ^(GLA {
+    : ^(GLA__ {
         lT->AddGLAWP(wp);
     }
       connList )
@@ -1136,36 +1220,6 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       }
       $sExpr += ")";
 }
-| ^(MATCH_DP patt=STRING a=expression[atts, cstStr, defs] { lInfo.Add($a.sExpr, $a.type, $a.isCT); } ) // pattern matcher
-    {
-        // for a pattern matcher, we have to build an expression
-        // of the form: PatternMather ctObj(pattern)
-        // then on use do ctObj.IsMatch(expr)
-        $type = "bool";
-        ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
-
-        $isCT = lInfo.IsListConstant();
-
-        lInfo.Prepare( $cstStr );
-        vector<string> paramTypes = lInfo.GetListTypes();
-        for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
-            string file = dTM.GetTypeFile(*it);
-            ADD_INCLUDE(defs, file);
-        }
-        std::vector<string> eVals = lInfo.Generate();
-        // new constant
-        int ctNo = ExprListInfo::NextVar();
-        // add def of matcher object
-        ostringstream match;
-        match << "PatternMatcher ct" << ctNo << "( string("
-              <<  TXTN($patt) << ") );" << endl;
-
-        ADD_CST($cstStr, match.str());
-        // now the expression
-        ostringstream expr;
-        expr << "ct" << ctNo << ".IsMatch(" << eVals[0] << ")";
-        $sExpr+=expr.str();
-   }
 | ^(CASE_DP (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // cases
    {
         // just like a function. For now we only support the 3-argument case

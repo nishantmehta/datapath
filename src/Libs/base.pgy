@@ -1,7 +1,7 @@
 #ifndef _base_PGY_
 #define _base_PGY_
 // Piggy description file for library base
-// generated on Tuesday, August 28, 2012 at 14:38 EDT
+// generated on Friday, September 28, 2012 at 09:54 EDT
 
 // base/Types/HString.h
 DEFINE DATATYPE HString FROM "base/Types/HString.h";
@@ -338,4 +338,10 @@ DEFINE TEMPLATE GLA Multiplexer FROM "base/GLAs/Multiplexer.h.m4";
 
 // base/UDFs/AbsoluteValue.h.m4
 DEFINE TEMPLATE FUNCTION AbsoluteValue FROM "base/UDFs/AbsoluteValue.h.m4";
+
+// base/GFs/PatternMatcher.h
+DEFINE GF PatternMatcher ( HString ) FROM "base/GFs/PatternMatcher.h";
+
+// base/GFs/PatternMatcherOnig.h
+DEFINE GF PatternMatcherOnig ( HString ) FROM "base/GFs/PatternMatcherOnig.h";
 #endif // _base_PGY_

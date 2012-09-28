@@ -34,7 +34,7 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 *     efficiently by the compiler.
 */
 #define NUM_SLOTS_IN_SEGMENT_BITS 24
-#define NUM_SEGS  2
+#define NUM_SEGS  8
 
 
 
@@ -89,12 +89,12 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 
 /* Number of threads available for the execution engine. This should be # Processors x 1.5
 */
-#define NUM_EXEC_ENGINE_THREADS 12
+#define NUM_EXEC_ENGINE_THREADS 6
 
 
 /* How many disk tokens we allow (this controls the parallelism)
 */
-#define NUM_DISK_TOKENS 12
+#define NUM_DISK_TOKENS 6
 
 
 /* Maximum number of chunks that can be built in parallel by the file scanner.
@@ -120,11 +120,11 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 
 /* This is the number of CPU work token requests that the hash table cleaner can have out at one time.
 */
-#define MAX_CLEANER_CPU_WORKERS 12
+#define MAX_CLEANER_CPU_WORKERS 6
 
 
 /* This is the number of disk work tokens that the cleaner can hoard to give to writers
 */
-#define MAX_CLEANER_DISK_REQUESTS 12
+#define MAX_CLEANER_DISK_REQUESTS 6
 
 #endif //_CONSTANTS_H_

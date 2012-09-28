@@ -25,7 +25,11 @@
 	operator.
 */
 
+#if __cplusplus >= 201103L
+#define SWAP(a,b) (auto tmp = a; a = b; b = tmp;)
+#else
 #define SWAP(a,b) {typeof(a) tmp=a; a=b; b=tmp;}
+#endif
 
 
 /* Macro to swap classes using memmove.

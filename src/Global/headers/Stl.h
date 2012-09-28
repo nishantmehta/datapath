@@ -25,16 +25,35 @@
 // Macro to streamline scan of STL container
 // list "list" is scanned and element is local variable that is
 // instantiated as each element of the list
-// Usage Scenario: 
+// Usage Scenario:
 //   FOREACH_STL(val, myList){
 //     do something with val
 //   }END_FOREACH
 //
 //
+#if __cplusplus >= 201103L
+#define FOREACH_STL(el, list) \
+    for( auto it = (list).begin(); it != (list).end(); it++ ) { \
+    auto el = *it;
+#else
 #define FOREACH_STL(el, list)																		\
 	for(typeof(list.begin()) it = list.begin(); it != list.end(); it++){	\
 	typeof(*it)& el = *it;
-#ifndef END_FOREACH									
+#endif
+
+#if __cplusplus >= 201103L
+#define FOREACH_STL_MAP(key, val, map) \
+    for( auto it = (map).begin(); it != (map).end(); ++it ) { \
+    auto & key = it->first; \
+    auto & val = it->second;
+#else
+#define FOREACH_STL_MAP(key, val, map) \
+    for( typeof((map).begin()) it = (map).begin(); it != (map).end(); ++it  ) { \
+    typeof(it->first) & key = it->first; \
+    typeof(it->second) & val = it->second;
+#endif
+
+#ifndef END_FOREACH
 #define END_FOREACH }
 #endif
 

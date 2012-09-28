@@ -41,19 +41,27 @@
 // Macro to streamline scan of TwoWayLists
 // list "list" is scanned and element is local variable that is
 // instantiated as each element of the list
-// Usage Scenario: 
+// Usage Scenario:
 //   FOREACH_EM(key, data, myMap){
 //     do something with key and data
 //   }END_FOREACH
 //
 //
+#if __cplusplus >= 201103L  // c++11
+#define FOREACH_EM(key, data, map) \
+    for((map).MoveToStart(); !(map).AtEnd(); (map).Advance()) { \
+    auto & key = (map).CurrentKey(); \
+    auto & data = (map).CurrentData();
+#else
 #define FOREACH_EM(key, data, map)															\
 	for((map).MoveToStart();	!(map).AtEnd(); (map).Advance()) {		\
 	typeof((map).CurrentKey())& key = (map).CurrentKey();						\
-	typeof((map).CurrentData())& data = (map).CurrentData();					
-#ifndef END_FOREACH									
+	typeof((map).CurrentData())& data = (map).CurrentData();
+#endif
+
+#ifndef END_FOREACH
 #define END_FOREACH }
-#endif 
+#endif
 
 
 template <class Key, class Data>
@@ -111,7 +119,7 @@ public:
 
 	// move the current pointer position forward through the list
 	void Advance ();
-	
+
 	// operations to consult state
 	bool AtStart ();
 	bool AtEnd ();

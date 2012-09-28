@@ -53,7 +53,7 @@ m4_define(</GF_DESC/>, </dnl
 
 m4_define(</GT_DESC/>, </dnl
 <//></$0/>dnl
-<//>m4_redefine(</__META_TYPE/>, </GF/>)dnl
+<//>m4_redefine(</__META_TYPE/>, </GT/>)dnl
 />)dnl
 
 m4_define(</FUNC_DESC/>, </dnl

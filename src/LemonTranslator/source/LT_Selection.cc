@@ -254,8 +254,14 @@ void LT_Selection::WriteM4File(ostream& out) {
     for (QueryFilterToExpr::iterator it = filters.begin();
              it != filters.end();){
         QueryID query = it->first;
-        out << "( " << GetQueryName(query) << ", "
-                << filterNames[query] << ", </( ";
+
+        // Argument 1
+        out << "( " << GetQueryName(query);
+        // Argument 2
+        out << ", " << filterNames[query];
+
+        // Argument 3
+        out << ", </(";
 
         // go through the synthesized attributes
         SlotSet& sAtts = synthesized[query];
@@ -270,9 +276,19 @@ void LT_Selection::WriteM4File(ostream& out) {
             if (its!=sAtts.end())
                 out << ", ";
         }
-        out << ")/>, <//>, ";
-        out << constructors[query] << ", ";
-        out << it->second << " ,</" << initializers[query] << "/>";
+        out << ")/>";
+
+        // Argument 4
+        out << ", " << constructors[query];
+
+        // Argument 5
+        out << ", <//>"; // Spot currently reserved
+
+        // Argument 6
+        out << ", " << it->second;
+
+        // Argument 7
+        out << ", </" << initializers[query] << "/>";
 
         // close up the list
         out << " )";

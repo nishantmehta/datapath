@@ -27,10 +27,7 @@ tokens {
   TERMCONN;
   SCANNER__;
   WRITER__;
-  GLATEMPLATE;
   LIST;
-  CRGLA;
-  CRGT;
   CRRELATION;
   FLUSHTOKEN;
   QUITTOKEN;
@@ -43,17 +40,31 @@ tokens {
   FUNCTEMPLATE;
   TYPE_;
   CR_TMPL_FUNC;
-  CR_TMPL_GLA;
-  CR_TMPL_GT;
-  TYPEDEF_GLA;
-  TYPEDEF_GT;
   STATE__;
+
+  // Generalized Linear Aggregates
+  GLA__;
+  GLA_DEF;
+  GLATEMPLATE;
+  CRGLA;
+  CR_TMPL_GLA;
+  TYPEDEF_GLA;
+
+  // Generalized Transforms
   GT__;
+  GT_DEF;
   GTTEMPLATE;
+  CRGT;
+  CR_TMPL_GT;
+  TYPEDEF_GT;
+
+  // Generalized Filters
   GF__;
+  GF_DEF;
   GFTEMPLATE;
   CRGF;
   CR_TMPL_GF;
+  TYPEDEF_GF;
 }
 
 

@@ -68,12 +68,19 @@ LOAD partsupp;
 LOAD nation;
 LOAD region;
 
-selpart =
+selpart_type =
 FILTER
     part
 BY
-    MATCH(part.p_type, ".*BRASS")
-    && part.p_size == 15;
+    GF:PatternMatcherOnig (".*BRASS")
+USING
+    part.p_type;
+
+selpart =
+FILTER
+    selpart_type
+BY
+    part.p_size == 15;
 
 selregion =
 FILTER
