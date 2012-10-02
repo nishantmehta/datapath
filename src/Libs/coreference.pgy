@@ -1,0 +1,8 @@
+#ifndef COREFERENCE_PGH_
+#define COREFERENCE_PGH_
+
+DEFINE GIST FROM "coreference/coref.h";
+
+
+
+#endif // COREFERENCE_PGH_
