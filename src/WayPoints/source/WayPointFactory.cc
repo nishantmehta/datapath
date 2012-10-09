@@ -38,6 +38,7 @@
 #include "TileJoinWayPointImp.h"
 #include "GLAWayPointImp.h"
 #include "GTWayPointImp.h"
+#include "GISTWayPointImp.h"
 
 /* The only function. Takes a configuration objec as input
      and creates the waypoint of the correct type.
@@ -91,6 +92,9 @@ WayPointImp* WayPointFactory(const WayPointConfigureData &configData){
 
         case GTConfigureData::type :
             return new GTWayPointImp;
+
+        case GISTConfigureData::type :
+            return new GISTWayPointImp;
 
         default:
             FATAL ("Got some strange type of waypoint configuration. \n");

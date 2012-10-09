@@ -113,6 +113,8 @@ void LT_GLA::DeleteQuery(QueryID query)
     QueryID qID;
     SlotContainer slotCont;
     glaAttribs.Remove(query, qID, slotCont);
+
+    glaInfoMap.erase(query);
 }
 
 void LT_GLA::ClearAllDataStructure() {
@@ -219,18 +221,12 @@ void LT_GLA::WriteM4DataStructures(ostream& out) {
 
     out << "m4_divert(0)" << endl;
 
-    // Note: This anonymous namespace is here so that the same GLAs and
-    // functions may be defined in separate files without the linker
-    // complaining. The anonymous namespace restricts the linkage visibility
-    // of everything in it to this file only.
-    //out << "namespace {" << endl;
     FOREACH_EM(key, data, glaAttribs){
         out << " /* Generating datastructures for query "
             << GetQueryName(key) << "*/" << endl;
         GLAInfo glaInfo = glaInfoMap[key];
         out << glaInfo.defs << endl;
     } END_FOREACH;
-    //out << "}";
 }
 
 void LT_GLA::WriteM4File(ostream& out) {
@@ -259,7 +255,7 @@ void LT_GLA::WriteM4FileAux(ostream& out) {
     AttributeManager& am = AttributeManager::GetAttributeManager();
 
     out << wpname << ", ";
-    out << "\t</";
+    out << "</";
 
     //GLADesc starts here.
     // go through the query to GLA attribute map

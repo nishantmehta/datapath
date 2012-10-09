@@ -15,42 +15,42 @@
 //
 /** for Emacs -*- c++ -*- */
 private:
-	/* Internal struct so we can form a map to values */
-	struct QueryParameter {
-		QueryID query;
-		string param;
+/* Internal struct so we can form a map to values */
+struct QueryParameter {
+    QueryID query;
+    std::string param;
 
-		QueryParameter(QueryID _query, string& _param):query(_query), param(_param){}
-		QueryParameter(){}
-		~QueryParameter(){}
+    QueryParameter(QueryID _query, std::string& _param):query(_query), param(_param){}
+    QueryParameter(){}
+    ~QueryParameter(){}
 
-		bool operator <(const QueryParameter& other) const {
-			return (query<other.query) || (query==other.query && param<other.param);
-		}
-	};
+    bool operator <(const QueryParameter& other) const {
+        return (query<other.query) || (query==other.query && param<other.param);
+    }
+};
 
-	typedef map<QueryParameter, string> QueryParameterMap;
+typedef std::map<QueryParameter, std::string> QueryParameterMap;
 
-	QueryIDSet queries; // set of queries mentioned in paramters
+QueryIDSet queries; // set of queries mentioned in paramters
 
-	// Map between integer param names and values
-	map<string, int> intParams;
+// Map between integer param names and values
+std::map<std::string, int> intParams;
 
-	// Map between double param names and values
-	map<string, double> doubleParams;
+// Map between double param names and values
+std::map<std::string, double> doubleParams;
 
-	// Map between string param names and values
-	map<string, string> stringParams;
+// Map between string param names and values
+std::map<std::string, std::string> stringParams;
 
-	// Map between query,parameter to values
-	QueryParameterMap queryParameterMap;
+// Map between query,parameter to values
+QueryParameterMap queryParameterMap;
 
-	// Waypoint ID
-	WayPointID wid;
+// Waypoint ID
+WayPointID wid;
 
-	// Waypoint type
-	WaypointType wtype;
+// Waypoint type
+WaypointType wtype;
 
-	// Disallow assignment and copy constructors
-	SymbolicWaypointConfig(const SymbolicWaypointConfig &s);
-	SymbolicWaypointConfig &operator=(const SymbolicWaypointConfig &w);
+// Disallow assignment and copy constructors
+SymbolicWaypointConfig(const SymbolicWaypointConfig &s);
+SymbolicWaypointConfig &operator=(const SymbolicWaypointConfig &w);

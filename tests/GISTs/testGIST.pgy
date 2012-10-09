@@ -1,0 +1,9 @@
+#include "test.pgy"
+
+stuff = GIST : TestGIST (10)
+AS numSteps : INT;
+
+PRINT stuff
+USING numSteps
+AS numSteps : INT
+INTO "testGIST.csv";

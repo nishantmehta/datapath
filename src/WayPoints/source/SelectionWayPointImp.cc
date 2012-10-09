@@ -21,7 +21,7 @@
 
 SelectionWayPointImp :: SelectionWayPointImp () {
     PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");
-    SetResultExitCode( PROCESS_CHUNK );
+    SetResultExitCode( WP_PROCESS_CHUNK );
 }
 SelectionWayPointImp :: ~SelectionWayPointImp () {PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");}
 

@@ -83,7 +83,7 @@ int SelectionPreProcessWorkFunc_<//>M4_WPName
     SelectionPreProcessRez myRez( constStates );
     myRez.swap(result);
 
-    return -1; // for PreProcess
+    return WP_PREPROCESSING; // for PreProcess
 }
 
 extern "C"
@@ -208,5 +208,5 @@ dnl # now synthesized
     ChunkContainer tempResult (input);
     tempResult.swap (result);
 
-    return 0; // For Process Chunk
+    return WP_PROCESS_CHUNK; // For Process Chunk
 }

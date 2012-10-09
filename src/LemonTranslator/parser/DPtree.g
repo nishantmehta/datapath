@@ -30,7 +30,7 @@ options {
 
 /* Debugging */
 #undef PREPORTERROR
-#define PREPORTERROR assert(1=2)
+#define PREPORTERROR assert(1==2)
 
 // uncomment this to enforce types
 #define ENFORCE_TYPES
@@ -197,20 +197,38 @@ complexStatement
         dTM.AddSynonymType(gtName, STR($name));
         waypointIncludes[wp].clear();
   }
+  | ^(TYPEDEF_GF name=ID gf=gtDef) {
+        string gfName = $gf.name;
+        dTM.AddSynonymType(gfName, STR($name));
+        waypointIncludes[wp].clear();
+  }
+  | ^(TYPEDEF_GIST name=ID gist=gistDef) {
+        string gistName = $gist.name;
+        dTM.AddSynonymType(gistName, STR($name));
+        waypointIncludes[wp].clear();
+  }
   | ^(FUNCTION ID (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(CRGLA ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
   | ^(CRGT ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGT(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
   | ^(CRGF ID (s=STRING) ^(TPATT (args=lstArgsGLA))) { dTM.AddGF(STR($ID), $args.vecT, STRS($s) ); }
+  | ^(CRGIST ID (s=STRING) states=reqStateList ^(TPATT ret=lstArgsGLA) )
+    { dTM.AddGIST( STR($ID), $states.vect, $ret.vecT, STRS($s)); }
   | ^(CR_TMPL_FUNC name=ID file=STRING ) { dTM.AddFunctionTemplate( STR($name), STRS($file));}
   | ^(CR_TMPL_GLA name=ID file=STRING) { dTM.AddGLATemplate( STR($name), STRS($file)); }
   | ^(CR_TMPL_GT name=ID file=STRING) { dTM.AddGTTemplate( STR($name), STRS($file)); }
   | ^(CR_TMPL_GF name=ID file=STRING) { dTM.AddGFTemplate( STR($name), STRS($file)); }
+  | ^(CR_TMPL_GIST name=ID file=STRING) { dTM.AddGISTTemplate( STR($name), STRS($file)); }
   | relationCR
   | FLUSHTOKEN {/*dTM.Save();*/ catalog.SaveCatalog();}
   | runStmt
   | QUITTOKEN { exit(0); }
   ;
+
+reqStateList returns [vector<string> vect]
+    : ^(STATE_LIST (t=dType {$vect.push_back($t.type);})+ )
+    | /* nothing */
+    ;
 
 runStmt
 @init{QueryIDSet qrys;}
@@ -348,6 +366,7 @@ rules :
   | glaRule
   | gtRule
   | gfRule
+  | gistRule
   ;
 
 filterRule
@@ -477,6 +496,21 @@ gfDef returns [string name, string defs]
     : ^(GF_DEF ID {$name = TXT($ID); } gfTemplate[$name, $defs])
     ;
 
+gistDef returns [string name, string defs]
+    : ^(GIST_DEF ID {$name = STR($ID); } gistTemplate[$name, $defs])
+    ;
+
+stateDef[string& defs, string& args]
+    : gla=glaDef {
+        defs += $gla.defs;
+        args += $gla.name;
+    }
+    | gist=gistDef {
+        defs += $gist.defs;
+        args += $gist.name;
+    }
+    ;
+
 glaTemplate[string& name, string& defs]
 @init { string args;
 
@@ -509,12 +543,7 @@ glaTemplate[string& name, string& defs]
 glaTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
-    | glaDef {
-      // glue the definitions accumulated
-      defs+=$glaDef.defs;
-      // add the name to current definition
-      args+=$glaDef.name;
-    }
+    | stateDef[defs, args]
     | s=STRING { args+=TXTN($s); }
     | i=INT { args+=TXT($i); }
     | f=FLOAT { args+=TXT($f); }
@@ -552,12 +581,7 @@ gtTemplate[string& name, string& defs]
 gtTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
-    | glaDef {
-      // glue the definitions accumulated
-      defs+=$glaDef.defs;
-      // add the name to current definition
-      args+=$glaDef.name;
-    }
+    | stateDef[defs, args]
     | s=STRING { args+=TXTN($s); }
     | i=INT { args+=TXT($i); }
     | f=FLOAT { args+=TXT($f); }
@@ -595,16 +619,49 @@ gfTemplate[string& name, string& defs]
 gfTemplArg[string& args, string& defs]
     : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
     | attC[args] /* single typed argument */
-    | glaDef {
-      // glue the definitions accumulated
-      defs+=$glaDef.defs;
-      // add the name to current definition
-      args+=$glaDef.name;
-    }
+    | stateDef[defs, args]
     | gfDef {
         defs += $gfDef.defs;
         args += $gfDef.name;
     }
+    | s=STRING { args+=TXTN($s); }
+    | i=INT { args+=TXT($i); }
+    | f=FLOAT { args+=TXT($f); }
+    ;
+
+gistTemplate[string& name, string& defs]
+@init { string args;
+
+    }
+    : /* simple GIST */
+    {
+        string file;
+        FATALIF( !dTM.GISTExists( name, file ), "No GIST named \%s known to the system!\n", name.c_str());
+
+        ADD_INCLUDE(defs, file);
+    }
+    | ^(GISTTEMPLATE  ({args+=",";} gistTemplArg[args, defs] )* )
+    {
+        string file;
+        if( !dTM.IsGISTTemplate(name, file) ) {
+            FATAL("No GIST Template called \%s known.", name.c_str());
+        }
+
+        string tmp = "GIST_\%d_" + name;
+        string tempName = GenerateTemp(tmp.c_str());
+
+        ProcessTemplate( name, tempName, defs, file, args );
+
+        name=tempName; // new name
+        defs.clear();
+        ADD_INCLUDE(defs, tempName + ".h");
+    }
+    ;
+
+gistTemplArg[string& args, string& defs]
+    : ^(LIST {args+="</";} attC[args] ({args+=",";} attC[args])* {args+="/>";})
+    | attC[args] /* single typed argument */
+    | stateDef[defs, args]
     | s=STRING { args+=TXTN($s); }
     | i=INT { args+=TXT($i); }
     | f=FLOAT { args+=TXT($f); }
@@ -910,6 +967,48 @@ gfRule
     }
   ;
 
+gistRule
+    @init {
+            SlotContainer outAtts; /**output attributes */
+            string ctArgs="("; /* constructor arguments*/
+            std::vector<std::string> outTypes;
+            string defs; /* the definitions needed by the expressions */
+            vector<WayPointID> reqStateSources;
+            vector<string> reqStateTypes;
+        }
+    : ^(GIST__ ctAttList[ctArgs] stateArgs[defs, reqStateSources, reqStateTypes] gistDef res=glaRez[outAtts, outTypes, defs, $gistDef.name] ) {
+        // This is we get in return
+            string gistName = $gistDef.name;
+            string file = $gistDef.name + ".h";
+#ifdef ENFORCE_GLA_TYPES
+           if (!dTM.IsGIST(gistName, reqStateTypes, outTypes, file)) {
+               printf("\nERROR: GIST \%s does not exist",
+                      gistName.c_str());
+           }
+           // Make sure we have the necessary includes for any required states
+           for( vector<string>::const_iterator it = reqStateTypes.begin(); it != reqStateTypes.end(); ++it ) {
+               string file = dTM.GetTypeFile(*it);
+               ADD_INCLUDE(defs, file);
+           }
+           // Make sure we have the definitions for the output types
+           for( vector<string>::const_iterator it = outTypes.begin(); it != outTypes.end(); ++it ) {
+               string file = dTM.GetTypeFile(*it);
+               ADD_INCLUDE(defs, file);
+           }
+
+           if( $res.retState ) {
+                glaStateType[qry][wp] = gistName;
+           }
+#endif
+
+           ctArgs+=")";
+
+           defs += $gistDef.defs;
+
+           lT->AddGIST(wp,qry, outAtts, $gistDef.name, defs, ctArgs, reqStateSources, $res.retState);
+    }
+  ;
+
 attLWT [SlotContainer& outAtts, vector<string> &outTypes, string& defs]
     : ^(ATTWT att=ID type=ID) {
             string name = STR($att);
@@ -1018,6 +1117,13 @@ gtWP
       connList )
   ;
 
+gistWP
+    : GIST_WP {
+        lT->AddGISTWP(wp);
+        lT->AddEdgeFromBottom(wp);
+    }
+    ;
+
 printWP
     :    ^(PRINT {
       lT->AddPrintWP(wp);
@@ -1077,6 +1183,7 @@ wpDefinition
     | textloaderWP
     | glaWP
     | gtWP
+    | gistWP
   ;
 
 expr[SlotContainer& atts, string& cstStr, string& defs] returns [string sExpr] :

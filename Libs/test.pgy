@@ -1,7 +1,7 @@
 #ifndef _test_PGY_
 #define _test_PGY_
 // Piggy description file for library test
-// generated on Tuesday, September 25, 2012 at 15:27 EDT
+// generated on Monday, October 08, 2012 at 15:07 EDT
 
 // test/GLAs/Multimap.m4
 DEFINE TEMPLATE GLA Multimap FROM "test/GLAs/Multimap.m4";
@@ -14,4 +14,7 @@ DEFINE TEMPLATE GLA JoinGLA FROM "test/GLAs/JoinGLA.m4";
 
 // test/GTs/JoinLHS.m4
 DEFINE TEMPLATE GT JoinLHS FROM "test/GTs/JoinLHS.m4";
+
+// test/GISTs/TestGIST.h
+DEFINE GIST TestGIST -> ( INT ) FROM "test/GISTs/TestGIST.h";
 #endif // _test_PGY_

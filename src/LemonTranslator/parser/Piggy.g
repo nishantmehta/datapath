@@ -74,6 +74,8 @@ defineStatement
     -> ^(CRGT $n $f ^(TPATT $retList) ^(TPATT $params))
   | GF n=ID LPAREN params=typeList RPAREN FROM f=STRING
     -> ^(CRGF $n $f ^(TPATT $params))
+  | GIST n=ID (LSQ reqList=typeList RSQ)? ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    -> ^(CRGIST $n $f ^(STATE_LIST $reqList)? ^(TPATT $retList))
   | TEMPLATE FUNCTION n=ID FROM f=STRING
     -> ^(CR_TMPL_FUNC $n $f)
   | TEMPLATE GLA n=ID FROM f=STRING
@@ -82,12 +84,16 @@ defineStatement
     -> ^(CR_TMPL_GT $n $f)
   | TEMPLATE GF n=ID FROM f=STRING
     -> ^(CR_TMPL_GF $n $f)
+  | TEMPLATE GIST n=ID FROM f=STRING
+    -> ^(CR_TMPL_GIST $n $f)
   | GLA COLON n=ID AS GLA glaDef
     -> ^(TYPEDEF_GLA $n glaDef)
   | GTRAN COLON n=ID AS GTRAN gtDef
     -> ^(TYPEDEF_GT $n gtDef)
   | GF COLON n=ID AS GF gfDef
     -> ^(TYPEDEF_GF $n gfDef)
+  | GIST COLON n=ID AS GIST gistDef
+    -> ^(TYPEDEF_GIST $n gistDef)
   | n=ID AS ty=type
     -> ^(CRSYNONYM $ty $n)
   ;
@@ -118,6 +124,8 @@ actionBody
         -> ^(GLA__ $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(GLA__ $ct $st $gla $rez $exp))
     | GTRAN gt=gtDef ct=constArgs (FROM? inp=ID) st=stateArgs USING exp=expressionList AS res=attListWTypes
         -> ^(GT__ $inp) ^(QUERRY__ ID[$inp, qry.c_str()] ^(GT__ $ct $st $gt $res $exp))
+    | GIST gist=gistDef ct=constArgs st=stateArgs AS rez=glaRez
+        -> ^(GIST_WP) ^(QUERRY__ ID[qry.c_str()] ^(GIST__ $ct $st $gist $rez))
     | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
         -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
     | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? ATTRIBUTES FROM c=ID
@@ -145,6 +153,23 @@ glaTemplArg
   | attC /* single typed argument */
   | ctAtt
   | GLA! glaDef
+  | GIST! gistDef
+  ;
+
+gistDef
+  : COLON ID def=gistTemplateDef?  -> ^(GIST_DEF  ID ^(GISTTEMPLATE $def)?)
+  ;
+
+gistTemplateDef
+  : '<'! gistTemplArg (COMMA! gistTemplArg)* '>'!
+  ;
+
+gistTemplArg
+  : LSQ attCList RSQ -> ^(LIST attCList)
+  | attC /* single typed argument */
+  | ctAtt
+  | GLA! glaDef
+  | GIST! gistDef
   ;
 
 glaRez

@@ -41,6 +41,7 @@ tokens {
   TYPE_;
   CR_TMPL_FUNC;
   STATE__;
+  STATE_LIST;
 
   // Generalized Linear Aggregates
   GLA__;
@@ -65,6 +66,15 @@ tokens {
   CRGF;
   CR_TMPL_GF;
   TYPEDEF_GF;
+
+  // GISTs
+  GIST__;
+  GIST_WP;
+  GIST_DEF;
+  GISTTEMPLATE;
+  CRGIST;
+  CR_TMPL_GIST;
+  TYPEDEF_GIST;
 }
 
 

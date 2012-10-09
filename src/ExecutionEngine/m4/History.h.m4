@@ -50,6 +50,10 @@ M4_CREATE_DATA_TYPE(GLAHistory, History,
  </(whichFragment, int)/>,
  <//>)
 
+M4_CREATE_DATA_TYPE(GISTHistory, History,
+</(whichFragment, int)/>,
+<//>)
+
 // history specific to the hash table cleaner
 M4_CREATE_DATA_TYPE(HashCleanerHistory, History,
  </(whichSegment, int)/>,

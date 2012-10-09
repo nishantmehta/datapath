@@ -178,4 +178,40 @@ M4_CREATE_DATA_TYPE(GTProcessChunkWD, WorkDescription,
 <//>,
 </(whichQueryExits, QueryExitContainer), (filters, QueryToGLAStateMap), (constStates, QueryToGLASContMap), (chunkToProcess, Chunk)/>)
 
+/***** GIST Work Descriptions *****/
+
+// Creates any needed generated constant states and, along with the
+// received states, creates the GIST state.
+M4_CREATE_DATA_TYPE(GISTPreProcessWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (receivedStates, QueryToGLASContMap)/>)
+
+// Gets a new Global Scheduler from the GIST and uses it to generate the new
+// round's local schedulers
+M4_CREATE_DATA_TYPE(GISTNewRoundWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (gists, QueryToGLAStateMap)/>)
+
+// Uses the gist state, local scheduler and gla to perform steps on the gist
+// until either the local scheduler is exhausted or a timeout is reached.
+M4_CREATE_DATA_TYPE(GISTDoStepsWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (workUnits, QueryToGistWorkUnit)/>)
+
+// Merges the GLAs for a query together.
+M4_CREATE_DATA_TYPE(GISTMergeStatesWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLASContMap)/>)
+
+// Consults with the merged GLA to determine whether or not the GIST should
+// go for another round or produce results this round.
+M4_CREATE_DATA_TYPE(GISTShouldIterateWD, WorkDescription,
+<//>,
+</(whichQueryExits, QueryExitContainer), (glaStates, QueryToGLAStateMap), (gists, QueryToGLAStateMap)/>)
+
+// Produces results for this GIST.
+M4_CREATE_DATA_TYPE(GISTProduceResultsWD, WorkDescription,
+</(fragmentNo, int)/>,
+</(whichOne, QueryExit), (gist, GLAState)/>)
+
 #endif // WORK_DESCRIPTION_H

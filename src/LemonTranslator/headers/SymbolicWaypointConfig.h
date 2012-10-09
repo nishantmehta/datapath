@@ -28,9 +28,6 @@
 
 #define NUM_WAYPOINT_TYPES 4
 
-using namespace std;
-
-
 /* Possible types of waypoints we can have in the system. */
 enum WaypointType {
 	InvalidWaypoint,
@@ -41,7 +38,8 @@ enum WaypointType {
 	ScannerWaypoint,
 	TextLoaderWaypoint,
 	GLAWaypoint,
-    GTWaypoint
+    GTWaypoint,
+    GISTWayPoint
 };
 
 struct WPTypeTranslator {

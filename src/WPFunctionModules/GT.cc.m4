@@ -64,7 +64,7 @@ int GTPreProcessWorkFunc_<//>M4_WPName
     GTPreProcessRez myRez( constStates );
     myRez.swap(result);
 
-    return -1; // for PreProcess
+    return WP_PREPROCESSING; // for PreProcess
 }
 
 extern "C"
@@ -247,5 +247,5 @@ m4_foreach(</_A_/>, m4_quote(m4_defin(</_OUTPUTS_/>M4_QUERY_NAME(_Q_))))
     GTProcessChunkRez gfResult(filters, output);
     result.swap(gfResult);
 
-    return 0;
+    return WP_PROCESS_CHUNK;
 }

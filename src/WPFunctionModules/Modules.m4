@@ -49,6 +49,7 @@ m4_define(</M4_CODE_GENERATION_PREAMBLE/>,</dnl
 #include <string.h>
 #include "Logging.h" // for profiling facility
 #include "Profiling.h"
+#include "WPFExitCodes.h"
 <//>m4_divert(-1)
 />)
  
@@ -139,6 +140,20 @@ m4_define(</M4_GT_MODULE/>, </dnl
 <//>m4_undefine(</M4_WPName/>)
 <//>m4_undefine(</M4_GTDesc/>)
 <//>m4_undefine(</M4_Attribute_Queries/>)
+/>)
+
+dnl Definition of the GIST Module
+dnl  $1 = ID of the waypoint where it is going to be placed 
+dnl  $2 = Query list, each element contains (qname, listGISTdesc)
+dnl    see file GIST.cc.m4 for description
+m4_define(</M4_GIST_MODULE/>, </dnl
+<//>m4_define(</M4_WPName/>, </$1/>)
+<//>m4_define(</M4_GISTDesc/>, </$2/>)
+<//>m4_divert(0)
+<//>m4_include(GIST.cc.m4)
+<//>m4_divert(-1)
+<//>m4_undefine(</M4_WPName/>)
+<//>m4_undefine(</M4_GISTDesc/>)
 />)
 
 dnl Definition of the TextLoader Module

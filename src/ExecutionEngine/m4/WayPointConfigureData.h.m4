@@ -53,6 +53,8 @@ M4_CREATE_DATA_TYPE(GLAConfigureData, GPWConfigureData, <//>,
 </(resultIsState, QueryIDToBool)/>)
 M4_CREATE_DATA_TYPE(GTConfigureData, GPWConfigureData, <//>,
 <//>)
+M4_CREATE_DATA_TYPE(GISTConfigureData, GPWConfigureData, <//>,
+</(resultIsState, QueryIDToBool)/>)
 
 struct PrintFileInfo {
     string file;

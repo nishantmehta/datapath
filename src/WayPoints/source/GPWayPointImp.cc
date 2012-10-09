@@ -17,7 +17,7 @@
 #include "CPUWorkerPool.h"
 #include "Logging.h"
 
-GPWayPointImp :: GPWayPointImp () : resultExitCode( FINALIZE ) {
+GPWayPointImp :: GPWayPointImp () : resultExitCode( WP_FINALIZE ) {
     PDEBUG ("GPWayPointImp :: GPWayPointImp ()");
     SetTokensRequested( CPUWorkToken::type, NUM_EXEC_ENGINE_THREADS / 2 );
 }
@@ -112,6 +112,11 @@ QueryToGLASContMap GPWayPointImp :: GetConstStates() {
     return constStateCopy;
 }
 
+void GPWayPointImp :: GetConstStates( QueryToGLASContMap& putHere ) {
+    PDEBUG ("GPWayPointImp :: GetConstStates()");
+    putHere.copy(constStates);
+}
+
 void GPWayPointImp :: RemoveQueryData( QueryIDSet toEject ) {
     PDEBUG ("GPWayPointImp :: RemoveQueryData()");
     QueryIDSet temp = toEject;
@@ -131,8 +136,36 @@ void GPWayPointImp :: RemoveQueryData( QueryIDSet toEject ) {
     }
 }
 
+void GPWayPointImp :: StartTerminatingExits( QueryIDSet queries ) {
+    PDEBUG ("GPWayPointImp :: StartTerminatingExits ()");
+
+    QueryExitContainer termExits;
+    GetEndingQueryExits(termExits);
+
+    FOREACH_TWL(iter, termExits) {
+        if( iter.query.Overlaps(queries) ) {
+            SendStartProducingMsg( iter );
+        }
+    } END_FOREACH;
+}
+
 bool GPWayPointImp :: PreProcessingPossible( CPUWorkToken& token ) {
     PDEBUG ("GPWayPointImp :: PreProcessingPossible ()");
+    return false;
+}
+
+bool GPWayPointImp :: PrepareRoundPossible( CPUWorkToken& token ) {
+    PDEBUG ("GPWayPointImp :: PrepareRoundPossible ()");
+    return false;
+}
+
+void GPWayPointImp :: GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
+        ChunkContainer& chunk, HistoryList& lineage) {
+    FATAL("GPWayPointImp doesn't know what do with a chunk!");
+}
+
+bool GPWayPointImp :: ProcessingPossible( CPUWorkToken& token ) {
+    PDEBUG ("GPWayPointImp :: ProcessingPossible ()");
     return false;
 }
 
@@ -161,13 +194,23 @@ bool GPWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, Hist
     return false;
 }
 
+bool GPWayPointImp :: PrepareRoundComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    PDEBUG ("GPWayPointImp :: PrepareRoundComplete ()");
+    return false;
+}
+
 bool GPWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
     PDEBUG ("GPWayPointImp :: ProcessChunkComplete ()");
     return false;
 }
 
-bool GPWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
-    PDEBUG ("GPWayPointImp :: PostProcessComplete ()");
+bool GPWayPointImp :: ProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    PDEBUG ("GPWayPointImp :: ProcessingComplete ()");
+    return false;
+}
+
+bool GPWayPointImp :: PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+    PDEBUG ("GPWayPointImp :: PostProcessingComplete ()");
     return false;
 }
 
@@ -190,49 +233,56 @@ void GPWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList 
     PDEBUG ("GPWayPointImp :: DoneProducing ()");
     // we do not touch data
 
+    bool generateTokens = false;
+
     // Notify that a token request was successful if we did anything other than
     // process a chunk.
-    if (result != PROCESS_CHUNK ){
+    if (result != WP_PROCESS_CHUNK ){
         TokenRequestCompleted( CPUWorkToken::type );
     }
 
     // Pre-Processing complete
-    if( result == PREPROCESSING ) {
-        PreProcessingComplete( whichOnes, history, data );
+    if( result == WP_PREPROCESSING ) {
+        generateTokens = PreProcessingComplete( whichOnes, history, data );
+    }
+
+    if( result == WP_PREPARE_ROUND ) {
+        generateTokens = PrepareRoundComplete( whichOnes, history, data );
     }
 
     // Chunk processing function complete
-    if (result == PROCESS_CHUNK) {
+    if (result == WP_PROCESS_CHUNK) {
         bool res = ProcessChunkComplete( whichOnes, history, data );
         if (res)
             SendAckMsg (whichOnes, history);
     }
 
+    if (result == WP_PROCESSING) {
+        generateTokens = ProcessingComplete( whichOnes, history, data );
+    }
+
     // Post Processing function complete
-    else if (result == POST_PROCESSING){
-        bool res = PostProcessComplete( whichOnes, history, data );
-        if (res)
-            GenerateTokenRequests();
+    else if (result == WP_POST_PROCESSING){
+        generateTokens = PostProcessingComplete( whichOnes, history, data );
     }
 
     // Pre Finalize function complete
-    else if (result == PRE_FINALIZE) {
-        bool res = PreFinalizeComplete( whichOnes, history, data );
-        if (res)
-            GenerateTokenRequests();
+    else if (result == WP_PRE_FINALIZE) {
+        generateTokens = PreFinalizeComplete( whichOnes, history, data );
     }
 
     // Finalize function complete
-    else if (result == FINALIZE ) {
-        bool res = FinalizeComplete( whichOnes, history, data );
-        if (res)
-            GenerateTokenRequests();
+    else if (result == WP_FINALIZE ) {
+        generateTokens = FinalizeComplete( whichOnes, history, data );
     }
 
     // Post Finalize function complete
-    else if (result == POST_FINALIZE ) {
-        PostFinalizeComplete( whichOnes, history, data );
+    else if (result == WP_POST_FINALIZE ) {
+        generateTokens = PostFinalizeComplete( whichOnes, history, data );
     }
+
+    if( generateTokens )
+        GenerateTokenRequests();
 
     if (result != resultExitCode){ // not finalize, kill the output since nothing gets to the top
         // zero-out data so the EE does not send it above
@@ -259,6 +309,12 @@ void GPWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
         return;
     }
     else if( PostProcessingPossible( myToken ) ) {
+        return;
+    }
+    else if ( ProcessingPossible( myToken ) ) {
+        return;
+    }
+    else if ( PrepareRoundPossible( myToken ) ) {
         return;
     }
     else if( PreProcessingPossible( myToken ) ) {

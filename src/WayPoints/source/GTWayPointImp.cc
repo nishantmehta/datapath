@@ -27,7 +27,7 @@
 
 GTWayPointImp :: GTWayPointImp() {
     PDEBUG( "GTWayPointImp :: GTWayPointImp()" );
-    SetResultExitCode( PROCESS_CHUNK );
+    SetResultExitCode( WP_PROCESS_CHUNK );
 }
 
 GTWayPointImp :: ~GTWayPointImp() {

@@ -15,11 +15,11 @@
 //
 
 private:
-	typedef map<string, AttributeInfoInternal*> AttributeNameInfoMap;
-typedef map<SlotID, string> AttributeSlotToNameMap;
-	typedef map<string, SlotToSlotMap*> RelationToSlotsMap;
-	typedef map<QueryID, StringContainer> QueryIDToAttributesMap;
-	typedef vector<bool> Slots;
+	typedef std::map<std::string, AttributeInfoInternal*> AttributeNameInfoMap;
+    typedef std::map<SlotID, std::string> AttributeSlotToNameMap;
+	typedef std::map<std::string, SlotToSlotMap*> RelationToSlotsMap;
+	typedef std::map<QueryID, StringContainer> QueryIDToAttributesMap;
+	typedef std::vector<bool> Slots;
 
 	// Mutex for the AttributeManager
 	pthread_mutex_t attributeManagerMutex;
@@ -30,8 +30,8 @@ typedef map<SlotID, string> AttributeSlotToNameMap;
 	// holds mapping between each attribute name and its information
 	AttributeNameInfoMap myAttributes;
 
-// reverse map from SlotID to name
-AttributeSlotToNameMap reverseMap;
+    // reverse map from SlotID to name
+    AttributeSlotToNameMap reverseMap;
 
 	//holds mapping between a relation and SlotToSlotMap of its columns
 	RelationToSlotsMap relationToSlots;

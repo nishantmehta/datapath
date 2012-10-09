@@ -328,35 +328,35 @@ m4_define(</G_INIT_STATE/>, </dnl
 <//>m4_fourth(</$1/>)<//>dnl
 />)dnl
 
-m4_define(</GLA_INIT_STATE/>, m4_defn(</G_INIT_STATE/>))
+m4_define(</GLA_INIT_STATE/>, m4_quote(m4_defn(</G_INIT_STATE/>)))
 
 dnl # form the name of the variable that has the GLA state based on query description.
 m4_define(</G_EXPRESSION/>, </dnl
 <//>m4_sixth(</$1/>)<//>dnl
 />)dnl
 
-m4_define(</GLA_EXPRESSION/>, m4_defn(</G_EXPRESSION/>))
+m4_define(</GLA_EXPRESSION/>, m4_quote(m4_defn(</G_EXPRESSION/>)))
 
 dnl # form the name of the variable that has the GLA state based on query description.
 m4_define(</G_TYPE/>, </dnl
 <//>m4_second(</$1/>)<//>dnl
 />)dnl
 
-m4_define(</GLA_TYPE/>, m4_defn(</G_TYPE/>))
+m4_define(</GLA_TYPE/>, m4_quote(m4_defn(</G_TYPE/>)))
 
 dnl # kind of GLA (single, multi, state)
 m4_define(</G_KIND/>, </dnl
 <//>reval(G_TYPE(</$1/>)</_REZTYPE/>)<//>dnl
 />)dnl
 
-m4_define(</GLA_KIND/>, m4_defn(</G_KIND/>))
+m4_define(</GLA_KIND/>, m4_quote(m4_defn(</G_KIND/>)))
 
 dnl # the output of the GLA
 m4_define(</G_OUTPUTS/>, </dnl
 <//>m4_fifth(</$1/>)<//>dnl
 />)dnl
 
-m4_define(</GLA_OUTPUTS/>, m4_defn(</G_OUTPUTS/>))
+m4_define(</GLA_OUTPUTS/>, m4_quote(m4_defn(</G_OUTPUTS/>)))
 
 dnl # the type of output container used by the GLA
 m4_define(</GLA_OUTPUT_TYPE/>, </dnl
@@ -369,9 +369,11 @@ m4_define(</GLA_ITERABLE/>, </dnl
 />)dnl
 
 dnl # Whether or not a gla needs to be finalized when being returned as itself
-m4_define(</GLA_FINALIZE_AS_STATE/>, </dnl
-<//>m4_ifdef(</GLA_FINALIZE_AS_STATE_/>GLA_TYPE(</$1/>), 1, 0)<//>dnl
+m4_define(</G_FINALIZE_AS_STATE/>, </dnl
+<//>m4_ifdef(GLA_TYPE(</$1/>)</_FINALIZE_AS_STATE_/>, 1, 0)<//>dnl
 />)dnl
+
+m4_define(</GLA_FINALIZE_AS_STATE/>, m4_defn(</GLA_FINALIZE_AS_STATE/>))
 
 dnl # M4 macros dealing with const states
 
@@ -414,6 +416,19 @@ m4_define(</SEL_IS_GF/>, </dnl
 m4_ifval(G_TYPE(</$1/>), 1, 0)<//>dnl
 />)
 
+dnl # GIST-specific macros
+
+m4_define(</GIST_LS_TYPE/>, </dnl
+<//>reval(G_TYPE(</$1/>)</_LS_TYPE/>)<//>dnl
+/>)dnl
+
+m4_define(</GIST_GLA_TYPE/>, </dnl
+<//>reval(G_TYPE(</$1/>)</_GLA_TYPE/>)<//>dnl
+/>)dnl
+
+m4_define(</GIST_TASK_TYPE/>, </dnl
+<//>reval(G_TYPE(</$1/>)</_TASK_TYPE/>)<//>dnl
+/>)dnl
 
 dnl $1 = WPName
 dnl $2 = Chunk input variable name

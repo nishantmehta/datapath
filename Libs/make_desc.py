@@ -9,9 +9,9 @@ hierarchy:
                         |
                      library
                         |
-    -----------------------------------------------------
-    |           |             |           |        |    |
-  Types      Functions       GLAs        UDFs     GFs  GTs
+    ----------------------------------------------------------------
+    |           |             |           |        |       |       |
+  Types      Functions       GLAs        UDFs     GFs     GTs    GISTs
 
 This script will create a file called library.pgy in the Libs folder, where
 library is replaced with the name of the library being built.
@@ -34,9 +34,9 @@ args = parser.parse_args()
 
 # Some useful definitions
 M4 = 'm4'
-m4Includes = '../M4/m4'
+m4Includes = '../src/M4/m4'
 
-directories = ['Types', 'Functions', 'GLAs', 'UDFs', 'GFs', 'GTs']
+directories = ['Types', 'Functions', 'GLAs', 'UDFs', 'GFs', 'GTs', 'GISTs']
 descFileName = args.library + '.pgy'
 
 descFile = open(descFileName, 'w')

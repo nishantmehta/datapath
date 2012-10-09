@@ -92,7 +92,7 @@ int GLAPreProcessWorkFunc_<//>M4_WPName
     GLAPreProcessRez myRez( constStates );
     myRez.swap(result);
 
-    return -1; // for PreProcess
+    return WP_PREPROCESSING; // for PreProcess
 }
 
 extern "C"
@@ -141,7 +141,7 @@ dnl # result must be in mainState object at the end
     GLAStatesRez rez(resultQueryGLASt);
     rez.swap(result);
 
-    return 1; // for merge
+    return WP_POST_PROCESSING; // for merge
 }
 
 extern "C"
@@ -221,7 +221,7 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
     GLAStatesFrRez rez(queryGLAStates, queryConstStates, fragments, iterateMap);
     rez.swap(result);
 
-    return 2; // for PreFinalize
+    return WP_PRE_FINALIZE; // for PreFinalize
 }
 
 extern "C"
@@ -328,14 +328,14 @@ dnl # write the tuple
     // and get outta here!
     ChunkContainer tempResult (output);
     tempResult.swap (result);
-    return 3; // for finalize
+    return WP_FINALIZE; // for finalize
 }
 
 extern "C"
 int GLAFinalizeStateWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
     GLAFinalizeWD myWork;
     myWork.swap (workDescription);
-    QueryExit whichOne = myWork.get_whichQueryExit();
+    QueryExit& whichOne = myWork.get_whichQueryExit();
     GLAState& glaState = myWork.get_glaState();
 
 <//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
@@ -357,7 +357,7 @@ int GLAFinalizeStateWorkFunc_<//>M4_WPName (WorkDescription &workDescription, Ex
     WayPointID myID = WayPointID::GetIdByName("M4_WPName");
     StateContainer stateCont( myID, whichOne, glaState );
     stateCont.swap(result);
-    return 3; // for finalize
+    return WP_FINALIZE; // for finalize
 }
 
 extern "C"
@@ -444,7 +444,7 @@ m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
             // GLA_INIT_STATE
             GLA_STATE(_Q_) = new GLA_TYPE(_Q_)GLA_INIT_STATE(_Q_);
 />)dnl
-            GLAPtr newPtr(0, (void*)GLA_STATE(_Q_));
+            GLAPtr newPtr(M4_HASH_NAME(GLA_TYPE(_Q_)), (void*)GLA_STATE(_Q_));
             QueryIDSet  qry=M4_QUERY_NAME(_Q_);
             glaStates.Insert(qry, newPtr); // put new state in glaStates (returned)
         }
@@ -496,7 +496,7 @@ dnl # definition of constants used in expressions
     GLAStatesRez glaResult(glaStates);
     result.swap(glaResult);
 
-    return 0; // for processchunk
+    return WP_PROCESS_CHUNK; // for processchunk
 }
 
 

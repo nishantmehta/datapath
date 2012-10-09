@@ -108,4 +108,39 @@ M4_CREATE_DATA_TYPE(SelectionPreProcessRez, ExecEngineData,
 <//>,
 </(constStates, QueryToGLASContMap)/>)
 
+/***** Return types for GISTs *****/
+
+// Preprocessing will generate constant states not received from other
+// waypoints and initialize the GIST state, and return them.
+M4_CREATE_DATA_TYPE(GISTPreProcessRez, ExecEngineData,
+<//>,
+</(genStates, QueryToGLASContMap), (gists, QueryToGLAStateMap)/>)
+
+// To start the new round, a global scheduler will be obtained from the GIST
+// state, which will be used to generate the local schedulers for this round.
+// The GLAs for each local scheduler will also be created, and bundled together
+// in work units.
+M4_CREATE_DATA_TYPE(GISTNewRoundRez, ExecEngineData,
+<//>,
+</(workUnits, QueryToGistWUContainer)/>)
+
+// Steps will be performed on the work units in this step, and they may or may
+// not completely finish their work due to timeouts.
+// For any finished work, the local scheduler is deallocated and just the
+// GLA is returned
+M4_CREATE_DATA_TYPE(GISTDoStepRez, ExecEngineData,
+<//>,
+</(unfinishedWork, QueryToGistWorkUnit), (finishedWork, QueryToGLAStateMap)/>)
+
+// MergeGLA work function simply uses the GLAStatesRez result type.
+
+// Returns whether or not the GIST should go for another round. If not, it will
+// have information regarding the number of fragments to be produced by the
+// GIST.
+M4_CREATE_DATA_TYPE(GISTShouldIterateRez, ExecEngineData,
+<//>,
+</(fragInfo, QueryIDToInt), (queriesToIterate, QueryIDSet)/>)
+
+// ProduceResults work function will produce a ChunkContainer
+
 #endif

@@ -88,7 +88,7 @@ class GLAWayPointImp : public GPWayPointImp {
 
     bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
-    bool PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    bool PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
     bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 

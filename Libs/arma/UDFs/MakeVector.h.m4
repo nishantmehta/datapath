@@ -41,7 +41,7 @@ m4_if( m4_eval(NUM_ELEM < 1), 1, </m4_fatal(Cannot create vector with NUM_ELEM e
  * FUNC_DESC
  *  NAME(FUNC_NAME)
  *  INPUTS(MY_INPUT)
- *  OUTPUTS(</(v, VECTOR)/>)
+ *  RESULT_TYPE(VECTOR)
  * END_DESC
  *
  * LIBS(armadillo)

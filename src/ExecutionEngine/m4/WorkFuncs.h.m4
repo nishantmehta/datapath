@@ -75,4 +75,14 @@ M4_CREATE_DATA_TYPE(GLAMergeStatesWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GTPreProcessWorkFunc, WorkFuncWrapper, <//>, <//>)
 M4_CREATE_DATA_TYPE(GTProcessChunkWorkFunc, WorkFuncWrapper, <//>, <//>)
 
+/** WorkFuncs for GISTs */
+
+M4_CREATE_DATA_TYPE(GISTPreProcessWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTNewRoundWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTDoStepsWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTMergeStatesWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTShouldIterateWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTProduceResultsWorkFunc, WorkFuncWrapper, <//>, <//>)
+M4_CREATE_DATA_TYPE(GISTProduceStateWorkFunc, WorkFuncWrapper, <//>, <//>)
+
 #endif

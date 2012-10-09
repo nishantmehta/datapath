@@ -1,7 +1,7 @@
 #!/bin/bash
 # $1 = base of the file names
 
-M4INCLUDES="-I ../../../M4/m4 -I ../../../WPFunctionModules -I ../../../GLAs -I ../../../UDFs -I ../../../Libs"
+M4INCLUDES="-I ../../../M4/m4 -I ../../../WPFunctionModules -I ../../../GLAs -I ../../../UDFs -I ../../../../Libs"
 
 DESC_M4="descfile.m4"
 

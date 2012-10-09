@@ -65,6 +65,16 @@ M4_CREATE_BASE_DATA_TYPE(CacheData, DataC,
 
 typedef EfficientMap <ChunkID, CacheData> ChunkToCacheMap;
 
+/** Data Structures for GIST Waypoints */
+
+M4_CREATE_BASE_DATA_TYPE(GISTWorkUnit, DataC,
+<//>,
+</(gist, GLAState), (localScheduler, GLAState), (gla, GLAState)/>)
+
+typedef TwoWayList <GISTWorkUnit> GistWUContainer;
+typedef EfficientMap<QueryID, GISTWorkUnit> QueryToGistWorkUnit;
+typedef EfficientMap<QueryID, GistWUContainer> QueryToGistWUContainer;
+
 /******* TODO: add other representations for GLAStates such as serialized GLAs ********/
 
 

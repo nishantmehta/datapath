@@ -9,6 +9,9 @@ options {
 #include <string>
 #include "DataTypeManager.h"
 
+using std::vector;
+using std::string;
+
 #ifndef TXT
 #define TXT(x) ((const char*)(x->getText(x))->chars)
 #endif
@@ -33,8 +36,8 @@ options {
     static DataTypeManager & dTM = DataTypeManager::GetDataTypeManager();
 
 
-    string StripQuotes(string str);
-    string NormalizeQuotes(string str);
+    extern string StripQuotes(string str);
+    extern string NormalizeQuotes(string str);
 }
 
 /* Keywords */
@@ -46,6 +49,7 @@ TEMPLATE : 'template' | 'Template' | 'TEMPLATE';
 GLA : 'gla' | 'Gla' | 'GLA';
 GF  : 'gf' | 'Gf' | 'GF';
 GTRAN : 'gt' | 'Gt' | 'GT';
+GIST : 'gist' | 'Gist' | 'GIST';
 
 DEFINE : 'define' | 'Define' | 'DEFINE';
 FROM : 'from' | 'From' | 'FROM';
@@ -82,6 +86,8 @@ COMMA : ',' ;
 COLON : ':' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
+LSQ : '[';
+RSQ : ']';
 ARROW : '->';
 
 fragment
@@ -149,6 +155,10 @@ defineStatement
     {
         dTM.AddGF( STR($n), $params.vect, STRS($f) );
     }
+    | GIST n=ID states=reqStateList ARROW LPAREN (retList=typeList) RPAREN FROM f=STRING
+    {
+        dTM.AddGIST( STR($n), $states.vect, $retList.vect, STRS($f) );
+    }
     | n=ID AS ty=ID
     {
         dTM.AddSynonymType(STR($syn), STR($ty));
@@ -157,4 +167,9 @@ defineStatement
 
 typeList returns [vector<string> vect]
     : a=ID {$vect.push_back(STR($a));} (COMMA b=ID {$vect.push_back(STR($b));})*
+    ;
+
+reqStateList returns [vector<string> vect]
+    : LSQ states=typeList {$vect = $states.vect; } RSQ
+    | /* nothing */
     ;

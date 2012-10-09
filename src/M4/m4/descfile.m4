@@ -19,13 +19,15 @@ m4_divert(-1)dnl
 
 m4_define(</D_DEFINE/>, 1)
 m4_define(</D_NAME/>, 2)
-m4_define(</D_PARAM/>, 3)
-m4_define(</D_RESULT/>, 4)
-m4_define(</D_FILE/>, 5)
-m4_define(</D_END/>, 6)
+m4_define(</D_STATE/>, 3)
+m4_define(</D_PARAM/>, 4)
+m4_define(</D_RESULT/>, 5)
+m4_define(</D_FILE/>, 6)
+m4_define(</D_END/>, 7)
 
 m4_define(</GLA_DESC/>, </dnl
 <//>m4_define(</DESC_TYPE/>, </GLA/>)
+<//>m4_define(</DESC_OUT_MULTI/>, <//>)
 <//>m4_divert_push(D_DEFINE)dnl
 <//>DEFINE GLA<//>dnl
 <//>m4_divert_pop(D_DEFINE)dnl
@@ -46,8 +48,20 @@ m4_define(</GF_DESC/>, </dnl
 
 m4_define(</GT_DESC/>, </dnl
 <//>m4_define(</DESC_TYPE/>, </GT/>)
+<//>m4_define(</DESC_OUT_MULTI/>, <//>)
 <//>m4_divert_push(D_DEFINE)dnl
 <//>DEFINE GT<//>dnl
+<//>m4_divert_pop(D_DEFINE)dnl
+<//>m4_divert_push(D_FILE)dnl
+<//> FROM "SOURCE_FILE"<//>dnl
+<//>m4_divert_pop(D_FILE)dnl
+/>)dnl
+
+m4_define(</GIST_DESC/>, </dnl
+<//>m4_define(</DESC_TYPE/>, </GIST/>)
+<//>m4_define(</DESC_OUT_MULTI/>, <//>)
+<//>m4_divert_push(D_DEFINE)dnl
+<//>DEFINE GIST<//>dnl
 <//>m4_divert_pop(D_DEFINE)dnl
 <//>m4_divert_push(D_FILE)dnl
 <//> FROM "SOURCE_FILE"<//>dnl
@@ -82,6 +96,7 @@ m4_define(</END_DESC/>, </dnl
 <//>m4_undivert<//>dnl
 <//>m4_divert_pop(0)dnl
 <//>m4_undefine(</DESC_TYPE/>)
+<//>m4_ifdef_undef(</DESC_OUT_MULTI/>)
 />)dnl
 
 m4_define(</FUNC_DEF/>, </dnl
@@ -157,10 +172,26 @@ m4_define(</INPUTS/>, </dnl
 
 m4_define(</OUTPUTS/>, </dnl
 <//>m4_divert_push(D_RESULT)dnl
-<//> -> m4_case(DESC_TYPE, </GLA/>, </( />, </GT/>, </( />)dnl
+<//> -> m4_ifdef(</DESC_OUT_MULTI/>, </( />, <//>)<//>dnl
 <//>TYPES($@)<//>dnl
-<//>m4_case(DESC_TYPE, </GLA/>, </ )/>, </GT/>, </)/>)<//>dnl
+<//>m4_ifdef(</DESC_OUT_MULTI/>, </ )/>, <//>)<//>dnl
 <//>m4_divert_pop(D_RESULT)dnl
+/>)dnl
+
+m4_define(</RESULT_TYPE/>, </dnl
+m4_ifndef(</DESC_OUT_MULTI/>, </dnl
+<//>m4_divert_push(D_RESULT)dnl
+<//> -> $1<//>dnl
+<//>m4_divert_pop(D_RESULT)dnl
+/>)dnl
+/>)dnl
+
+m4_define(</REQ_CONST_STATES/>, </dnl
+<//>m4_divert_push(D_STATE)dnl
+<//> [ <//>dnl
+<//>TYPES($@)<//>dnl
+<//> ]<//>dnl
+<//>m4_divert_pop(D_STATE)dnl
 />)dnl
 
 m4_include(SOURCE_FILE)dnl

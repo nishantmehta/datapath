@@ -27,6 +27,7 @@
 #include "LT_TextLoader.h"
 #include "LT_GLA.h"
 #include "LT_GT.h"
+#include "LT_GIST.h"
 #include "AttributeManager.h"
 #include "QueryManager.h"
 #include "Errors.h"
@@ -198,6 +199,36 @@ bool LemonTranslator::AddGraphNode(WayPointID WPID, WaypointType type, LT_Waypoi
     return true;
 }
 
+bool LemonTranslator::AddEdgeFromBottom( WayPointID WPID) {
+    PDEBUG("LemonTranslator::AddEdgeFromBottom(WPID = %s)", WPID.getName().c_str());
+    FATALIF(!WPID.IsValid(), "Invalid WaypointID received in AddEdgeFromBottom");
+    map<WayPointID, ListDigraph::Node>::const_iterator it = IDToNode.find(WPID);
+    if( it == IDToNode.end() ) {
+        cout << "No node found in the graph for waypoint " << WPID.getName() << endl;
+        return false;
+    }
+
+    ListDigraph::Arc arc = graph.addArc(bottomNode, it->second);
+    terminatingArcMap[arc] = false;
+
+    return true;
+}
+
+bool LemonTranslator::AddEdgeToTop( WayPointID WPID) {
+    PDEBUG("LemonTranslator::AddEdgeToTop(WPID = %s)", WPID.getName().c_str());
+    FATALIF(!WPID.IsValid(), "Invalid WaypointID received in AddEdgeToTop");
+    map<WayPointID, ListDigraph::Node>::const_iterator it = IDToNode.find(WPID);
+    if( it == IDToNode.end() ) {
+        cout << "No node found in the graph for waypoint " << WPID.getName() << endl;
+        return false;
+    }
+
+    ListDigraph::Arc arc = graph.addArc(it->second, topNode);
+    terminatingArcMap[arc] = false;
+
+    return true;
+}
+
 // Common processing function
 // This will be called from each add conditions function, like AddFilter
 bool LemonTranslator::GetWaypointAttr(WayPointID WPID, SlotContainer& atts,
@@ -330,6 +361,12 @@ bool LemonTranslator::AddGTWP(WayPointID gfID) {
     return AddGraphNode(gfID, GTWaypoint, WP);
 }
 
+bool LemonTranslator::AddGISTWP(WayPointID gistID) {
+    PDEBUG("LemonTranslator::AddGISTWP(WayPointID gistID = %s)", gistID.getName().c_str());
+    FATALIF(!gistID.IsValid(), "Invalid WayPointID received in AddGISTWP");
+    LT_Waypoint* WP = new LT_GIST(gistID);
+    return AddGraphNode(gistID, GISTWayPoint, WP);
+}
 
 bool LemonTranslator::AddPrintWP(WayPointID printWPID)
 {
@@ -458,6 +495,35 @@ bool LemonTranslator::AddGT(WayPointID wpID, QueryID query,
     set<SlotID> attr;
     if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
     return WP->AddGT(query, resultAtts, gfName, gfDef, constructorExp, attr, expr, initializer, reqStates);
+}
+
+//GIST, one per query basis
+bool LemonTranslator::AddGIST(WayPointID wpID, QueryID query,
+        SlotContainer& resultAtts, /*list of attributes produced as the result */
+        string gistName, /*name of the GLA eg. AverageGLA, CountGLA, myGLA etc */
+        string gistDef,
+        string constructorExp, /*expression in GLA constructor */
+        vector<WayPointID> reqStates,
+        bool retAsState)
+{
+    PDEBUG("LemonTranslator::AddGIST(WayPointID wpID = %s"
+            ", QueryID query = %s"
+            ", SlotContainer resultAtts = %s"
+            ", string gistName = %s"
+            ", string constructorExp = %s"
+            ")",
+            wpID.getName().c_str(),
+            query.ToString().c_str(),
+            GetAllAttrAsString(resultAtts),
+            gistName.c_str(),
+            constructorExp.c_str());
+
+    FATALIF(!wpID.IsValid(), "Invalid WaypointID received in AddGT");
+    LT_Waypoint* WP = NULL;
+    SlotContainer atts; // dummy
+    set<SlotID> attr;
+    if (GetWaypointAttr(wpID, atts, attr, WP) == false) return false;
+    return WP->AddGIST(query, resultAtts, gistName, gistDef, constructorExp, reqStates, retAsState);
 }
 
 // Selection, Join. Queries added one by one

@@ -73,12 +73,16 @@ public:
     bool AddPrintWP(WayPointID printWP);
     bool AddGLAWP(WayPointID glaWP);
     bool AddGTWP(WayPointID gfWP);
+    bool AddGISTWP(WayPointID gistWP);
 
     // Adding Edges to the graph (terminating or non-terminating)
     // The edge direction should be provided correctly, always bottom to top
     // (bottom, top)
     bool AddEdge(WayPointID start, WayPointID end);
     bool AddTerminatingEdge(WayPointID start, WayPointID end);
+
+    bool AddEdgeFromBottom(WayPointID WPID);
+    bool AddEdgeToTop(WayPointID WPID);
 
     /******* Adding information for queries (per query) ****************/
 
@@ -118,6 +122,15 @@ public:
                 SlotContainer& atts, string expr, string initializer = "",
                 vector<WayPointID> reqStates = vector<WayPointID>(),
                 bool retState = false);
+
+    // GIST, one per query basis
+    bool AddGIST( WayPointID wp, QueryID query,
+            SlotContainer& resultAtts,
+            string gistName,
+            string gistDef,
+            string constructorExp,
+            vector<WayPointID> reqStates,
+            bool retState);
 
     // GT, one per query basis
     bool AddGT(WayPointID wp, QueryID query,

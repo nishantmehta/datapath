@@ -174,6 +174,17 @@ public:
         return false;
     }
 
+    // GIST, one per query basis
+    virtual bool AddGIST( QueryID query,
+            SlotContainer& resultAtts,
+            string gistName,
+            string gistDef,
+            string constructorExp,
+            vector<WayPointID> reqStates,
+            bool retState) {
+        return false;
+    }
+
     //GT, one per query basis
     virtual bool AddGT(QueryID query,
                 SlotContainer& resultAtts, /*list of attributes produced as the result */

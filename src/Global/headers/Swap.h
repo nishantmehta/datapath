@@ -26,9 +26,17 @@
 */
 
 #if __cplusplus >= 201103L
-#define SWAP(a,b) (auto tmp = a; a = b; b = tmp;)
+#define SWAP(a,b) { \
+    decltype(a) tmp = ( a ); \
+    ( a ) = ( b ); \
+    ( b ) = tmp; \
+}
 #else
-#define SWAP(a,b) {typeof(a) tmp=a; a=b; b=tmp;}
+#define SWAP(a,b) { \
+    typeof(a) tmp = ( a ); \
+    ( a ) = ( b ); \
+    ( b ) = tmp; \
+}
 #endif
 
 

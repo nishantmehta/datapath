@@ -26,7 +26,7 @@ GLAWayPointImp :: GLAWayPointImp () {
 }
 
 GLAWayPointImp :: ~GLAWayPointImp () {
-    PDEBUG ("GLAWayPointImp :: GLAWayPointImp ()");
+    PDEBUG ("GLAWayPointImp :: ~GLAWayPointImp ()");
 }
 
 void GLAWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configData) {
@@ -277,7 +277,7 @@ bool GLAWayPointImp::MergeDone() {
 #endif
 
 bool GLAWayPointImp :: PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data) {
-    PDEBUG("GLASMallWayPointImp :: PreProcessingComplete()");
+    PDEBUG("GLAWayPointImp :: PreProcessingComplete()");
 
     GLAPreProcessRez temp;
     temp.swap(data);
@@ -345,7 +345,7 @@ bool GLAWayPointImp :: ProcessChunkComplete( QueryExitContainer& whichOnes, Hist
     return true;
 }
 
-bool GLAWayPointImp :: PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
+bool GLAWayPointImp :: PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data ) {
     PDEBUG ("GLAWayPointImp :: PostProcessingComplete()");
     //      cout<<"\n"<<GetID().getName()<<" Merged recvd"<<endl;
     GLAStatesRez rez;

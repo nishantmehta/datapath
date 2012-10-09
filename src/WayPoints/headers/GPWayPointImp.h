@@ -24,6 +24,7 @@
 #include "GLAData.h"
 #include "GLAHelpers.h"
 #include "Constants.h"
+#include "WPFExitCodes.h"
 
 /** WARNING: The chunk processing function has to return 0 and the
         finalize function 3 otherwise acknowledgments are not sent
@@ -66,23 +67,9 @@ protected:
 
     // Returns a copy of the constant states map.
     QueryToGLASContMap GetConstStates();
+    void GetConstStates( QueryToGLASContMap& putHere );
 
-    // Enumeration for work function exit codes.
-    enum ExitCode {
-        PREPROCESSING   = -1,
-        PROCESS_CHUNK   =  0,
-        POST_PROCESSING =  1,
-        PRE_FINALIZE    =  2,
-        FINALIZE        =  3,
-        POST_FINALIZE   =  4
-    };
-
-    // This method is called when the waypoint has received a data message
-    // containing a chunk to be processed and a work token has been acquired.
-    // This method should generate the necessary work description and other
-    // necessary information to perform work on the chunk.
-    virtual void GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
-            ChunkContainer& chunk, HistoryList& lineage ) = 0;
+    typedef WPFExitCode ExitCode;
 
     // Called when a wayoint has received a state from another waypoint.
     virtual void GotState( StateContainer& state );
@@ -93,64 +80,40 @@ protected:
     // Removes data pertaining to the specified queries from the waypoint.
     void RemoveQueryData( QueryIDSet queries );
 
-    /*************************************************************************/
-    // The following methods are to be defined by subclasses to determine the
-    // behavior of the RequestGranted method. These will determine whether
-    // or not a certain type of operation is possible and, if so, prepare
-    // a work description to be sent for processing.
-    // The default behavior for these functions is to return false.
-    /*************************************************************************/
+    // Sends start producing messages to all terminating query exits for a set of queries.
+    void StartTerminatingExits( QueryIDSet queries );
 
-    // Pre-Processing occurs before any chunks have been processed by the GLA.
-    virtual bool PreProcessingPossible( CPUWorkToken& token );
-
-    // Post-Processing occurs after all chunks have been processed by the GLA
-    // but before any finalization steps (e.g., merging states)
-    virtual bool PostProcessingPossible( CPUWorkToken& token );
-
-    // Pre-Finalize occurs after post-processing is complete, and it used to
-    // perform work and collect data needed for the finalize stage.
-    virtual bool PreFinalizePossible( CPUWorkToken& token );
-
-    // Finalization occurs when the GLA is ready to produce data.
-    virtual bool FinalizePossible( CPUWorkToken& token );
-
-    // Post-Finalize occurs after some or all of the finalization is complete.
-    // The purpose of Post-Finalize is to clean up data that is no longer
-    // needed and deallocate states that are no longer used.
-    virtual bool PostFinalizePossible( CPUWorkToken& token );
-
-    /*************************************************************************/
-    // The following methods are to be defined by subclasses to perform actions
-    // necessary after a particular work function has completed its work.
-    // The default behavior of these functions is to do nothing.
-    /*************************************************************************/
-
-    // Called when a Pre-Processing work function has finished.
-    virtual bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
-
-    // Called when a ProcessChunk work function has finished.
-    // An Ack message will automatically be sent after this function is called.
+    // This method is called when the waypoint has received a data message
+    // containing a chunk to be processed and a work token has been acquired.
+    // This method should generate the necessary work description and other
+    // necessary information to perform work on the chunk.
+    virtual void GotChunkToProcess( CPUWorkToken& token, QueryExitContainer& whichOnes,
+            ChunkContainer& chunk, HistoryList& lineage );
     virtual bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
 
-    // Called when a Post-Processing function has finished.
-    // Token Requests will automatically be generated after this function is
-    // called.
-    virtual bool PostProcessComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    /*************************************************************************/
+    // Methods for the various stages of the waypoint.
+    /*************************************************************************/
 
-    // Called when a Pre-Finalize function has finished.
-    // Token requests will automatically be generated after this function is
-    // called.
+    virtual bool PreProcessingPossible( CPUWorkToken& token );
+    virtual bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+
+    virtual bool PrepareRoundPossible( CPUWorkToken& token );
+    virtual bool PrepareRoundComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+
+    virtual bool ProcessingPossible( CPUWorkToken& token );
+    virtual bool ProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+
+    virtual bool PostProcessingPossible( CPUWorkToken& token );
+    virtual bool PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+
+    virtual bool PreFinalizePossible( CPUWorkToken& token );
     virtual bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
-    // Called when a Finalize function has finished.
-    // Token Requests will automatically be generated after this function is
-    // called.
+    virtual bool FinalizePossible( CPUWorkToken& token );
     virtual bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
-    // Called when a Post-Finalize function has finished.
-    // Token requests will automatically be generated after this function is
-    // called.
+    virtual bool PostFinalizePossible( CPUWorkToken& token );
     virtual bool PostFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
     /*************************************************************************/

@@ -30,9 +30,6 @@ dnl # END OF M4 CODE
 
 #include <string>
 
-using namespace std;
-
-
 ////////// SYMBOLIC QUERY DESCRIPTIONS /////////
 
 /** Message sent by the Translator to the Coordinator to give it the symbolic
@@ -59,7 +56,7 @@ M4_CREATE_MESSAGE_TYPE(SymbolicQueryDescriptions,
 			file: full path to the file with instructions for translator. dp file
 */
 M4_CREATE_MESSAGE_TYPE(TranslationMessage,
-	</(confFile, string)/>,
+	</(confFile, std::string)/>,
 	<//>)
 
 /** Message to specify that a set of queries have finished 

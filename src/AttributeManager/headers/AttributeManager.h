@@ -35,8 +35,6 @@
 // This number has to be in sync with the macros in Chunk.h
 #define FIRST_NONRESERVED_SLOT 2
 
-using namespace std;
-
 
 // forward definitions
 class AttributeInfo;
@@ -63,7 +61,7 @@ public:
 
 	// allocate slot for synthesized attribute
 	// return the slot allocated
-	SlotID AddSynthesizedAttribute(QueryID id, string attName, string attType);
+	SlotID AddSynthesizedAttribute(QueryID id, std::string attName, std::string attType);
 
 	// allocate slots for synthesized attributes
 	// void AddSynthesizedAttributes(QueryID& id, StringContainer& atts);
@@ -72,22 +70,22 @@ public:
 	// METHODS TO GET INFORMATION ABOUT INDIVIDUAL ATTRIBUTES
 
 	// retrieves the slot for given attribute
-	SlotID GetAttributeSlot(string attLongName);
-	SlotID GetAttributeSlot(string tableName, string attributeName);
+	SlotID GetAttributeSlot(std::string attLongName);
+	SlotID GetAttributeSlot(std::string tableName, std::string attributeName);
 
 	// return empty string if not found (do not fail)
-	string GetAttributeType(string attLongName);
-	string GetAttributeType(string tableName, string attributeName);
+    std::string GetAttributeType(std::string attLongName);
+    std::string GetAttributeType(std::string tableName, std::string attributeName);
 
 	// retrieves the slot for all attributes
 	void GetAttributesSlots(string tableName, SlotContainer& where);
 
 	// retrieves the slot for given sythesized attribute
-	SlotID GetAttributeSlot(QueryID id, string attributeName);
+	SlotID GetAttributeSlot(QueryID id, std::string attributeName);
 
 	// retrieves the column slot for given attribute
-	SlotID GetAttributeColumn(string tableName, string attributeName);
-	SlotID GetAttributeColumn(string attLongName);
+	SlotID GetAttributeColumn(std::string tableName, std::string attributeName);
+	SlotID GetAttributeColumn(std::string attLongName);
 
 	// retrieve the name of an attribute by SlotID
 	string GetAttributeName(SlotID slot);
@@ -100,7 +98,7 @@ public:
 
 	// returns column to slot mapping for given relation
 	// the result is placed in where
-	void GetColumnToSlotMapping(string tableName, SlotToSlotMap& where);
+	void GetColumnToSlotMapping(std::string tableName, SlotToSlotMap& where);
 
 	// deletes synthesized attributes present in system for given query id
 	void DeleteAttributes(QueryID queryid);

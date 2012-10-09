@@ -31,12 +31,12 @@ endif
 
 
 GLA_INC = -I ../../../GLAs/
-LIB_INC = -I ../../../Libs/
+LIB_INC = -I ../../../../Libs/
 M4INCLUDES = -I ../../../M4/m4 
 M4INCLUDES += -I ../../../WPFunctionModules 
 M4INCLUDES += -I ../../../GLAs 
 M4INCLUDES += -I ../../../UDFs 
-M4INCLUDES += -I ../../../Libs 
+M4INCLUDES += $(LIB_INC)
 
 ifdef DP_GLAs
 GLA_INC += -I $(DP_GLAs)

@@ -17,6 +17,7 @@
 #include "QueryManager.h"
 #include "Swap.h"
 
+using namespace std;
 
 WPTypeTranslator nameofTypes[NUM_WAYPOINT_TYPES] = {
 	{ "Selection", SelectionWaypoint},
