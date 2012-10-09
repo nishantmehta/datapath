@@ -520,6 +520,10 @@ int GISTProduceResultsWorkFunc</_/>M4_WPName
 <//><//>/>)dnl
 <//>/>)dnl
         }
+m4_if( G_KIND(_Q_), fragment, </dnl
+        // Delete the iterator;
+        delete G_TYPE(_Q_)</_It/>;
+/>)dnl
     }
 <//>/>)dnl
 

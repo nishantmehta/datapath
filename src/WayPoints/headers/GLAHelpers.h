@@ -17,7 +17,7 @@
 #define _GLA_HELPER_H_
 
 #include "ID.h"
-#include "Bitstring.h"s
+#include "Bitstring.h"
 #include "Bitmap.h"
 #include "Chunk.h"
 #include "Bitstring.h"

@@ -1,6 +1,19 @@
 #ifndef COREFERENCE_H_
 #define COREFERENCE_H_
 
+/* Meta-information
+ *
+ *  GIST_DESC
+ *      NAME(CoreferenceState)
+ *      OUTPUTS()   // Fill this in!
+ *      RESULT_TYPE() // Fill this in!
+ *
+ *      TASK_TYPE(Task)
+ *      LOCAL_SCHEDULER_TYPE(LocalScheduler)
+ *      GLA_TYPE(CGLA)
+ *  END_DESC
+ */
+
 #include <vector>
 
 class GlobalScheduler {
@@ -59,7 +72,7 @@ public:
 
 /* convergence GLA */
 class CGLA{
-	int numIter; 
+	int numIter;
 public:
 	CGLA(int _numIter):numIter(_numIter){}
 
@@ -67,7 +80,7 @@ public:
 	// not needed void AddItem(int){}
 	void AddState(CGLA& other){}
 
-	bool ShouldIterate(void){ 
+	bool ShouldIterate(void){
 		return ((numIter--)>=0);
 	}
 };
@@ -76,18 +89,18 @@ public:
 class CoreferenceState{
 
 public:
-	
+
 	// Mentions datastructure
-	
+
 	class Mention{
 		int feature; // mock feature
 		int entity; // the id of the entity this belongs to
 	public:
 		Mention(int val):feature(val){}
-		
+
 		int GetEntity(void){ return entity; }
 	};
-	
+
 	class Entity{
 		std::atomic<vector<int>*> mentions;
 	public:
@@ -99,10 +112,10 @@ public:
 		AddMention(int _mention){
 			// create another vector with the new mention added
 			vector<int>* _mentions = mentions.load();
-			
-			
+
+
 			// swap the two vectors
-			
+
 
 		}
 	};
@@ -110,12 +123,28 @@ public:
 	typedef vector<Mention> Mentions;
 	typedef vector<Entity> Entities;
 
+    // Work unit typedef, used for preparing new rounds
+    typedef std::pair<LocalScheduler*, CGLA*> WorkUnit;
+    typedef std::vector<WorkUnit> WUVector;
+
 private:
 	Mentions mentions;
 	Entities entities;
 
 public:
-	void Step(Task& task, CGLA& cGla){
+
+    // Constructor
+    CoreferenceState() { }
+    // Destructor
+    ~CoreferenceState() {}
+
+    void PrepareRound( WUVector& workUnits, size_t paraHint ) {
+        // Generate pairs of local schedulers and GLAs,
+        // using paraHint as a hint about the level of parallelization desired
+        // by the system.
+    }
+
+	void DoStep(Task& task, CGLA& cGla){
 
 		int mention = task.GetItem1();
 		int entity = mentions[task.GetItem2()].GetEntity();
@@ -124,8 +153,65 @@ public:
 
 	}
 
+
+    // Use one of the output methods below:
+
+#ifdef COREF_USE_SINGLE
+    ///// single /////
+    void GetResult( /* outputs go here */ ) {
+        // Set the outputs here.
+    }
+#endif
+
+#ifdef COREF_USE_MULTI
+    ///// multi /////
+private:
+    // used for internal iteration
+    // this is just an example, you can have any kind of state needed here to
+    // determine what to produce next.
+    int curResult;
+
+public:
+    void Finalize() {
+        // Do any necessary finalization here.
+        // This will likely set the internal iterator (in this case curResult)
+    }
+
+    bool GetNextResult( /* outputs go here */ ) {
+        // Return false is there are no more results to be produced.
+        // Otherwise, set the outputs to the next values and return true.
+    }
+#endif
+
+#ifdef COREF_USE_FRAGMENT
+    ///// fragment /////
+
+    // First we need an iterator type
+    struct Iterator {
+        // Any state needed to determine iteration goes here.
+    }
+
+    int GetNumFragments() {
+       // Do anything here you need to figure out how many fragments you will produce.
+       // 0 is a valid answer.
+    }
+
+    Iterator* Finalize( int fragment ) {
+        // Create the iterator for this fragment and return a pointer to it.
+    }
+
+    bool GetNextResult( Iterator*, /* outputs go here */ ) {
+        // use the iterator to determine the next result to produce.
+        // if there is no result to be produced, return false,
+        // otherwise return true;
+    }
+#endif
 }
 
+#ifdef COREF_USE_FRAGMENT
+// typedef for fragment interface
+typedef CoreferenceState::Iterator Coreference_Iterator;
+#endif
 
 
 #endif //  COREFERENCE_H_

@@ -311,12 +311,12 @@ primary_expression
     : attribute
     | synthAttribute
     | constant
-    | function
+    | funct
     | case_expression
     | LPAREN! expression RPAREN!
     ;
 
-function
+funct
     :    name=ID LPAREN expressionList RPAREN -> ^(FUNCTION $name expressionList)
     |    UDF COLON name=ID functionTemplate LPAREN expressionList RPAREN retType=functionRetType ->^(FUNCTION $name $retType functionTemplate expressionList)
     ;
