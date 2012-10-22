@@ -4,7 +4,6 @@ Tool_DataPath/executable/dp:
     -ldl
     -lsqlite3
     -lantlr3c
-    -lonig
     -lpthread
     AttributeManager
     Catalog

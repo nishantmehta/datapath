@@ -18,7 +18,7 @@ dnl # implemented as a generalized filter, but until those are implemented, this
 dnl # is used to test the state-passing mechanism.
 
 dnl # Usage
-dnl # $1=GF_NAME   name of the class generated
+dnl # $1=GT_NAME   name of the class generated
 dnl # $2=MAP_NAME   name of the class containing the RHS map
 dnl # $3=KEY_ATTS   the join attributes
 dnl # $4=LHS_ATTS   extra attributes from the LHS
@@ -29,7 +29,7 @@ GT_TEMPLATE_DESC(</JoinLHS/>)
 m4_define(</JoinLHS/>, </dnl
 m4_divert_push(-1)
 
-m4_redefine(</GF_NAME/>, </$1/>)
+m4_redefine(</GT_NAME/>, </$1/>)
 m4_redefine(</MAP_NAME/>, </$2/>)
 m4_redefine(</KEY_ATTS/>, </$3/>)
 m4_redefine(</LHS_ATTS/>, </$4/>)
@@ -44,7 +44,7 @@ m4_redefine(</MY_CONST_STATES/>, </(map, $2)/>)
 m4_divert_pop(-1)dnl
 /** Information for meta-GLAs
  *  GT_DESC
- *      NAME(GF_NAME)
+ *      NAME(GT_NAME)
  *      INPUTS(MY_INPUT)
  *      OUTPUTS(MY_OUTPUT)
  *      RESULT_TYPE(MY_REZTYPE)
@@ -53,7 +53,7 @@ m4_divert_pop(-1)dnl
  *  END_DESC
  */
 
-class GF_NAME {
+class GT_NAME {
     const MAP_NAME & map;
 
     // Cached join attributes
@@ -70,7 +70,7 @@ m4_foreach(</_A_/>, </LHS_ATTS/>, </dnl
 
 public:
 
-    GF_NAME ( const MAP_NAME & map ) : map(map) {
+    GT_NAME ( const MAP_NAME & map ) : map(map) {
     }
 
     void ProcessTuple( TYPED_CONST_REF_ARGS(MY_INPUT) ) {
@@ -82,11 +82,14 @@ m4_foreach(</_A_/>, </MY_INPUT/>, </
     }
 
     bool GetNextResult( TYPED_REF_ARGS(MY_OUTPUT) ) {
+        if(curIt.GetNext(ARGS(RHS_ATTS))) {
 m4_foreach(</_A_/>, </MY_INPUT/>, </dnl
-        VAR(_A_) = this->VAR(_A_);
+            VAR(_A_) = this->VAR(_A_);
 />)
+            return true;
+        }
 
-        return curIt.GetNext(ARGS(RHS_ATTS));
+        return false;
     }
 };
 />)dnl

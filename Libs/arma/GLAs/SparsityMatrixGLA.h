@@ -9,6 +9,7 @@
  *  INPUTS(</(v, VECTOR)/>)
  *  OUTPUTS(</(count, DOUBLE)/>)
  *  RESULT_TYPE(</single/>)
+ *  CONSTRUCTOR(</(numElem, INT)/>)
  * END_DESC
  *
  * LIBS(armadillo)
@@ -24,7 +25,7 @@ class SparsityMatrix {
 
 public:
 
-    SparsityMatrix<//>() : tupleCount(0), sparsityMatrix(NUM_ELEM, NUM_ELEM) {
+    SparsityMatrix ( const INT numElem ) : tupleCount(0), sparsityMatrix(numElem, numElem) {
         sparsityMatrix.zeros();
     }
 
@@ -42,7 +43,7 @@ public:
         curRow = 0;
 
         cout << endl;
-        cout << "</SparsityMatrix/>: tuples processed = " << tupleCount << endl;
+        cout << "SparsityMatrix: tuples processed = " << tupleCount << endl;
         cout << "Sparsity Matrix:" << endl;
         cout << sparsityMatrix << endl;
     }

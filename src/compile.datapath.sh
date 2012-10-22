@@ -1,5 +1,35 @@
 #!/bin/bash
 
+# Ensure that we have all of the required libraries installed
+REQUIRED_LIBS="lemon sqlite3 antlr3c"
+
+# First of all, make sure we have pkg-config installed so we can even check
+# for installed libraries
+
+command -v pkg-config &>/dev/null
+if (( $? != 0 )); then
+    echo "pkg-config not found! DataPath relies on this utility to ensure that required"
+    echo "libraries are installed and to acquire proper include and linking information."
+    echo
+    echo "Aborting compilation"
+    exit 1
+fi
+
+# Now check for the existence of the libraries
+
+for lib in $REQUIRED_LIBS
+do
+    pkg-config --exists $lib
+    if (( $? != 0 )); then
+        echo "Library $lib not found! Please ensure that it is installed and that a pkg-config"
+        echo "meta-data file is present in a location that pkg-config is set to search."
+        echo "(You may set the PKG_CONFIG_PATH enviroment variable to modify where it searches.)"
+        echo
+        echo "Aborting compilation"
+        exit 1
+    fi
+done
+
 # Get System Information
 
 # Old versions of NUM_OF_PROCS and NUM_OF_THREADS
@@ -160,6 +190,11 @@ mv CONSTANTS_M4 Global/m4/Constants.h.m4
 # Remake the parser
 echo "Making parser."
 ./parserMake.sh
+
+if (( $? != 0 )); then
+    echo "Failed to compile parser. Aborting compilation."
+    exit 1
+fi
 
 echo
 # Clean old stuff

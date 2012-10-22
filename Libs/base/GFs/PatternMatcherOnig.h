@@ -31,9 +31,9 @@
  *      NAME(</PatternMatcherOnig/>)
  *      INPUTS(</(str, HString)/>)
  *      CONSTRUCTOR(</(regexp, STRING_LITERAL)/>)
- *  END_DESC
  *
- *  LIBS(onig)
+ *      LIBS(onig)
+ *  END_DESC
  */
 
 class PatternMatcherOnig {

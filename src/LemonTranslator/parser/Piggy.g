@@ -47,7 +47,7 @@ statements
 statement
   : a=ID EQUAL actionBody -> ^(NEWSTATEMENT ^(WAYPOINT__ $a actionBody) )
     /* above always creates a new waypoint.  */
-  | LOAD a=ID (AS b=ID)? -> ^(NEWSTATEMENT ^(SCANNER__ $a $b) )
+  | LOAD a=ID (AS b=ID)? -> ^(NEWSTATEMENT ^(SCANNER__ $a $b?) )
   | PRINT a=ID USING exp=expressionList (AS header=attCList)? (INTO file=STRING)? (SEPARATOR sep=STRING)?
     -> ^(NEWSTATEMENT ^(WAYPOINT__ ID[$a, "print"] ^(PRINT TERMCONN $a)
         ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp ($header)? ^(LIST $file)? ^(SEPARATOR $sep)? ) )))
@@ -206,6 +206,7 @@ gfTemplArg
     | ctAtt
     | GLA! glaDef
     | GF! gfDef
+    | GT! gfDef
     ;
 
 /* constructor arguments */

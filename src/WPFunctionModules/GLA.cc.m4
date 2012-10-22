@@ -289,8 +289,11 @@ dnl # get the queries out of queriesToRun
         while (    GLA_STATE(_Q_)->GetNextResult(GLA_TYPE(_Q_)<//>_It, reval(</m4_args/>GLA_OUTPUTS(_Q_))) )    {
 <//><//>/>,</state/>, </dnl
 <//><//>dnl we place the result in the first attribute	
-	{
-	    reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), M4_HASH_NAME(GLA_TYPE(_Q_)));
+    {
+m4_if(G_FINALIZE_AS_STATE(_Q_), 1, </dnl
+        G_STATE(_Q_)->FinalizeState();
+/>)dnl
+        reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), M4_HASH_NAME(GLA_TYPE(_Q_)));
 <//><//>/>,</dnl
         {
             m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_));

@@ -5,4 +5,4 @@ Information about user-defined types and functions goes here.
 
 - - - - -
 
-\<\< @ref piggy-tutorial | @ref toc | @ref gf-gt-tutorial \>\>
+\<\< @ref piggy-tutorial | @ref toc | @ref gf-tutorial \>\>

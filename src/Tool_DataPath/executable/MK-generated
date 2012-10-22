@@ -3,20 +3,13 @@
 # make -f MK-generaged -DOBJECTS="WP1.O ..." 
 # The macro OBJECTS must list the objects needed
 
-# STAT_LIBS =  ../../../GLAs/CurveFittingLib/libcfit.a
-
 #LIBS = -lonig # -lgsl -lgslcblas -lonig
-
-# pattern matching library to use
-PAT_MATCH=2 # 1: xpression 2:onig
-# library has to be statically linked
-# STAT_LIB=-lonig
 
 # COMPILER SELECTION
 CC=g++
 #CC=/opt/intel/Compiler/11.1/056/bin/intel64/icc
 
-CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG -DDP_REGEX_LIB=${PAT_MATCH}
+CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
 
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
@@ -50,6 +43,7 @@ endif
 CINCLUDES = -I ../../../Headersdp ${GLA_INC} $(FUNC_INC) ${LIB_INC}
 
 LIB_EXTRACT = ../extract_libs.awk
+LIB_PROCESS = ../process_libs.sh
 
 # to preserve the generated cc files we need this
 .PRECIOUS: %.cc
@@ -67,7 +61,9 @@ DataTypes.m4:
 	${LIB_EXTRACT} $^ > $@
 
 libfile: ${OBJECTS:.o=.lib}
-	sort -u $^ > libfile
+	sort -u $^ > libfile.temp
+	${LIB_PROCESS} libfile.temp > libfile
+	rm libfile.temp
 
 Generated.so: ${OBJECTS} libfile
 	${CC} ${OPT} -rdynamic -shared  -o Generated.so   ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)

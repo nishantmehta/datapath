@@ -25,9 +25,12 @@ fi
 # what are the grammars to compile
 FILES="BaseLexer.g Desc.g DataPath.g Piggy.g DPtree.g"
 ANTLR=antlr3
-#ANTLR="java -jar /usr/local/lib/antlr-3.3-complete.jar"
-#ANTLR="java -jar /usr/local/lib/antlr-3.4-complete-no-antlrv2.jar"
-#ANTLR="java -jar /home/cdudley/lib/antlr-3.4-complete-no-antlrv2.jar"
+
+command -v $ANTLR &>/dev/null
+if (( $? != 0 )); then
+    echo "Command $ANTLR not found! Please ensure that a driver for ANTLR is available."
+    exit 1
+fi
 
 cd "LemonTranslator/parser/"
 
@@ -35,6 +38,10 @@ cd "LemonTranslator/parser/"
 for gram in $FILES; do
         echo "Compiling $gram via" "$ANTLR $gram $DEBUG"
         $ANTLR $DEBUG $gram
+        if (( $? != 0 )); then
+            echo "Failed to compile grammar $gram. Aborting."
+            exit 1
+        fi
 done
 
 # move the .h and .cc files in place

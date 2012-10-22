@@ -126,7 +126,7 @@ m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
         GLAState& tState = curStates.Current();
         GLAPtr tPtr;
         tPtr.swap(tState);
-        G_STATE(_P_)</_/>VAR(_S_) = tPtr.get_glaPtr();
+        G_STATE(_P_)</_/>VAR(_S_) = (TYPE(_S_)*) tPtr.get_glaPtr();
         tPtr.swap(tState);
     }
 
@@ -138,7 +138,7 @@ m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
 <//><//><//><//>m4_ifdef_undef(</__FIRST__/>)dnl
 <//><//><//><//>m4_foreach(</_S_/>, m4_quote(G_CONST_STATES(_P_)), </dnl
 m4_ifndef(</__FIRST__/>, </m4_define(</__FIRST__/>, <//>)/>, </, />)<//>dnl
-G_STATE(_P_)</_/>VAR(_S_)<//>dnl
+*G_STATE(_P_)</_/>VAR(_S_)<//>dnl
 <//><//><//><//>/>)dnl
 </);/>
 <//><//><//>/>, </dnl

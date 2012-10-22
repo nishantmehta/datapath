@@ -14,5 +14,5 @@ BEGIN {
 
 /^[A-Za-z0-9_]+$/ {
     if( printOut == 1 )
-        print "-l" $0
+        print $0
 }

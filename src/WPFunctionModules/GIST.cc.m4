@@ -504,6 +504,9 @@ int GISTProduceResultsWorkFunc</_/>M4_WPName
         while( G_STATE(_Q_)->GetNextResult( G_TYPE(_Q_)</_It/>, reval(</m4_args/>GLA_OUPUTS(_Q_))) ) {
 />, state, </dnl
         {
+m4_if(G_FINALIZE_AS_STATE(_Q_), 1, </dnl
+            G_STATE(_Q_)->FinalizeState();
+/>)dnl
             reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)G_STATE(_Q_), M4_HASH_NAME(G_TYPE(_Q_)));
 />, </dnl
     m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_) [GLA_KIND(_Q_)])
