@@ -39,26 +39,12 @@ interface the system expects.
 
 ### Construction of the State {#gla-tut-construct}
 
-There are two ways that a GLA's state may be constructed. Either through using
+The GLA state may be constructed using
 zero or more constant literal arguments (as seen below with the Average GLA):
 
 @snippet GLA/AverageGLA.h average-constructor
 
-Or through the use of *constant states*. Constant states may be generated
-by the system prior to construction of the GLA state, or received from other
-waypoints. If a GLA depends on constant states, any literal constructor
-arguments will be passed to the generated constant states instead. If the
-literal arguments are needed by the GLA, they can be cached by the constant
-state. An example is the LogisticRegressionIRLS GLA:
-
-Here is the GLA's generated constant state:
-
-@snippet GLA/LogisticRegressionIRLS.h ex-logreg-const-state
-
-And here is the GLA's constructor, showing the GLA state being initialized using
-data from the constant state:
-
-@snippet GLA/LogisticRegressionIRLS.h ex-logreg-constructor
+The GLA may also be constructed using [Constant States](@ref state-tutorial).
 
 ### Receiving Input {#gla-tut-input}
 

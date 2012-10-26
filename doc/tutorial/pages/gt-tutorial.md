@@ -19,18 +19,14 @@ results.
 ### Construction of the Transform {#gt-tut-construct}
 
 There are two ways in which a GT may be constructed: through the use of zero or
-more constant literal arguments, or through the use of constant states.
+more constant literal arguments, or through the use of
+[Constant States](@ref state-tutorial).
 
 In the first case, the constructor should simply take the constant arguments,
 if any. An example of this is the constructor for the
 [IntervalToDiscrete](@ref GT/IntervalToDiscrete.h) GT:
 
 @snippet GT/IntervalToDiscrete.h constructor
-
-In the second case, the constructor should take constant references to the
-states it requires. If the transform still requires constant literal arguments,
-they will be passed to any generated states instead (which, in turn, will be
-passed to the filter during construction).
 
 ### Performing a Transformation {#gt-tut-transform}
 
@@ -62,7 +58,8 @@ called with references to the storage locations of the output tuple attributes
 as parameters. `GetNextResult` should return true if the output tuple is valid,
 and false if there are no more output tuples.
 
-Here is pseudo-code for the execution plan for this output method:
+Here is pseudo-code for how the system will interact with the transform with
+this output method:
 
 ~~~~~~~~~~~~~~~~~~~{.cc}
 for each tuple {

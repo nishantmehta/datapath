@@ -10,26 +10,22 @@ continue to the next waypoint.
 ## Implementing a GF {#gf-tut-structure}
 
 Generalized Filters have a very simple interface, consisting of only a
-constructor and a single method. The GF does not need to be aware of any
+class with a constructor and a single method. The GF does not need to be aware of any
 attributes in the tuples that do not take part in the filtration; any extra
 attributes needed by subsequent waypoints will automatically be passed through
 if the tuple passes the filter.
 
 ### Construction of the Filter {#gf-tut-construct}
 
-There are two ways in which a GF may be constructed: through the use of zero or
-more constant literal arguments, or through the use of constant states.
+The GF may be constructed through the use of zero or
+more constant literal arguments, or through the use of
+[Constant States](@ref state-tutorial).
 
 In the first case, the constructor should simply take the constant arguments,
 if any. An example of this is the constructor for the
 [PatternMatcher](@ref GF/PatternMatcher.h) GF:
 
 @snippet GF/PatternMatcher.h constructor
-
-In the second case, the constructor should take constant references to the
-states it requires. If the filter still requires constant literal arguments,
-they will be passed to any generated states instead (which, in turn, will be
-passed to the filter during construction).
 
 ### The Filtration Function {#gf-tut-filter}
 
