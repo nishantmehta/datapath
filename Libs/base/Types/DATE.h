@@ -19,6 +19,7 @@
 #include "datetimedefs.h"
 #include "datecalc.h"
 #include <assert.h>
+#include "Constants.h"
 
 //---------------------------------------------------------------------------
 //
@@ -599,5 +600,22 @@ void DATE::InternalToDate() const
 inline uint64_t Hash( const DATE val ) {
     return val.GetJulianDay();
 }
+
+#ifdef _HAS_CPP_11
+#include <functional>
+// C++11 STL-compliant hash struct specialization
+
+namespace std {
+
+template <>
+class hash<DATE> {
+public:
+    size_t operator () (const DATE& key) const {
+        return Hash(key);
+    }
+};
+
+}
+#endif // _HAS_CPP_11
 
 #endif

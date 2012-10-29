@@ -289,8 +289,8 @@ public:
 
     // Adding GLAs to the system. Represented by 2 functions representing
     // AddItem and GetResult
-    void AddGLA(string glaName, string_vector& typeargs, string_vector& typeret, string filename );
-    bool IsGLA( string& glaName, string_vector& typeargs, string_vector& typeret, string& file,
+    void AddGLA(string glaName, string_vector& typeargs, string_vector& typeret, string filename, string_vector& reqStates );
+    bool IsGLA( string& glaName, string_vector& typeargs, string_vector& typeret, string& file, string_vector& reqStates,
             argf_vector& /* out param */ actualArgs );
 
     bool GLAExists( string& glaName, string& file );
@@ -298,8 +298,8 @@ public:
     void AddGLATemplate( string glaName, string filename );
     bool IsGLATemplate( string glaName, string& filename );
 
-    void AddGT(string gtName, string_vector& typeargs, string_vector& typeret, string filename );
-    bool IsGT( string& gtName, string_vector& typeargs, string_vector& typeret, string& file,
+    void AddGT(string gtName, string_vector& typeargs, string_vector& typeret, string filename, string_vector& reqStates );
+    bool IsGT( string& gtName, string_vector& typeargs, string_vector& typeret, string& file, string_vector& reqStates,
             argf_vector& /* out param */ actualArgs );
 
     bool GTExists( string& gtName, string& file );
@@ -307,8 +307,8 @@ public:
     void AddGTTemplate( string gtName, string filename );
     bool IsGTTemplate( string gtName, string& filename );
 
-    void AddGF(string gtName, string_vector& typeargs, string filename );
-    bool IsGF( string& gtName, string_vector& typeargs, string& file,
+    void AddGF(string gtName, string_vector& typeargs, string filename, string_vector& reqStates );
+    bool IsGF( string& gtName, string_vector& typeargs, string& file, string_vector& reqStates,
             argf_vector& /* out param */ actualArgs );
 
     bool GFExists( string& gtName, string& file );

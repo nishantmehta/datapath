@@ -16,6 +16,8 @@
 #ifndef _SWAP_H_
 #define _SWAP_H_
 
+#include "Constants.h"
+
 /**
 	This header contains macro definitions to streamline the swapping of data.
 	The main macro defined is SWAP(a,b) that swaps the content of a and b as
@@ -25,7 +27,7 @@
 	operator.
 */
 
-#if __cplusplus >= 201103L
+#ifdef _HAS_CPP_11
 #define SWAP(a,b) { \
     decltype(a) tmp = ( a ); \
     ( a ) = ( b ); \

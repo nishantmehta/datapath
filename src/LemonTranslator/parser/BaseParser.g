@@ -42,6 +42,7 @@ tokens {
   CR_TMPL_FUNC;
   STATE__;
   STATE_LIST;
+  CLIST;
 
   // Generalized Linear Aggregates
   GLA__;
@@ -130,9 +131,10 @@ string GenerateTemp(const char* pattern);
 }
 
 type
-    : ID typeTemplate?
+    : ID
     ;
 
+/*
 typeTemplate
     : '<' typeTemplateParam (COMMA typeTemplateParam)* '>'
     ;
@@ -141,6 +143,7 @@ typeTemplateParam
     : type
     | INT
     ;
+*/
 
 typeList
     : type (COMMA! type)*
@@ -172,7 +175,7 @@ attC
     ;
 
 fragment attCElem
-    : ID (COLON! type)*
+    : ID (COLON! type)+
     ;
 
 idList     :    ID ( COMMA ID)*

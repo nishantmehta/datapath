@@ -796,7 +796,7 @@ bool DataTypeManager :: IsFilter(string fName, vector<string>& typeargs, string&
 }
 
 void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
-        vector<string>& typeret, string fileName ) {
+        vector<string>& typeret, string fileName, string_vector& reqStates ) {
     if( !DoesTypeExist( glaName ) ) {
         AddBaseType( glaName, fileName );
     }
@@ -808,14 +808,17 @@ void DataTypeManager :: AddGLA(string glaName, vector<string>& typeargs,
 
     string fName_add = "AddItem_" + glaName;
     string fName_ret = "GetResult_" + glaName;
+    string fName_req = "Requires_" + glaName;
 
     string ret = "";
 
     vector<string> args_vec(typeargs);
     vector<string> ret_vec(typeret);
+    vector<string> req_vec(reqStates);
 
     AddFunc( glaName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
     AddFunc( glaName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( glaName, fName_req, req_vec, ret, fileName, NoAssoc, -1, false );
 }
 
 void DataTypeManager :: AddGLATemplate( string glaName, string filename ) {
@@ -827,11 +830,12 @@ bool DataTypeManager :: IsGLATemplate( string glaName, string& filename ) {
 }
 
 bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
-        vector<string>& typeret, string& file,
+        vector<string>& typeret, string& file, vector<string>& reqStates,
         vector<ArgFormat>& /* out param */ actualArgs ) {
 
     vector<string> arg_vec(typeargs);
     vector<string> ret_vec(typeret);
+    vector<string> req_vec(reqStates);
     string ret("");
 
     if( !IsType( glaName ) ) {
@@ -841,6 +845,7 @@ bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
 
     string fName_add = "AddItem_" + glaName;
     string fName_ret = "GetResult_" + glaName;
+    string fName_req = "Requires_" + glaName;
 
     bool pure;
 
@@ -852,6 +857,16 @@ bool DataTypeManager ::  IsGLA( string& glaName, vector<string>& typeargs,
     if( !correct ) {
         return false;
     }
+
+    // Check to make sure the required states are the same
+    correct = IsCorrectFuncExact( glaName, fName_req, req_vec, ret, file, NoAssoc, -1, pure );
+    if( !correct ) {
+        return false;
+    }
+
+    // If ret_vec is blank, then we don't care about what the output is.
+    if( ret_vec.size() == 0 )
+        return true;
 
     return IsCorrectFuncExact( glaName, fName_ret, ret_vec, ret, file, NoAssoc, -1, pure );
 }
@@ -866,7 +881,7 @@ bool DataTypeManager :: GLAExists( string& glaName, string& file ) {
 }
 
 void DataTypeManager :: AddGT(string gtName, vector<string>& typeargs,
-        vector<string>& typeret, string fileName ) {
+        vector<string>& typeret, string fileName, vector<string>& reqStates ) {
     if( !DoesTypeExist( gtName ) ) {
         AddBaseType( gtName, fileName );
     }
@@ -878,14 +893,17 @@ void DataTypeManager :: AddGT(string gtName, vector<string>& typeargs,
 
     string fName_add = "AddItem_" + gtName;
     string fName_ret = "GetResult_" + gtName;
+    string fName_req = "Requires_" + gtName;
 
     string ret = "";
 
     vector<string> args_vec(typeargs);
     vector<string> ret_vec(typeret);
+    vector<string> req_vec(reqStates);
 
     AddFunc( gtName, fName_add, args_vec, ret, fileName, NoAssoc, -1, false );
     AddFunc( gtName, fName_ret, ret_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( gtName, fName_req, req_vec, ret, fileName, NoAssoc, -1, false );
 }
 
 void DataTypeManager :: AddGTTemplate( string gtName, string filename ) {
@@ -897,11 +915,12 @@ bool DataTypeManager :: IsGTTemplate( string gtName, string& filename ) {
 }
 
 bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
-        vector<string>& typeret, string& file,
+        vector<string>& typeret, string& file, vector<string>& reqStates,
         vector<ArgFormat>& /* out param */ actualArgs ) {
 
     vector<string> arg_vec(typeargs);
     vector<string> ret_vec(typeret);
+    vector<string> req_vec(reqStates);
     string ret("");
 
     if( !IsType( gtName ) ) {
@@ -911,6 +930,7 @@ bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
 
     string fName_add = "AddItem_" + gtName;
     string fName_ret = "GetResult_" + gtName;
+    string fName_req = "Requires_" + gtName;
 
     bool pure;
 
@@ -922,6 +942,11 @@ bool DataTypeManager ::  IsGT( string& gtName, vector<string>& typeargs,
     if( !correct ) {
         return false;
     }
+
+    // Check to make sure the required states are the same.
+    correct = IsCorrectFuncExact( gtName, fName_req, req_vec, ret, file, NoAssoc, -1, pure );
+    if( !correct )
+        return false;
 
     return IsCorrectFuncExact( gtName, fName_ret, ret_vec, ret, file, NoAssoc, -1, pure );
 }
@@ -935,7 +960,8 @@ bool DataTypeManager :: GTExists( string& gtName, string& file ) {
     return true;
 }
 
-void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs, string fileName ) {
+void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs, string fileName,
+        vector<string>& reqStates ) {
     if( !DoesTypeExist( gfName ) ) {
         AddBaseType( gfName, fileName );
     }
@@ -946,12 +972,16 @@ void DataTypeManager :: AddGF(string gfName, vector<string>& typeargs, string fi
     }
 
     string fName = "Filter_" + gfName;
+    string fName_req = "Requires_" + gfName;
 
     string ret = "bool";
+    string ret_req = "";
 
     vector<string> args_vec(typeargs);
+    vector<string> req_vec(reqStates);
 
     AddFunc( gfName, fName, args_vec, ret, fileName, NoAssoc, -1, false );
+    AddFunc( gfName, fName_req, req_vec, ret_req, fileName, NoAssoc, -1, false );
 }
 
 void DataTypeManager :: AddGFTemplate( string gfName, string filename ) {
@@ -963,10 +993,11 @@ bool DataTypeManager :: IsGFTemplate( string gfName, string& filename ) {
 }
 
 bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
-        string& file,
+        string& file, vector<string>& reqStates,
         vector<ArgFormat>& /* out param */ actualArgs ) {
 
     vector<string> arg_vec(typeargs);
+    vector<string> req_vec(reqStates);
     string ret("bool");
 
     if( !IsType( gfName ) ) {
@@ -975,8 +1006,15 @@ bool DataTypeManager ::  IsGF( string& gfName, vector<string>& typeargs,
     }
 
     string fName = "Filter_" + gfName;
+    string fName_req = "Requires_" + gfName;
 
     bool pure;
+
+    // Check to make sure that the required states are correct.
+    string ret_req = "";
+    bool correct = IsCorrectFuncExact( gfName, fName_req, req_vec, ret_req, file, NoAssoc, -1, pure );
+    if( !correct )
+        return false;
 
     // Check the arguments and get any formatting necessary.
     return IsCorrectFunc( gfName, fName, arg_vec, ret, file, NoAssoc, -1, pure, actualArgs );
@@ -1048,6 +1086,10 @@ bool DataTypeManager ::  IsGIST( string& gistName, vector<string>& stateargs,
         return false;
     }
 
+    // If ret_vec is blank, then we don't care about what the output is.
+    if( ret_vec.size() == 0 )
+        return true;
+
     return IsCorrectFuncExact( gistName, fName_ret, ret_vec, ret, file, NoAssoc, -1, pure );
 }
 
@@ -1078,7 +1120,7 @@ void DataTypeManager :: GenerateIncludes(vector<string>& types, string& result) 
 string DataTypeManager :: GetTypeFile(string type) {
     if( !IsType(type) ) {
         cout << "\nError: attempting to get source file for unknown type " << type;
-        return "";
+        return string("");
     }
 
     TypeToInfoMap::const_iterator it = mType.find(type);

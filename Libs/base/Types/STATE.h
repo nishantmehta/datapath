@@ -16,6 +16,8 @@
 #ifndef _STATE_H_
 #define _STATE_H_
 
+#include <cstdint>
+
 /** Type definition for generic GLA states. This type is only used to
     trannsport states withing the same memory space between
     operators. The object the state points to MUST be treated like a
@@ -56,6 +58,5 @@ public:
 
   /** no destructor. object should not be deallocated here */
 };
-
 
 #endif  // _STATE_H_

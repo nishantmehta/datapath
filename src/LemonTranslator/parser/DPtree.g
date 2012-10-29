@@ -209,9 +209,9 @@ complexStatement
   }
   | ^(FUNCTION ID (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STR($ID), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
   | ^(OPDEF n=STRING (s=STRING) dType lstArgsFc){ dTM.AddFunctions(STRS($n), $lstArgsFc.vecT, $dType.type, STRS($s), true); }
-  | ^(CRGLA ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
-  | ^(CRGT ID (s=STRING) ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGT(STR($ID), $args.vecT, $ret.vecT, STRS($s) ); }
-  | ^(CRGF ID (s=STRING) ^(TPATT (args=lstArgsGLA))) { dTM.AddGF(STR($ID), $args.vecT, STRS($s) ); }
+  | ^(CRGLA ID (s=STRING) states=reqStateList ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGLA(STR($ID), $args.vecT, $ret.vecT, STRS($s), $states.vect ); }
+  | ^(CRGT ID (s=STRING) states=reqStateList ^(TPATT (ret=lstArgsGLA)) ^(TPATT (args=lstArgsGLA))) { dTM.AddGT(STR($ID), $args.vecT, $ret.vecT, STRS($s), $states.vect ); }
+  | ^(CRGF ID (s=STRING) states=reqStateList ^(TPATT (args=lstArgsGLA))) { dTM.AddGF(STR($ID), $args.vecT, STRS($s), $states.vect ); }
   | ^(CRGIST ID (s=STRING) states=reqStateList ^(TPATT ret=lstArgsGLA) )
     { dTM.AddGIST( STR($ID), $states.vect, $ret.vecT, STRS($s)); }
   | ^(CR_TMPL_FUNC name=ID file=STRING ) { dTM.AddFunctionTemplate( STR($name), STRS($file));}
@@ -437,7 +437,7 @@ printAtts[vector< vector< string > >& header]
     }
     : /*nothing*/
     | (
-        ^(ATTC {level=-1;}
+        ^(CLIST {level=-1;}
             (a=ID
                 {
                     ++level;
@@ -758,14 +758,11 @@ glaRez[SlotContainer& outAtts, vector<string>& outTypes, string& defs, string& g
 @init{ $retState = false; }
     : attLWT[outAtts, outTypes, defs]*
     | STATE__ {
-        outTypes.push_back("STATE");
         $retState = true;
+        outTypes.clear();
 
-        string attName = glaName + "_state";
+        // Make sure we have the STATE type included, just in case.
         string attType = "STATE";
-        SlotID attID = am.AddSynthesizedAttribute(qry, attName, attType);
-        outAtts.Append(attID);
-
         string file = dTM.GetTypeFile(attType);
         ADD_INCLUDE(defs, file);
     }
@@ -793,7 +790,7 @@ glaRule
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
            // TODO: Make sure that the gLA also requires the constant states that were given.
-           if (!dTM.IsGLA(glaName, paramTypes, outTypes, file, actArgs)) {
+           if (!dTM.IsGLA(glaName, paramTypes, outTypes, file, reqStateTypes, actArgs)) {
                printf("\nERROR: GLA \%s with arguments \%s do not exist",
                       glaName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {
@@ -864,7 +861,7 @@ gtRule
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
-           if (!dTM.IsGT(gtName, paramTypes, outTypes, file, actArgs)) {
+           if (!dTM.IsGT(gtName, paramTypes, outTypes, file, reqStateTypes, actArgs)) {
                printf("\nERROR: GT \%s with arguments \%s do not exist",
                       gtName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {
@@ -927,7 +924,7 @@ gfRule
             // Check if operator exists
 #ifdef ENFORCE_GLA_TYPES
            vector<ArgFormat> actArgs;
-           if (!dTM.IsGF(gfName, paramTypes, file, actArgs)) {
+           if (!dTM.IsGF(gfName, paramTypes, file, reqStateTypes, actArgs)) {
                printf("\nERROR: GT \%s with arguments \%s do not exist",
                       gfName.c_str(), lInfo.GetTypesDesc().c_str());
            } else {

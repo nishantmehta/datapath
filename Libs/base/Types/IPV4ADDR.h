@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "Constants.h"
 
 /** This type implements an efficient IP v4 address
         Internal representation is an int (for efficiency).
@@ -154,5 +155,21 @@ inline uint64_t Hash(const IPv4 d){ return d.addr.asInt; }
 // compatibility with the other type definitions
 typedef IPv4 IPV4ADDR;
 
+#ifdef _HAS_CPP_11
+#include <functional>
+// C++11 STL-compliant hash struct specialization
+
+namespace std {
+
+template <>
+class hash<IPv4> {
+public:
+    size_t operator () (const IPv4& key) const {
+        return Hash(key);
+    }
+};
+
+}
+#endif // _HAS_CPP_11
 
 #endif // _IPV4ADDR_H_

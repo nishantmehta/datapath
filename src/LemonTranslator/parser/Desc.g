@@ -143,17 +143,17 @@ defineStatement
     {
         dTM.AddFunctions(STRS($op), $params.vect, STR($ret), STRS($f), true );
     }
-    | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    | GLA n=ID states=reqStateList LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     {
-        dTM.AddGLA( STR($n), $params.vect, $retList.vect, STRS($f) );
+        dTM.AddGLA( STR($n), $params.vect, $retList.vect, STRS($f), $states.vect );
     }
-    | GTRAN n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    | GTRAN n=ID states=reqStateList LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     {
-        dTM.AddGT( STR($n), $params.vect, $retList.vect, STRS($f) );
+        dTM.AddGT( STR($n), $params.vect, $retList.vect, STRS($f), $states.vect );
     }
-    | GF n=ID LPAREN params=typeList RPAREN FROM f=STRING
+    | GF n=ID states=reqStateList LPAREN params=typeList RPAREN FROM f=STRING
     {
-        dTM.AddGF( STR($n), $params.vect, STRS($f) );
+        dTM.AddGF( STR($n), $params.vect, STRS($f), $states.vect );
     }
     | GIST n=ID states=reqStateList ARROW LPAREN (retList=typeList) RPAREN FROM f=STRING
     {

@@ -72,6 +72,15 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 #define METADATA_FILE "datapath.sqlite"
 
 
+/*
+================== System Information =================
+*/
+
+// Check if we have C++11 support
+
+#if __cplusplus >= 201103L
+    #define _HAS_CPP_11
+#endif
 
 /*
 ==================Other Settings==================

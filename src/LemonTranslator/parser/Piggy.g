@@ -48,14 +48,19 @@ statement
   : a=ID EQUAL actionBody -> ^(NEWSTATEMENT ^(WAYPOINT__ $a actionBody) )
     /* above always creates a new waypoint.  */
   | LOAD a=ID (AS b=ID)? -> ^(NEWSTATEMENT ^(SCANNER__ $a $b?) )
-  | PRINT a=ID USING exp=expressionList (AS header=attCList)? (INTO file=STRING)? (SEPARATOR sep=STRING)?
+  | PRINT a=ID USING exp=expressionList header=printHeader (INTO file=STRING)? (SEPARATOR sep=STRING)?
     -> ^(NEWSTATEMENT ^(WAYPOINT__ ID[$a, "print"] ^(PRINT TERMCONN $a)
-        ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp ($header)? ^(LIST $file)? ^(SEPARATOR $sep)? ) )))
+        ^(QUERRY__ ID[$a,qry.c_str()] ^(PRINT $exp $header ^(LIST $file)? ^(SEPARATOR $sep)? ) )))
   | STORE a=ID INTO b=ID
     -> ^(NEWSTATEMENT ^(WRITER__ $b ID[$a, qry.c_str()] TERMCONN $a))
   | CREATE createStatement -> createStatement
   | DEFINE defineStatement -> defineStatement
   ;
+
+printHeader
+    : /* nothing */
+    | AS! colonSepList (COMMA! colonSepList)*
+    ;
 
 createStatement
   : RELATION n=ID LPAREN tpAttList RPAREN -> ^(CRRELATION $n tpAttList)
@@ -68,12 +73,12 @@ defineStatement
     -> ^(FUNCTION $n $f $ret $params)
   | OPKEYWORD n=STRING LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
     -> ^(OPDEF $n $f $ret $params)
-  | GLA n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
-    -> ^(CRGLA $n $f ^(TPATT $retList) ^(TPATT $params))
-  | GTRAN n=ID LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
-    -> ^(CRGT $n $f ^(TPATT $retList) ^(TPATT $params))
-  | GF n=ID LPAREN params=typeList RPAREN FROM f=STRING
-    -> ^(CRGF $n $f ^(TPATT $params))
+  | GLA n=ID (LSQ reqList=typeList RSQ)? LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    -> ^(CRGLA $n $f ^(STATE_LIST $reqList)? ^(TPATT $retList) ^(TPATT $params))
+  | GTRAN n=ID (LSQ reqList=typeList RSQ)? LPAREN params=typeList RPAREN ARROW LPAREN retList=typeList RPAREN FROM f=STRING
+    -> ^(CRGT $n $f ^(STATE_LIST $reqList)? ^(TPATT $retList) ^(TPATT $params))
+  | GF n=ID (LSQ reqList=typeList RSQ)? LPAREN params=typeList RPAREN FROM f=STRING
+    -> ^(CRGF $n $f ^(STATE_LIST $reqList)? ^(TPATT $params))
   | GIST n=ID (LSQ reqList=typeList RSQ)? ARROW LPAREN retList=typeList RPAREN FROM f=STRING
     -> ^(CRGIST $n $f ^(STATE_LIST $reqList)? ^(TPATT $retList))
   | TEMPLATE FUNCTION n=ID FROM f=STRING
@@ -228,3 +233,11 @@ attEListAlt
   : (attribute|synthAttribute)
   | LPAREN! attributeEList RPAREN!
   ;
+
+colonSepList
+    : colonSepListInner -> ^(CLIST colonSepListInner)
+    ;
+
+colonSepListInner
+    : ID (COLON! ID)*
+    ;

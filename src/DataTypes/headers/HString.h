@@ -697,5 +697,22 @@ void HString :: ConvertToDictionary( void ) {
     SET_DICT_BIT(mHash);
 }
 
+#ifdef _HAS_CPP_11
+#include <functional>
+// C++11 STL-compliant hash struct specialization
+
+namespace std {
+
+template <>
+class hash<HString> {
+public:
+    size_t operator () (const HString& key) const {
+        return Hash(key);
+    }
+};
+
+}
+#endif // _HAS_CPP_11
+
 #endif // _HSTRING_H_
 

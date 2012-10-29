@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <Errors.h>
+#include "Constants.h"
 
 /* This type implements the MAC address
    Internal representation is an Int (for better efficiency)
@@ -194,5 +195,22 @@ typedef macAddr MACADDR;
 inline unsigned int Hash(const macAddr mac1){
   return mac1.mac.asInt;
 }
+
+#ifdef _HAS_CPP_11
+#include <functional>
+// C++11 STL-compliant hash struct specialization
+
+namespace std {
+
+template <>
+class hash<macAddr> {
+public:
+    size_t operator () (const macAddr& key) const {
+        return Hash(key);
+    }
+};
+
+}
+#endif // _HAS_CPP_11
 
 #endif
