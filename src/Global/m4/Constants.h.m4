@@ -34,7 +34,7 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 *     efficiently by the compiler.
 */
 #define NUM_SLOTS_IN_SEGMENT_BITS 24
-#define NUM_SEGS  8
+#define NUM_SEGS 16
 
 
 
@@ -70,6 +70,7 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 ==================Metadata filename==================
 */
 #define METADATA_FILE "datapath.sqlite"
+
 
 /*
 ================== System Information =================
