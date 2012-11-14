@@ -38,3 +38,11 @@ environment variable).
 
 For more information about pkg-config, view the guide at:
 http://people.freedesktop.org/~dbn/pkg-config-guide.html
+
+============================== Compiling DataPath ==============================
+
+Once all of the required libraries have been installed and the correct meta-data
+files placed in the proper locations, you can compile DataPath by going into the
+`src` directory and executing:
+
+    ./compile.datapath.sh
