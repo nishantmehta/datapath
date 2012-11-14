@@ -53,7 +53,13 @@ m4_ifdef(INNER_GLA</_INIT/>, </dnl
 />)dnl
 dnl
 m4_redefine(</MY_INPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</_INPUT/>))))dnl
+
+dnl # Special case for inner result type of state
+m4_if(m4_defn(INNER_GLA</_REZTYPE/>), state, </dnl
+m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, </(state, STATE)/>)))dnl
+/>, </dnl
 m4_redefine(</MY_OUTPUT/>, m4_quote(GLUE_LISTS(</GBY_ATTS/>, m4_quote(INNER_GLA</_OUTPUT/>))))dnl
+/>)dnl
 
 /* Information for meta GLAs
  * GLA_DESC
@@ -285,7 +291,7 @@ m4_if(reval(</GLA_REZTYPE_/>INNER_GLA), </fragment/>, </dnl
         else {
             FATALIF(theIterator == groupByMap.end(), "WHY??");
 
-m4_case(reval(</GLA_REZTYPE_/>INNER_GLA), </single/>, </dnl
+m4_case(reval(INNER_GLA</_REZTYPE/>), </single/>, </dnl
 m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
             VAR(_A_) = theIterator->first.VAR(_A_);
 />)dnl
@@ -308,6 +314,15 @@ m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
             }
 
             return gotResult;
+/>, </state/>, </dnl
+m4_foreach(</_A_/>,</GBY_ATTS/>,</dnl
+            VAR(_A_) = theIterator->first.VAR(_A_);
+/>)dnl
+            INNER_GLA& gla = theIterator->second;
+            state = STATE((void*) &gla, M4_HASH_NAME(INNER_GLA));
+            ++theIterator;
+
+            return true;
 />, </dnl
 </#/>error Unsupported inner GLA result type.
 />)dnl

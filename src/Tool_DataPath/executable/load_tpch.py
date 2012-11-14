@@ -65,11 +65,11 @@ parser.add_argument('-r', '--reload',
         default=False,
         help='redownload the tpch data generator and regenerate the data, even if it already exists.')
 
-parser.add_argument('-q', '--query-dir',
+parser.add_argument('-q', '--query',
         action='store',
-        default='./LOAD_TPCH',
+        default='./LOAD_TPCH/tpch.pgy',
         metavar='path',
-        help='the directory containing the query files used to bulkload the data. [./LOAD_TPCH]')
+        help='the query file that creates the tables. [./LOAD_TPCH/tpch.pgy]')
 
 parser.add_argument('-n', '--num-stripes',
         action='store',
@@ -78,23 +78,31 @@ parser.add_argument('-n', '--num-stripes',
         metavar='stripes',
         help='the number of stripes in which to generate the TPC-H data. [1]')
 
-parser.add_argument('-i', '--initialize',
+parser.add_argument('-x', '--script',
+        action='store',
+        default=None,
+        metavar='file',
+        help='a script to execute inbetween TPCH data generation and data loading. [None]')
+
+init_group = parser.add_argument_group('Initialization Options', 'Options used to initialize DataPath on first run.')
+
+init_group.add_argument('-i', '--initialize',
         action='store_true',
         default=False,
         help='initialize DataPath (i.e. answer the questions it asked upon first run).')
 
-parser.add_argument('-p', '--disk-pattern',
+init_group.add_argument('-p', '--disk-pattern',
         action='store',
         default='./disks/disks%d',
-        help='the pattern to use for the disks when initializing DataPath. [./disks/disk%d]')
+        help='the pattern to use for the disks when initializing DataPath. [./disks/disk%%d]')
 
-parser.add_argument('-e', '--exponent',
+init_group.add_argument('-e', '--exponent',
         action='store',
         default=0,
         type=int,
         help='the page multiplier exponent to use when initializing DataPath. [0]')
 
-parser.add_argument('-m', '--num-disks',
+init_group.add_argument('-m', '--num-disks',
         action='store',
         type=int,
         default=1,
@@ -126,8 +134,6 @@ dbgenDir = os.path.join( tpchDir, 'dbgen' )
 scaleFactor = str(args.scale_factor)
 numStripes = str(args.num_stripes)
 
-queryDir = realpath( args.query_dir )
-
 sedCommand = "s/CC[[:space:]]*=.*$/CC = gcc/ ; " \
         "s/DATABASE[[:space:]]*=.*$/DATABASE = SQLSERVER/ ; " \
         "s/MACHINE[[:space:]]*=.*$/MACHINE = LINUX/ ; " \
@@ -136,9 +142,25 @@ sedCommand = "s/CC[[:space:]]*=.*$/CC = gcc/ ; " \
 queryFiles = { 'tpch.pgy', 'bulkload_lineitem.pgy', 'bulkload_customer.pgy', 'bulkload_region.pgy', 'bulkload_nation.pgy',
         'bulkload_orders.pgy', 'bulkload_part.pgy', 'bulkload_partsupp.pgy', 'bulkload_supplier.pgy'}
 
+tables = { 'region', 'nation', 'lineitem', 'orders', 'customer', 'part', 'partsupp', 'supplier' }
+
+# Tables that have only a single .tbl file, regardless of striping
+tablesSingle = { 'region', 'nation' }
+
+# Flags for the -T option for dbgen
+tableFlag = { 'region' : 'r', 'nation' : 'n', 'customer' : 'c', 'supplier' : 's',
+             'lineitem' : 'L', 'orders' : 'O', 'part' : 'P', 'partsupp' : 'S'}
+
 # Used when asking the user a yes or no question
 yes = {'Y', 'y', 'yes', 'YES', 'Yes'}
 no = {'N', 'n', 'no', 'NO', 'No'}
+
+# Template for generated query files
+bulkload_template = """
+data = READ "{file}" {striping} SEPARATOR '|' ATTRIBUTES FROM {relation};
+
+STORE data INTO {relation};
+"""
 
 def cleanup(force = False):
     """Clean up directories used."""
@@ -215,9 +237,59 @@ def buildGenerator():
     # Build successful!
     return
 
-def generateTables():
-    """Generate the TPC-H data tables using the generator."""
+def generatePipes( relation ):
+    if relation in tablesSingle or args.num_stripes == 1:
+        os.mkfifo( os.path.join(tpchDir, "{0}.tbl".format(relation)) )
+        if args.script != None:
+            os.mkfifo( os.path.join(tpchDir, "{0}.tbl.script".format(relation)) )
+    else:
+        for i in range(1, args.num_stripes + 1):
+            os.mkfifo( os.path.join(tpchDir, "{0}.tbl.{1}".format(relation, i)) )
+            if args.script != None:
+                os.mkfifo( os.path.join(tpchDir, "{0}.tbl.{1}.script".format(relation, i)) )
 
+    return
+
+def generateQuery( relation ):
+    tableFile = "{0}.tbl".format(relation)
+    striping = ""
+    if args.num_stripes > 1 and not relation in tablesSingle:
+        striping = ": {0}".format(args.num_stripes)
+        tableFile += ".%d"
+
+    if args.script != None:
+        tableFile += ".script"
+
+    tableFile = os.path.join(tpchDir, tableFile)
+
+    queryFileName = os.path.join(dataDir, 'bulkload_{0}.pgy'.format(relation))
+    queryFile = open(queryFileName, 'w')
+
+    queryFile.write( bulkload_template.format(relation=relation, file=tableFile, striping=striping))
+    queryFile.close()
+
+    return queryFileName
+
+def handleError( ):
+    if not args.ignore_dp:
+        print 'Warning: an error occurred while loading the data. It\'s possible that'
+        print 'DataPath exited with a non-zero exit code because it does not yet quit cleanly.'
+        print 'If this is the case, it is safe to continue.'
+        print
+
+        s = raw_input('Continue? (Y/N) --> ')
+
+        while s not in yes and s not in no:
+            print "Please answer yes or no."
+            s = raw_input('Continue? (Y/N) --> ')
+
+        if s in no:
+            print "Exiting."
+            sys.exit(9)
+
+    return
+
+def loadTable( relation ):
     dbgenExec = os.path.join( dbgenDir, 'dbgen' )
     distsFile = os.path.join( dbgenDir, 'dists.dss')
 
@@ -226,51 +298,64 @@ def generateTables():
         buildGenerator()
 
     # Remove any previous tables.
-    for f in glob.glob( os.path.join( tpchDir, '*.tbl*' ) ):
+    for f in glob.glob( os.path.join( tpchDir, '{0}.tbl*'.format(relation) ) ):
         os.remove(f)
 
-    print 'Generating Tables with scale factor {0} in {1} stripe(s).'.format(scaleFactor, numStripes)
+    generatePipes( relation )
 
-    if args.num_stripes == 1:
-        try:
-            subprocess.check_call([dbgenExec, '-vf', '-s', scaleFactor, '-b', distsFile], cwd=tpchDir)
-        except:
-            print 'Error: Failed to generate TPC-H table data files!'
-            sys.exit(6)
+    tpchProcs = list()
+
+    # Start the TPCH DBGEN processes
+    if relation in tablesSingle or args.num_stripes == 1:
+        proc = subprocess.Popen([dbgenExec, '-qf', '-s', scaleFactor, '-b', distsFile, '-T', tableFlag[relation]], cwd=tpchDir)
+        tpchProcs.append(proc)
     else:
         for i in xrange(1, args.num_stripes + 1):
-            try:
-                subprocess.check_call([dbgenExec, '-vf', '-s', scaleFactor, '-b', distsFile,
-                    '-C', numStripes, '-S', str(i)], cwd=tpchDir)
-            except:
-                print 'Error: Failed to generate TPC-H table data files!'
-                sys.exit(6)
+            proc = subprocess.Popen([dbgenExec, '-qf', '-s', scaleFactor, '-b', distsFile,
+                '-C', numStripes, '-S', str(i), '-T', tableFlag[relation]], cwd=tpchDir)
+            tpchProcs.append(proc)
 
-    return
+    # Start up scripts if necessary
+    scriptProcs = list()
+    if args.script != None:
+        scriptFileName = os.path.realpath(args.script)
 
-def generateQueries():
-    """Generate the queries necessary to load the schema and data into the database."""
+        if relation in tablesSingle or args.num_stripes == 1:
+            pipeInName = os.path.join(tpchDir, "{0}.tbl".format(relation))
 
-    if not os.path.exists( queryDir ):
-        print 'Error: specified query directory doesn\'t exist!'
-        sys.exit(9)
-    elif not os.path.isdir( queryDir ):
-        print 'Error: specified query directory isn\'t a directory!'
-        sys.exit(9)
+            pipeOutName = os.path.join(tpchDir, "{0}.tbl.script".format(relation))
 
-    for f in queryFiles:
-        piggyFile = os.path.join( queryDir, f)
-        if os.path.exists( piggyFile ):
-            shutil.copy( piggyFile, os.path.join( tpchDir, f) )
+            proc = subprocess.Popen("{0} < {1} > {2}".format(scriptFileName, pipeInName, pipeOutName), shell=True)
+            scriptProcs.append(proc)
+        else:
+            for i in xrange(1, args.num_stripes + 1):
+                pipeInName = os.path.join(tpchDir, "{0}.tbl.{1}".format(relation, i))
 
-        m4File = os.path.join( queryDir, f + '.m4' )
-        if os.path.exists( m4File ):
-            outFile = open(os.path.join( tpchDir, f), 'w')
-            try:
-                subprocess.check_call( ['m4', '-DNUM_STRIPES=' + numStripes, '-DTABLE_DIR=' + tpchDir, m4File], stdout=outFile)
-            except:
-                print 'Error generating query file for {0} using m4!'.format(f)
-                sys.exit(10)
+                pipeOutName = os.path.join(tpchDir, "{0}.tbl.{1}.script".format(relation, i))
+
+                proc = subprocess.Popen("{0} < {1} > {2}".format(scriptFileName, pipeInName, pipeOutName), shell=True)
+                scriptProcs.append(proc)
+
+    # Start up DP
+    queryFileName = generateQuery( relation )
+
+    try:
+        subprocess.check_call([dpExec, '-q', '-e', queryFileName],
+            cwd=dpDir)
+    except:
+        # Kill any running processes
+        for p in tpchProcs:
+            if p.poll() == None:
+                p.terminate()
+        for p in scriptProcs:
+            if p.poll() == None:
+                p.terminate()
+        handleError()
+
+    # Cleanup the pipes
+    for f in glob.glob( os.path.join( tpchDir, '{0}.tbl*'.format(relation) ) ):
+        os.remove(f)
+
     return
 
 def getDPInit():
@@ -298,46 +383,10 @@ def loadData():
         print 'Error: specified data directory is not actually a directory!'
         sys.exit(7)
 
-    # Check to make sure all of the table files are there.
-    tableFiles = { 'lineitem.tbl', 'customer.tbl', 'region.tbl', 'nation.tbl', 'orders.tbl', 'part.tbl', 'partsupp.tbl', 'supplier.tbl'}
-    if args.num_stripes > 1:
-        tempTableFiles = set()
-
-        for f in tableFiles:
-            if f != 'region.tbl' and f != 'nation.tbl':
-                for i in xrange( 1, args.num_stripes + 1):
-                    tempTableFiles.add( f + '.{0}'.format(i) )
-            else:
-                tempTableFiles.add( f )
-
-        tableFiles = tempTableFiles
-
-    foundFiles = set()
-
-    if os.path.exists( tpchDir ):
-        for f in os.listdir( tpchDir ):
-            foundFiles.add(f)
-
-    if not foundFiles >= tableFiles:
-        print "Didn't find all of the TPC-H table data files, generating them."
-        generateTables()
-    elif args.num_stripes > 1 and 'lineitem.tbl.{0}'.format(args.num_stripes + 1) in foundFiles:
-        # The tables that are already generated are in too many pieces, and
-        # thus we must regenerate them.
-        print "Previously generated table files in too many stripes, regenerating."
-        generateTables()
-
-    # Make sure we have all of the query files we need.
-    generateQueries()
-
-    foundFiles = set()
-
-    for f in os.listdir( tpchDir ):
-        foundFiles.add(f)
-
-    if not foundFiles >= queryFiles:
-        print "Error: unable to locate all necessary query files in query directory."
-        sys.exit(7)
+    schemaFile = os.path.realpath(args.query)
+    if not os.path.exists( schemaFile ):
+        print 'Error: specified schema query file does not exist!'
+        sys.exit(8)
 
     # TODO: Fix DataPath so that it will exit cleanly with the -q switch.
     # It currently does not save meta-data when bulkloading relations if
@@ -363,7 +412,7 @@ def loadData():
     inFile = getDPInit()
 
     try:
-        subprocess.check_call([dpExec, '-q', '-e', os.path.join(tpchDir, 'tpch.pgy')], stdin=inFile, cwd=dpDir)
+        subprocess.check_call([dpExec, '-q', '-e', schemaFile], stdin=inFile, cwd=dpDir)
     except subprocess.CalledProcessError:
         if not args.ignore_dp:
             print 'Warning: an error occurred while loading the schema. It\'s possible that'
@@ -386,30 +435,13 @@ def loadData():
 
     print "Loading data into database."
 
-    queryFiles.remove('tpch.pgy')
+    for relation in tables:
+        loadTable( relation )
 
-    for query in queryFiles:
-        try:
-            subprocess.check_call([dpExec, '-q', '-e', os.path.join(tpchDir, query)], cwd=dpDir)
-        except (subprocess.CalledProcessError, KeyboardInterrupt):
-            if not args.ignore_dp:
-                print 'Warning: an error occurred while loading the data. It\'s possible that'
-                print 'DataPath exited with a non-zero exit code because it does not yet quit cleanly.'
-                print 'If this is the case, it is safe to continue.'
-                print
-
-                s = raw_input('Continue? (Y/N) --> ')
-
-                while s not in yes and s not in no:
-                    print "Please answer yes or no."
-                    s = raw_input('Continue? (Y/N) --> ')
-
-                if s in no:
-                    print "Exiting."
-                    sys.exit(9)
+    return
 
 if args.reload:
-    cleanup(force = True)
+    cleanup()
 
 loadData()
 

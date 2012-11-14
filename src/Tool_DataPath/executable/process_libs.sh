@@ -5,12 +5,14 @@
 
 # $1 = file containing the library names, one per line.
 
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:../../../../Libs/pkgconfig
+
 for lib in $(cat $1)
 do
-    if [$(pkg-config --exists $lib)];
+    if `pkg-config --exists $lib`;
     then
         echo  $(pkg-config --cflags --libs $lib)
     else
-        exit 1;
+	echo "-l$lib"
     fi
 done
