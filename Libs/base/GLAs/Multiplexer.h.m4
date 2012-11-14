@@ -58,17 +58,18 @@ dnl # Handle result types
 <//>m4_ifndef(</MY_REZTYPE/>,</<//>dnl
 <//><//>m4_define(</MY_REZTYPE/>, m4_quote(</GLA_REZTYPE_/>_ARG_))/>,</<//>dnl
 <//><//>m4_if(m4_quote(MY_REZTYPE), reval(</GLA_REZTYPE_/>_ARG_), <//>, </<//>dnl
-<//><//><//>m4_errprintn(</Have GLAs with different result types in the same multiplexer! />)<//>dnl
-<//><//><//>m4_errprintn(</Previous: />MY_REZTYPE</ New: />reval(</GLA_REZTYPE_/>_ARG_))<//>dnl
-<//><//><//>m4_exit(1)<//>dnl
+dnl # <//><//><//>m4_errprintn(</Have GLAs with different result types in the same multiplexer! />)<//>dnl
+dnl # <//><//><//>m4_errprintn(</Previous: />MY_REZTYPE</ New: />reval(</GLA_REZTYPE_/>_ARG_))<//>dnl
+dnl # <//><//><//>m4_exit(1)<//>dnl
 <//><//>/>)<//>dnl
 <//>/>)<//>dnl
 />)dnl
 dnl
-m4_if(MY_REZTYPE, single, <//>, </<//>dnl
-<//>m4_errprintn(</Multiplexing GLAs only supported for GLAs that return a single result./>)<//>dnl
-<//>m4_exit(1)<//>dnl
-/>)dnl
+
+dnl # m4_if(MY_REZTYPE, single, <//>, </<//>dnl
+dnl # <//>m4_errprintn(</Multiplexing GLAs only supported for GLAs that return a single result.Your type is/> MY_REZTYPE)<//>dnl
+dnl # <//>m4_exit(1)<//>dnl
+dnl # />)dnl
 dnl
 /** Information for Meta-GLAs
  * GLA_DESC
@@ -107,15 +108,20 @@ m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
 />)dnl
     }
 
-m4_if(MY_REZTYPE, </multi/>, </dnl
+m4_case(MY_REZTYPE, </multi/>, </dnl
     void Finalize() {
         // Call Finalize on each GLA individually
 
 m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//>m4_if(
         m4_first(__GLA__).Finalize();
 />)dnl
     }
-/>)dnl
+
+    bool GetNextResult(TYPED_REF_ARGS(MY_OUTPUTS)) {
+        
+    }
+/>, </single/>, </dnl
 
     void GetResult(TYPED_REF_ARGS(MY_OUTPUTS)) {
         // Call GetResult on each GLA individually.
@@ -124,5 +130,6 @@ m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
         m4_first(__GLA__).GetResult(ARGS(m4_quote(reval(m4_first(__GLA__)</_OUTPUT/>))));
 />)dnl
     }
+/>)dnl
 };
 />)dnl

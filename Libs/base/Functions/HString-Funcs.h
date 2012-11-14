@@ -21,4 +21,10 @@
 // ***** Hash Function *****
 // FUNC_DEF(</Hash/>, </(s, HString)/>, </BIGINT/>)
 
+// FUNC_DEF(</ToString/>, </(s, HString)/>, </STRING_LITERAL/>)
+inline
+STRING_LITERAL ToString( const HString& s ) {
+    return s.GetStr();
+}
+
 #endif // _HSTRING_FUNCS_H_

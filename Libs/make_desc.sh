@@ -45,6 +45,7 @@ M4_INCLUDES="../src/M4/m4"
 
 DIRECTORIES="Types Functions GLAs UDFs GFs GTs GISTs"
 OUT_FILE="${LIB_NAME}.pgy"
+LIB_HEADER_FILE="${LIB_NAME}.h"
 
 DATE_TIME=$(date +"%A, %B %d, %Y at %H:%M %Z")
 
@@ -66,17 +67,61 @@ echo "#define _${LIB_NAME}_PGY_" >> $OUT_FILE
 echo "// Piggy description file for library $LIB_NAME" >> $OUT_FILE
 echo "// generated on $DATE_TIME" >> $OUT_FILE
 
+# Erase any existing header file
+if [ -e $LIB_HEADER_FILE ]; then
+    rm $LIB_HEADER_FILE
+fi
+touch $LIB_HEADER_FILE
+
+# Write the header of the header file
+echo "#ifndef _${LIB_NAME}_H_" >> $LIB_HEADER_FILE
+echo "#define _${LIB_NAME}_H_" >> $LIB_HEADER_FILE
+echo "// C/C++ header file for library $LIB_NAME" >> $LIB_HEADER_FILE
+echo "// generated on $DATE_TIME" >> $LIB_HEADER_FILE
+
 for dir in $DIRECTORIES
 do
-    curDir=$LIB_NAME/$dir""
+    curDir=$LIB_NAME/$dir
+
+	dirHeaderFile="$curDir.h"
+	# Create directory header file
+	if [ -e $dirHeaderFile ]; then
+		rm $dirHeaderFile
+	fi
+	touch $dirHeaderFile
+
+	echo "#ifndef _${LIB_NAME}_${dir}_H_" >> $dirHeaderFile
+	echo "#define _${LIB_NAME}_${dir}_H_" >> $dirHeaderFile
+	echo "// C/C++ header file for directory ${dir} of library $LIB_NAME" >> $dirHeaderFile
+	echo "// generated on $DATE_TIME" >> $dirHeaderFile
+
+	# Add the directory header file to the library header file
+    echo "#include \"${dirHeaderFile}\"" >> $LIB_HEADER_FILE
+
     if [ -e $curDir ] && [ -d $curDir ]; then
-        for file in $curDir/*
+        for file in $curDir/*.h
         do
             if [ -e $file ] && [ -f $file ]; then
                 echo >> $OUT_FILE
                 echo "// $file" >> $OUT_FILE
                 output=$($M4 --define=SOURCE_FILE=$file -I $M4_INCLUDES descfile.m4)
-                if [ $? ]; then
+                if (($? == 0)); then
+                    echo "$output" >> $OUT_FILE
+                else
+                    echo "Error running M4 on file $file"
+                fi
+
+				# Add to directory header file
+				echo "#include \"${file}\"" >> $dirHeaderFile
+            fi
+        done
+        for file in $curDir/*.m4
+        do
+            if [ -e $file ] && [ -f $file ]; then
+                echo >> $OUT_FILE
+                echo "// $file" >> $OUT_FILE
+                output=$($M4 --define=SOURCE_FILE=$file -I $M4_INCLUDES descfile.m4)
+                if (($? == 0)); then
                     echo "$output" >> $OUT_FILE
                 else
                     echo "Error running M4 on file $file"
@@ -84,7 +129,13 @@ do
             fi
         done
     fi
+
+	# Add footer to directory header file
+	echo "#endif//_${LIB_NAME}_${dir}_H_" >> $dirHeaderFile
 done
 
-# Write footer
+# Write footer of description file
 echo "#endif // _${LIB_NAME}_PGY_" >> $OUT_FILE
+
+# Write footer of header file
+echo "#endif//_${LIB_NAME}_H_" >> $LIB_HEADER_FILE

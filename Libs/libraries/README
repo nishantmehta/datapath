@@ -1,0 +1,4 @@
+This directory contains binary libraries that are needed do execute various probrams.
+
+If you add your own library to the sytem, make sure the Makefile links
+produced libraries in this directory.

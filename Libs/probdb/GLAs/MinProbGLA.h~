@@ -1,0 +1,278 @@
+
+#ifndef _MINPROBGLA_H_ 
+#define _MINPROBGLA_H_ 
+
+#include "AtLeastOne.h"
+#include <map>
+#include <iomanip>
+
+
+/** Info for the meta-GLAs
+ * GLA_DESC
+ *
+ * NAME(</MinProbGLA/>)
+ * INPUTS(</(v, INT),(p, DOUBLE)/>)
+ * OUTPUTS(</(q, DOUBLE)/>)
+ * RESULT_TYPE(</state/>)
+ *
+ * END_DESC
+ */
+
+/* Overall plan:
+Maintain the best tuples and their probabilities. 
+
+Maintain Top-k of value,ProbOneGLA for best values
+
+*/
+
+#define MAX_ERROR 1.0e-6
+
+//templeate<typename VALTYPE>
+#define VALTYPE INT
+class MinProbGLA {
+  
+  typedef std::map<VALTYPE, AtLeastOne> Map;
+  Map mapI;
+  // map from values to glas
+  VALTYPE threshold;
+  // anything worse than the threshold is thrown out
+  
+  int capacity;
+  // the max sizse of the map
+  
+  // final result production
+  Map::iterator rIt;
+  long double notBefore;
+  // probability that items before not in data
+  
+  
+  // method to ensure the map does not grow too large
+  void Resize(void){
+    if (mapI.size()>capacity){
+      // delete last element
+      Map::iterator it = mapI.end();
+      --it;
+      // go one before;
+      // reset the threshold at the value removed
+      threshold = it->first;
+      mapI.erase(it);
+    }
+  }
+  
+ public: 
+
+ typedef struct {int a,b;} c_int;
+
+ MinProbGLA(int _capacity=10000):capacity(_capacity){
+   // cout << "Capacity: " << capacity << endl;
+    threshold=10000000;
+  }
+  
+  void AddItem(VALTYPE val, DOUBLE p){
+    // Case 1: val is worse than the current threshold, throw it out
+    if (val>threshold || val == 0)
+      return;
+    
+    Map::iterator it=mapI.find(val);
+    if (it!=mapI.end()){
+      // Case 2: val in
+      it->second.AddItem(p);
+      
+    }
+    else {
+      // Case 3: val not in
+      // insert into the map
+      AtLeastOne gla;
+      gla.AddItem(p);
+      mapI[val]=gla;
+      Resize();
+    }
+  }
+  
+  
+  void AddState(MinProbGLA& other){
+    // scan the map of other
+    for (Map::iterator it=other.mapI.begin();
+         it!=other.mapI.end();
+         ++it){
+      Map::iterator it2=mapI.find(it->first);
+      if (it2!=mapI.end()){
+        // Case 2: val in
+        it2->second.AddState(it->second);
+        
+      }
+      else {
+        // Case 3: val not in
+        mapI[it->first]=it->second;
+      }
+    }
+  }
+  
+  void Finalize(){
+    rIt = mapI.begin();
+    notBefore = 1.0;
+  }
+   
+  bool GetNextResult(VALTYPE& val, DOUBLE& p){
+    if (rIt == mapI.end()){
+      if (notBefore>MAX_ERROR)
+        cout << "The error of MIN computation is too large " << setprecision(100) << notBefore << endl;
+      
+      return false;
+    }
+    
+    DOUBLE prob;
+    val = rIt->first;
+    rIt->second.GetResult(prob);
+    //cout << "prob =" << prob << endl;
+    p = notBefore * prob;
+    
+    notBefore*=(1-prob);
+    
+    ++rIt;
+    return true;
+  }
+  
+  // compute P[X = a]
+float Equal(float a){
+  VALTYPE v;
+  DOUBLE p;
+  bool more = true;
+  do 
+    more = GetNextResult(v,p);
+  while (more && v < a);
+  Finalize();
+  if (v == a)
+    return p;
+  else
+    return 0.0;
+}
+
+  // compute P[X>a]
+float Greater(float a){
+  VALTYPE v;
+  DOUBLE p, r = 0.0;
+  bool more = true;
+  do {
+    more = GetNextResult(v,p);
+    r += p;
+  }
+  while (more && v < a);
+  Finalize();
+  if (v == a)
+    return 1.0 - r;
+  else
+    return 1.0 - r - p;
+}
+
+  // compute P[X>=a]
+float GreaterEq(float a){
+  VALTYPE v;
+  DOUBLE p, r = 0.0;
+  bool more = true;
+  do {
+    more = GetNextResult(v,p);
+    r += p;
+  }
+  while (more && v < a);
+  Finalize();
+  return 1.0 - r;
+}
+
+  // compute P[X = Y]
+  // PGF2 possibly different type
+template<typename PGF2>
+float Equal(PGF2& other){
+  VALTYPE v;
+  DOUBLE p;
+  double r = 0.0;
+  while (GetNextResult(v,p))
+    r += p * other.Equal(v);
+  Finalize();
+  return r;
+}
+
+  // compute P[X>Y]
+template<typename PGF2>
+float Greater(PGF2& other){
+  VALTYPE v;
+  DOUBLE p;
+  map<int, double> pdf;
+  double p1 = 1.0, r = 0.0;
+  while (GetNextResult(v,p)){
+    pdf[v] = p1 * (1.0 - p);
+    p1 *= p;
+  }
+  for (map<int, double>::iterator it = pdf.begin(); it != pdf.end(); it++)
+    r += it->second * (1.0 - other.GreaterEq(it->first));
+  Finalize();
+  return r;
+}
+
+  // compute P[X>=Y]
+template<typename PGF2>
+float GreaterEq(PGF2& other){
+  VALTYPE v;
+  DOUBLE p;
+  map<int, double> pdf;
+  double p1 = 1.0, r = 0.0;
+  while (GetNextResult(v,p)){
+    pdf[v] = p1 * (1.0 - p);
+    p1 *= p;
+  }
+  for (map<int, double>::iterator it = pdf.begin(); it != pdf.end(); it++)
+    r += it->second * (1.0 - other.Greater(it->first));
+  Finalize();
+  return r;
+}
+
+  // compute confidence interval [l,h]
+  // such that P[l<X<h] = conf
+c_int ConfidenceInterval(float conf){
+  map<int, double> pdf;
+  VALTYPE v;
+  DOUBLE p;
+  double p1 = 1.0;
+  while (GetNextResult(v,p)){
+    //cout << "~~~" << v << "\t" << p << endl;
+    pdf[v] = p1 * (1.0 - p);
+    p1 *= p;
+  }
+  Finalize();
+  double pp = (1.0 - conf) / 2.0, a = 0.0;
+  //cout << "conf="<<conf<<" pp=" << pp<< endl;
+  int l = 0;
+  while (a < pp){
+    DOUBLE tmp;
+    rIt->second.GetResult(tmp);
+    a += tmp;
+    rIt++;
+  }
+  l = rIt->first;
+  int h = pdf.size() - 1;
+  while (a < 1.0 - pp){
+    DOUBLE tmp;
+    rIt->second.GetResult(tmp);
+    a += tmp;
+    rIt++;
+  }
+  h = rIt->first;
+  c_int cf = {l, h};
+  Finalize();
+  return cf;
+}
+
+ void GetResult(int &a, int &b){
+   double conf = 0.95;  
+   Finalize(); // not automatically called
+   c_int cf = ConfidenceInterval (conf);
+   a = cf.a;
+   b = cf.b;
+ }
+
+}
+;
+  
+  
+#endif //_MINPROBGLA_H_
+  

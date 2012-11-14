@@ -1,0 +1,7 @@
+To create a set of Factors, create a file with one line of the form:
+
+Storage Type|DictionaryName
+
+for each factor.
+
+Then run make_factor.py giving the name of the file as the argument.

@@ -21,15 +21,16 @@
 #include <string.h>
 #include "Errors.h"
 
+#include <pthread.h>
+
 #include "base/Types/STRING_LITERAL.h"
-#include "base/Types/HString.h"
 
 #include <oniguruma.h>
 
 /** Meta-information
  *  GF_DESC
  *      NAME(</PatternMatcherOnig/>)
- *      INPUTS(</(str, HString)/>)
+ *      INPUTS(</(target, STRING_LITERAL)/>)
  *      CONSTRUCTOR(</(regexp, STRING_LITERAL)/>)
  *
  *      LIBS(onig)
@@ -40,15 +41,26 @@ class PatternMatcherOnig {
 
     regex_t* reg;       // The compiled regular expression
 
+
+    static pthread_mutex_t mutex __attribute__ ((weak));
+
 public:
 
     // Constructor
     PatternMatcherOnig( STRING_LITERAL regexp ) {
+      /* Onig NEEDS to run in single thread mode for the construction
+	 of the regular expression. Failure to do so results in weird
+	 bugs.
+
+      */
+
         UChar * pattern = (UChar *) regexp;
         OnigErrorInfo einfo;
 
+	pthread_mutex_lock(&mutex);
         int r = onig_new(&reg, pattern, pattern + strlen(regexp),
                 ONIG_OPTION_DEFAULT, ONIG_ENCODING_UTF8, ONIG_SYNTAX_DEFAULT, &einfo);
+	pthread_mutex_unlock(&mutex);
 
         if( r != ONIG_NORMAL ) {
             char s[ONIG_MAX_ERROR_MESSAGE_LEN];
@@ -58,11 +70,11 @@ public:
     }
 
     // filtration function
-    bool Filter( const HString& str ) {
-        const char * target = str.GetStr();
+    bool Filter( STRING_LITERAL target ) {
         int size = strlen(target);
 
         int r = onig_match( reg, (UChar *) target, (UChar *) target + size, (UChar *) target,
+
                 NULL, ONIG_OPTION_NONE);
 
         return r >= 0;
@@ -73,5 +85,7 @@ public:
         onig_free(reg);
     }
 };
+
+pthread_mutex_t PatternMatcherOnig::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #endif // _PATTERN_MATCHER_ONIG_H_

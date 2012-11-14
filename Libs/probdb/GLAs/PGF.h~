@@ -1,0 +1,56 @@
+#ifndef _PGF_H_
+#define _PGF_H_
+
+/** GLA description. Please keep in sync with rest of implementation 
+m4_define(Count_INPUT, </(p, DOUBLE)/>) 
+m4_define(Count_OUTPUT, </(p, PGF)/>) 
+m4_define(GLA_REZTYPE_Count, </single/>) 
+*/ 
+
+#include "zPoly.h"
+
+class PGF{
+  zPoly pgf;
+public:
+
+  // constructor, builds empty object 
+  PGF(); 
+
+  // incorporate one datapoint into PGF
+  // p: probability,x: value 
+  void AddItem(float p, float x=1.0);
+
+  // merge info or other PGFs into current
+  void AddState(PGF& other);
+
+  // expand PGF
+  void Finalize();
+
+  // compute P[X = a]
+  float Equal(float a);
+
+  // compute P[X>a]
+  float Greater(float a);
+
+  // compute P[X>=a]
+  float GreaterEq(float a);
+
+  // compute P[X = Y]
+  // PGF2 possibly different type
+  template<typename PGF2>
+  float Equal(PGF2& other);
+
+  // compute P[X>Y]
+  float Greater(PGF& other);
+
+  // compute P[X>=Y]
+  float GreaterEq(PGF& other);
+
+  // compute confidence interval [l,h]
+  // such that P[l<X<h] = conf
+  c_int ConfidenceInterval(float conf);
+
+  void GetResult(FLOAT& l, FLOAT& h);
+};
+
+#endif  // _PGF_H_

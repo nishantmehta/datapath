@@ -1,0 +1,8 @@
+unsigned char|manufacturer_F
+unsigned char|partbrand_F
+unsigned char|parttype_F
+unsigned char|partcontainer_F
+unsigned char|mktsegment_F
+unsigned char|status_F
+unsigned char|nation_F
+unsigned char|region_F
