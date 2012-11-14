@@ -74,12 +74,12 @@ int JoinRHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // get the waypoint identifier
     unsigned int wayPointID = myWork.get_wayPointID ();
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-dnl M4_ACCESS_COLUMNS(</M4_Attribute_Queries_RHS/>,</input/>)dnl
-<//>M4_ACCESS_COLUMNS(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)),</input/>)dnl
+dnl M4_ACCESS_COLUMNS(</M4_Attribute_Queries_RHS/>,</input/>)<//>dnl
+<//>M4_ACCESS_COLUMNS(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)),</input/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
 
     int totalNum = 0; // counter for the tuples processed
 
@@ -109,7 +109,7 @@ dnl     # For each query class (queries with the same set of join attributes)
 dnl         # hash all hashing attributes (use chain hashing)
 <//><//>m4_foreach(</_A_/>, m4_quote(reval(</m4_args/>m4_second(_QC_))),</dnl
             hashValue = CongruentHash(Hash(_A_<//>), hashValue);
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
             // figure out which of the hash buckets it goes into
             unsigned int index = WHICH_SEGMENT (hashValue);
@@ -151,11 +151,11 @@ dnl         Bitstring myInBString(QueryIDSet(m4_first(_QC_), true));
                 location =  M4_OPTIMIZED_SERIALIZE(M4_ATT_TYPE(M4_ATT_AQ(_AQ_)), M4_ATT_AQ(_AQ_), serializeHere);
                 serializedSegments[index].Append (M4_ATT_SLOT(M4_ATT_AQ(_AQ_)), location, bytesUsed);
             }
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
         }
 
 <//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(m4_quote(reval(</m4_args/>M4_Attribute_Queries_RHS)), queriesToRun)
-<//>/>)dnl
+<//>/>)<//>dnl
     }
 
     // now we are done serializing the chunk

@@ -104,7 +104,7 @@ e (), i++) {
 	Column _A_<//>_Column_LHS[numDyingWaypoints];
 	ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter_LHS[numDyingWaypoints];
 	int _A_<//>_Column_LHSIsUsed[numDyingWaypoints];
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
 
   // now, actually set up all of these columns
@@ -136,7 +136,7 @@ e (), i++) {
 	ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter (_A_<//>_Col);
 	_A_<//>_ColumnIter.swap (_A_<//>_ColumnIter_LHS[i]);
 	_A_<//>_Column_LHSIsUsed[i] = 0;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
 }
 
@@ -156,7 +156,7 @@ e (), i++) {
 	Column _A_<//>_Column_RHS[numDyingWaypoints];
 	ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter_RHS[numDyingWaypoints];
 	int _A_<//>_Column_RHSIsUsed[numDyingWaypoints];
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
   // now, actually set up all of these columns
   for (int i = 0; i < numDyingWaypoints; i++) {
@@ -186,7 +186,7 @@ e (), i++) {
   ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter (_A_<//>_Col);
   _A_<//>_ColumnIter.swap (_A_<//>_ColumnIter_RHS[i]);
   _A_<//>_Column_RHSIsUsed[i] = 0;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
 }
 
@@ -292,7 +292,7 @@ e (), i++) {
       // if we finished the tuple, stop serializing
       if (done)
         goto end;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
       // NOW DO RHS COLUMNS
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_RHS_Attr)),</dnl
@@ -328,7 +328,7 @@ e (), i++) {
       // if we finished the tuple, stop serializing
       if (done)
         goto end;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
 end:      // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
 
@@ -385,7 +385,7 @@ end:      // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
         _A_<//>_ColumnIter_LHS[i].Done (col);
         myChunk.SwapColumn (col, M4_ATT_SLOT(_A_));
       }
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
       // at this point, we have totally constructed the LHS chunk, so package it up
       // first, find out which of the join waypoints was put in this slot
@@ -445,7 +445,7 @@ end:      // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
         _A_<//>_ColumnIter_RHS[i].Done (col);
         myChunk.SwapColumn (col, M4_ATT_SLOT(_A_));
       }
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
       // first, find out which of the join waypoints was put in this slot
       unsigned int whichJoin = 0;

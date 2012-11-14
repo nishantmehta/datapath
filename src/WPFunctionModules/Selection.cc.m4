@@ -45,7 +45,7 @@ int SelectionPreProcessWorkFunc_<//>M4_WPName
 
     QueryToGLASContMap constStates;
 
-<//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>, <//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
 <//>m4_foreach(</_Q_/>, </M4_QueryDesc/>, </dnl
@@ -67,17 +67,17 @@ int SelectionPreProcessWorkFunc_<//>M4_WPName
 
                 myConstStates.Append(newPtr);
             }
-/>)dnl
+/>)<//>dnl
             QueryID key;
 
             key = iter.query;
             constStates.Insert( key, myConstStates );
 />, </dnl # this query doesn't need constant states
-<//><//><//>/>)dnl
+<//><//><//>/>)<//>dnl
         }
-<//><//>/>)dnl
-<//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     SelectionPreProcessRez myRez( constStates );
@@ -94,20 +94,20 @@ int SelectionProcessChunkWorkFunc_<//>M4_WPName (WorkDescription &workDescriptio
     Chunk &input = myWork.get_chunkToProcess ();
     QueryToGLASContMap& constStates = myWork.get_constStates();
 
-<//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>,</M4_Attribute_Queries/>)<//>dnl
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
 
 dnl # create syntesized columns
 <//>m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
-<//><//><//>M4_CREATE_SYNTHESIZED(_P_)dnl
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//><//>M4_CREATE_SYNTHESIZED(_P_)<//>dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
 dnl # Create any GFs that are needed.
 m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
@@ -130,24 +130,24 @@ m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
         tPtr.swap(tState);
     }
 
-<//><//><//><//>/>)dnl
-<//><//><//>/>)dnl
+<//><//><//><//>/>)<//>dnl
+<//><//><//>/>)<//>dnl
 <//><//><//>m4_if(G_REQ_CONST_STATE(_P_), 1, </dnl
     // Create state for query M4_QUERY_NAME(_P_) using constant state
     G_TYPE(_P_) G_STATE(_P_) </(/> dnl
-<//><//><//><//>m4_ifdef_undef(</__FIRST__/>)dnl
+<//><//><//><//>m4_ifdef_undef(</__FIRST__/>)<//>dnl
 <//><//><//><//>m4_foreach(</_S_/>, m4_quote(G_CONST_STATES(_P_)), </dnl
 m4_ifndef(</__FIRST__/>, </m4_define(</__FIRST__/>, <//>)/>, </, />)<//>dnl
 *G_STATE(_P_)</_/>VAR(_S_)<//>dnl
-<//><//><//><//>/>)dnl
+<//><//><//><//>/>)<//>dnl
 </);/>
 <//><//><//>/>, </dnl
     // Create state for query M4_QUERY_NAME(_P_) using constant arguments
     G_TYPE(_P_) G_STATE(_P_) G_INIT_STATE(_P_)<//>;
-<//><//><//>/>)dnl
-<//><//>/>)dnl
-<//>/>)dnl
-/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 
 <//>M4_START_OUTPUT_BITMAP<//>dnl
 
@@ -155,9 +155,9 @@ dnl # definition of constants used in expressions
 <//>m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
     // constants for query M4_QUERY_NAME(_P_)
-<//>_SEL_INITIALIZER(_P_)dnl # the initializer should have a new line
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//>_SEL_INITIALIZER(_P_)<//>dnl # the initializer should have a new line
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 	
     FOR_EACH_TUPLE(</input/>){
         QueryIDSet qry;
@@ -175,12 +175,12 @@ dnl # definition of constants used in expressions
 !(m4_if(SEL_IS_GF(_P_), 1, </G_STATE(_P_).Filter/>)<//>M4_EVAL_EXPR(_SEL_PREDICATE(_P_)) )){
             qry.Difference(M4_QUERY_NAME(_P_));
         } else { // compute synthesized
-<//><//><//>M4_COMPUTE_SYNTHESIZED(_P_)dnl
+<//><//><//>M4_COMPUTE_SYNTHESIZED(_P_)<//>dnl
         }
 
 <//><//>M4_WRITE_SYNTHESIZED(_P_)
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
 <//><//>SET_QUERIES(qry)
 <//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>, queriesToRun)
@@ -192,10 +192,10 @@ dnl # now synthesized
 <//>m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
     if (M4_QUERY_NAME(_P_).Overlaps(queriesToRun)){
-<//><//>M4_CLOSE_SYNTHESIZED(_P_, </input/>)dnl
+<//><//>M4_CLOSE_SYNTHESIZED(_P_, </input/>)<//>dnl
     }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 <//>M4_PUTBACK_OUTBITMAP(</input/>)
 
     PROFILING2("sel", input.GetNumTuples());

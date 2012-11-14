@@ -100,10 +100,17 @@ dnl # $1=SQL statement with ?1, ?2 ... as the plug in parameters
 dnl # $2=list of types of parameters. The size of the list has to coincide
 dnl #   with the number of parameters
 dnl #   the list is of the form </int, double, text/>
+dnl # $3=</val1, .../> optional argument for printf like behavior. Thext must contain %d, %f or %s
 m4_define(</SQL_STATEMENT_PARAMETRIC_NOREZ/>,</dnl
 <//>m4_pushdef(</SQL_INTERNAL_PARAMETER_LIST/>, </$2/>)
 dnl # we deal with the lis when we expand parameters
   zSql_INTERNAL = M4_MULTI_LINE($1) ;
+
+<//>m4_case($#,2,<//>,</
+    sprintf(buffer_INTERNAL,zSql_INTERNAL, $3);
+		zSql_INTERNAL = buffer_INTERNAL;
+<//>/>)
+
 
   PDEBUG(zSql_INTERNAL);
 

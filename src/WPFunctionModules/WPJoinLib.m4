@@ -21,33 +21,33 @@ dnl $1 M4_LeftHash
 
 m4_define(</M4_EXTRACT_LHS_HASH_ATTRIB/>, </dnl
 dnl These sets are computed when the set of queries each attribute uses are determined
-m4_set_delete(ATTS_ALL)dnl This will contain the list of attributes accessed from the LHS
-m4_set_add_all(</ATTS_ALL/>, $1)dnl so we can access the hashing attributes
+m4_set_delete(ATTS_ALL)<//>dnl This will contain the list of attributes accessed from the LHS
+m4_set_add_all(</ATTS_ALL/>, $1)<//>dnl so we can access the hashing attributes
 />)
 
 m4_define(</M4_DEFINE_QUERY_IDS_FOR_QUERIES/>, </dnl
 m4_foreach(</_A_/>, </$1/>, </dnl
-<//>m4_define(_A_<//>_Qrys_<//>$2)dnl
+<//>m4_define(_A_<//>_Qrys_<//>$2)<//>dnl
     QueryID _A_<//>_Qrys=queriesToRun;
-/>)dnl
+/>)<//>dnl
 />)
 
 
 m4_define(</M4_CLEAR_LOCAL_ATTS/>, </dnl
-<//>m4_set_delete(IN_LOCAL_ATTS)dnl the columns in input for this query
-<//>m4_set_delete(OUT_LOCAL_ATTS)dnl the columns in output for this query
+<//>m4_set_delete(IN_LOCAL_ATTS)<//>dnl the columns in input for this query
+<//>m4_set_delete(OUT_LOCAL_ATTS)<//>dnl the columns in output for this query
 />)
 
 m4_define(</M4_POPULATE_LOCAL_ATTS/>, </dnl
-<//>m4_set_add_all(IN_LOCAL_ATTS, M4_JOIN_COPY_LHS($1))dnl
-<//>m4_set_add_all(CHRIS_LOCAL_ATTS, M4_JOIN_COPY_LHS($1))dnl
-<//>m4_set_add_all(OUT_LOCAL_ATTS, M4_JOIN_COPY_LHS($1), M4_JOIN_COPY_RHS($1))dnl
+<//>m4_set_add_all(IN_LOCAL_ATTS, M4_JOIN_COPY_LHS($1))<//>dnl
+<//>m4_set_add_all(CHRIS_LOCAL_ATTS, M4_JOIN_COPY_LHS($1))<//>dnl
+<//>m4_set_add_all(OUT_LOCAL_ATTS, M4_JOIN_COPY_LHS($1), M4_JOIN_COPY_RHS($1))<//>dnl
 />)
 
 
 m4_define(</M4_POPULATE_RHS_ATTS/>, </dnl
-<//>m4_set_add_all(RHS_ATTS, M4_JOIN_HASH_RHS($1), M4_JOIN_COPY_RHS($1))dnl
-<//>m4_set_add_all(RHS_COPY_ATTS, M4_JOIN_COPY_RHS($1))dnl
+<//>m4_set_add_all(RHS_ATTS, M4_JOIN_HASH_RHS($1), M4_JOIN_COPY_RHS($1))<//>dnl
+<//>m4_set_add_all(RHS_COPY_ATTS, M4_JOIN_COPY_RHS($1))<//>dnl
 />)
 
 
@@ -56,14 +56,14 @@ m4_define(</M4_DECLARE_QUERYID_FOR_EACH_IN_ATT/>, </dnl
 <//>m4_set_foreach(IN_LOCAL_ATTS,</_A_/>, </dnl
 <//><//>M4_IFVALID_ATT(_A_, </dnl
 <//><//><//>m4_ifndef(_A_<//>_Qrys_<//>$1,</dnl
-<//><//><//><//><//>m4_define(_A_<//>_Qrys_<//>$1)dnl
+<//><//><//><//><//>m4_define(_A_<//>_Qrys_<//>$1)<//>dnl
     QueryID _A_<//>_Qrys; // encountered first time so declared
-<//><//><//>/>)dnl define
+<//><//><//>/>)<//>dnl define
     _A_<//>_Qrys.Union(M4_QUERY_NAME($2));
 <//><//>/>)
-<//>/>)dnl foreach on _A_
+<//>/>)<//>dnl foreach on _A_
 
-<//>m4_set_add_all(</ATTS_ALL/>, m4_set_list(IN_LOCAL_ATTS))dnl
+<//>m4_set_add_all(</ATTS_ALL/>, m4_set_list(IN_LOCAL_ATTS))<//>dnl
 />)
 
 
@@ -71,13 +71,13 @@ m4_define(</M4_DECLARE_QUERYID_FOR_EACH_OUT_ATT/>, </dnl
 <//>m4_set_foreach(OUT_LOCAL_ATTS,</_A_/>, </dnl
 <//><//>M4_IFVALID_ATT(_A_, </dnl
 <//><//><//>m4_ifndef(_A_<//>_QOut_<//>$1,</dnl
-<//><//><//><//><//>m4_define(_A_<//>_QOut_<//>$1)dnl
+<//><//><//><//><//>m4_define(_A_<//>_QOut_<//>$1)<//>dnl
     QueryID _A_<//>_QOut; // encountered first time so declared
-<//><//><//>/>)dnl define
+<//><//><//>/>)<//>dnl define
     _A_<//>_QOut.Union(M4_QUERY_NAME($2));
 <//><//>/>)
-<//>/>)dnl foreach on _A_
-<//>m4_set_add_all(</OUT_ATTS/>, m4_set_list(OUT_LOCAL_ATTS))dnl
+<//>/>)<//>dnl foreach on _A_
+<//>m4_set_add_all(</OUT_ATTS/>, m4_set_list(OUT_LOCAL_ATTS))<//>dnl
 />)
 
 
@@ -87,8 +87,8 @@ dnl # declaring and allocating memory of all output columns
 m4_set_foreach(</ATTS_ALL/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
     M4_ATT_TYPE(_A_)* M4_ATT_OUT_DATA(_A_) = NULL;
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 
 // out
 
@@ -98,8 +98,8 @@ m4_set_foreach(</RHS_COPY_ATTS/>, </_A_/>, </dnl
     if (_A_<//>_QOut.Overlaps(queriesToRun)){
         M4_ATT_OUT_DATA(_A_) = (M4_ATT_TYPE(_A_) *) malloc (INIT_SIZE * sizeof (M4_ATT_TYPE(_A_)));
     }
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 
 />)
 
@@ -115,7 +115,7 @@ outBitmap<//>M4_INDEX($1).Empty();
 
 
 m4_define(</M4_IS_EMPTY_SLOT_IN_OUPUT_BITMAP/>, </dnl
-outBitmap<//>M4_INDEX($1).IsEmpty()dnl
+outBitmap<//>M4_INDEX($1).IsEmpty()<//>dnl
 />)
 
 
@@ -141,28 +141,28 @@ int mySize;
 m4_set_foreach(</RHS_ATTS/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
 <//><//>m4_case(M4_ATT_TYPE(_A_), VARCHAR,</dnl definitin for VARCHAR---changed by Chris because now we just store the actual varchar in the table
-    M4_ALLOCATE_SPACE_FOR_VARCHAR(</_A_/>)dnl
+    M4_ALLOCATE_SPACE_FOR_VARCHAR(</_A_/>)<//>dnl
 <//>/>, </dnl definition for fixed types
-    M4_ALLOCATE_SPACE_FOR_FIXEDTYPES(</_A_/>)dnl
-<//><//>/>)dnl m4_case
-<//>/>)dnl ifvalid
-/>)dnl foreach
+    M4_ALLOCATE_SPACE_FOR_FIXEDTYPES(</_A_/>)<//>dnl
+<//><//>/>)<//>dnl m4_case
+<//>/>)<//>dnl ifvalid
+/>)<//>dnl foreach
 />)
 
 
 m4_define(</M4_COMPUTE_EXPRESSION/>, </dnl
 dnl we compute first the expression
-m4_pushdef(</XORS/>,)dnl
+m4_pushdef(</XORS/>,)<//>dnl
 m4_foreach(</_A_/>, </M4_LeftHash/>, </dnl
-<//>m4_append(</XORS/>,Hash(M4_ATT_DATA__(_A_,i)),</ ^ />)dnl
-/>)dnl
+<//>m4_append(</XORS/>,Hash(M4_ATT_DATA__(_A_,i)),</ ^ />)<//>dnl
+/>)<//>dnl
 />)
 
 
 m4_define(</M4_DEFINE_HASH/>, </dnl
     M4_COMPUTE_EXPRESSION dnl
     HT_INDEX_TYPE ind = HASH_SEED<//>XORS;
-m4_popdef(</XORS/>)dnl
+m4_popdef(</XORS/>)<//>dnl
     HT_INDEX_TYPE hash = CongruentHash (ind);
 />)
 
@@ -183,9 +183,9 @@ m4_set_foreach(</RHS_ATTS/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
 <//><//>m4_if(M4_ATT_TYPE(_A_), VARCHAR,</dnl
         M4_ATT_TUPLE(_A_)</</0/>/> = 0;
-<//><//>/>)dnl m4_if
-<//>/>)dnl ifvalid
-/>)dnl foreach
+<//><//>/>)<//>dnl m4_if
+<//>/>)<//>dnl ifvalid
+/>)<//>dnl foreach
 />)
 
 m4_define(</M4_IS_ENTRY_USED/>, </dnl
@@ -208,7 +208,7 @@ whichEntry dnl
 />)
 
 m4_define(</M4_SET_TUPLE/>, </dnl
-tuple<//>M4_INDEX($1)<//>M4_INDEX($2)dnl
+tuple<//>M4_INDEX($1)<//>M4_INDEX($2)<//>dnl
 />)
 
 m4_define(</M4_DEFINE_REZ_QUERYIDSET/>, </dnl
@@ -223,22 +223,22 @@ m4_define(</M4_ACCESS_ALL_COLUMNS/>, </dnl
     int temp;
 <//>dnl # declaring and extracting all the columns
 <//>m4_set_foreach(</ATTS_ALL/>, </_A_/>, </dnl
-    M4_EXTRACT_COLUMN(</_A_/>,$1)dnl
-/>)dnl
+    M4_EXTRACT_COLUMN(</_A_/>,$1)<//>dnl
+/>)<//>dnl
 />)
 
 
 m4_define(</M4_POPULATE_EQ_LIST/>, </dnl
-<//>m4_ifdef(</EQ_LIST/>,</m4_undefine(</EQ_LIST/>)/>)dnl
-<//>m4_pushdef(</TMP_LIST/>, </M4_JOIN_HASH_RHS($1)/>)dnl
+<//>m4_ifdef(</EQ_LIST/>,</m4_undefine(</EQ_LIST/>)/>)<//>dnl
+<//>m4_pushdef(</TMP_LIST/>, </M4_JOIN_HASH_RHS($1)/>)<//>dnl
 <//>m4_foreach(</_A_/>, </M4_LeftHash/>, </dnl
 // C
-<//><//>m4_ifval(</TMP_LIST/>,, </m4_errprint(Not enough attributes in RHS hash of _Q_ )/>)dnl
+<//><//>m4_ifval(</TMP_LIST/>,, </m4_errprint(Not enough attributes in RHS hash of _Q_ )/>)<//>dnl
 // D
-<//><//>m4_append(</EQ_LIST/>, M4_ATT_DATA__(_A_,i) == m4_car(TMP_LIST)<//>_tuple , && )dnl
-<//><//>m4_pushdef(</TMP_LIST/>, m4_cdr(TMP_LIST))dnl
-<//>/>)dnl
-<//>m4_popdef(</TMP_LIST/>)dnl
+<//><//>m4_append(</EQ_LIST/>, M4_ATT_DATA__(_A_,i) == m4_car(TMP_LIST)<//>_tuple , && )<//>dnl
+<//><//>m4_pushdef(</TMP_LIST/>, m4_cdr(TMP_LIST))<//>dnl
+<//>/>)<//>dnl
+<//>m4_popdef(</TMP_LIST/>)<//>dnl
 
 />)
 
@@ -258,8 +258,8 @@ m4_define(</M4_WRITE_LHS/>, </dnl
 <//>m4_foreach(</_A_/>, </M4_JOIN_COPY_LHS($2)/>, </dnl
 <//><//>M4_IFVALID_ATT(_A_, </dnl
                     M4_ATT_OUT_DATA(_A_)<//>M4_INDEX($1) = M4_ATT_DATA_(_A_,i);
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 />)
 
 dnl $1 outslot
@@ -268,8 +268,8 @@ m4_define(</M4_WRITE_RHS/>, </dnl
 <//>m4_foreach(</_A_/>, </M4_JOIN_COPY_RHS($2)/>, </dnl
 <//><//>M4_IFVALID_ATT(_A_, </dnl
                 M4_ATT_OUT_DATA(_A_)<//>M4_INDEX($1) = _A_<//>_tuple;
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 />)
 
 dnl $1 curNumOutSlots
@@ -284,8 +284,8 @@ m4_define(</M4_WRITE_DEEP_LHS/>, </dnl
                     memmove (M4_ATT_OUT_DATA(_A_), &(M4_ATT_DATA_(_A_,0)), ($2) * sizeof (M4_ATT_TYPE(_A_)));
                     M4_ATT_OUT_DATA(_A_)<//>M4_INDEX($2) = M4_ATT_DATA_(_A_,i);
                 }
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 />)
 
 dnl $1 curNumOutSlots
@@ -294,8 +294,8 @@ m4_set_foreach(</RHS_COPY_ATTS/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
                     if (M4_ATT_OUT_DATA(_A_) != NULL)
                         M4_ATT_OUT_DATA(_A_) = (M4_ATT_TYPE(_A_) *) realloc (M4_ATT_OUT_DATA(_A_), 2 * $1 * sizeof (M4_ATT_TYPE(_A_)));
-<//>/>)dnl IFVALID
-/>)dnl
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl
 />)
 
 
@@ -305,8 +305,8 @@ m4_set_foreach(</OUT_ATTS/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
                     if (M4_ATT_OUT_DATA(_A_) != NULL)
                         M4_ATT_OUT_DATA(_A_) = (M4_ATT_TYPE(_A_) *) realloc (M4_ATT_OUT_DATA(_A_), 2 * $1 * sizeof (M4_ATT_TYPE(_A_)));
-<//>/>)dnl IFVALID
-/>)dnl foreach
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl foreach
 />)
 
 
@@ -317,17 +317,17 @@ m4_set_foreach(</OUT_ATTS/>, </_A_/>, </dnl
 <//><//>m4_case(M4_ATT_TYPE(_A_),VARCHAR,</dnl definitin for VARCHAR
             if (M4_ATT_OUT_DATA(_A_) != NULL)
                 M4_ATT_OUT_DATA(_A_)<//>M4_INDEX($1) = NULL;
-<//><//>/>, <//>)dnl
-<//>/>)dnl IFVALID
-/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl
 />)
 
 m4_define(</M4_DELETE_TEMP_RHS_ATTS/>, </dnl
 m4_set_foreach(</RHS_ATTS/>, </_A_/>, </dnl
 <//>M4_IFVALID_ATT(_A_, </dnl
     free (M4_ATT_TUPLE(_A_));
-<//>/>)dnl IFVALID
-/>)dnl
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl
 />)
 
 m4_define(</M4_FREE_TUPLES/>, </dnl
@@ -363,8 +363,8 @@ m4_set_foreach(</RHS_COPY_ATTS/>, </_A_/>, </dnl
     _A_<//>_oCol.LoadColumnFixedLen(M4_ATT_OUT_DATA(_A_), $1);
     $2.SwapColumn(_A_<//>_oCol, M4_ATT_SLOT(_A_));
 
-<//>/>)dnl IFVALID
-/>)dnl
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl
 />)
 
 
@@ -384,11 +384,11 @@ m4_set_foreach(</ATTS_ALL/>, </_A_/>, </dnl
         _A_<//>_oCol.LoadColumnVarLen(M4_ATT_OUT_DATA(_A_), $1);
 <//><//>/>, </dnl definition for fixed types
         _A_<//>_oCol.LoadColumnFixedLen(M4_ATT_OUT_DATA(_A_), $1);
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
         $2.SwapColumn(_A_<//>_oCol, M4_ATT_SLOT(_A_));
     }
 
-<//>/>)dnl IFVALID
-/>)dnl
+<//>/>)<//>dnl IFVALID
+/>)<//>dnl
 />)
-m4_divert(0)dnl
+m4_divert(0)<//>dnl

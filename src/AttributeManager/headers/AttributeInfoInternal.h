@@ -35,6 +35,9 @@ private:
 	// attribute name
 	string name;
 
+    // base attribute name without table or query prefix
+    string shortName;
+
 	// relation to which attribute belongs
 	string relationName;
 
@@ -65,6 +68,7 @@ public:
 	void SetColumn(SlotID _column){ column = _column; }
 
 	// access methods
+	string ShortName(void) { return shortName; }
 	string Name(void){ return name;}
 	string Type(void){ return type;}
 

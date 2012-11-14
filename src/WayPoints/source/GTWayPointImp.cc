@@ -37,7 +37,7 @@ GTWayPointImp :: ~GTWayPointImp() {
 void GTWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData ) {
     PDEBUG( "GTWayPointImp :: TypeSpecificConfigure()" );
 
-    GPWayPointImp::TypeSpecificConfigure( configData );
+    GPWayPointImp::Configure( configData );
 
     QueryExitContainer queries;
     GetFlowThruQueryExits(queries);

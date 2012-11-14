@@ -82,7 +82,7 @@ HDThreadImp::HDThreadImp(char *_fileName, int _diskNo, EventProcessor &_dispatch
 
 
 HDThreadImp::~HDThreadImp() {
-  FATAL("You should not shut down the disk array");
+  // WARNING("You should not shut down the disk array");
 
 	free(fileName);
 	close(fileDescriptor);
@@ -140,7 +140,7 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 		else  if (msg.operation == READ) {
 			if (read (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG)) == -1) {
 				perror("HDThread:");
-				WARNING("Reading of file %s at position %d of size %d for job %d failed. Mem: %lx", evProc.fileName, (int)page, PAGES_TO_BYTES(numPG), (int)msg.requestId, where);
+				FATAL("Reading of file %s at position %d of size %d for job %d failed. Mem: %lx", evProc.fileName, (int)page, PAGES_TO_BYTES(numPG), (int)msg.requestId, where);
 			} else {
 			  PROFILING2("diskR", PAGES_TO_BYTES(numPG));
 			}

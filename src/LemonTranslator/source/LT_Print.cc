@@ -114,7 +114,10 @@ bool LT_Print::AddPrint(QueryID query, SlotSet& atts, string expr, string initia
     cout << "Adding query " << GetQueryName(query) << endl;
     bool isNew = CheckQueryAndUpdate(query, atts, newQueryToSlotSetMap);
 
-    print[query] += ","+expr;
+    if( print.begin() == print.end() )
+	print[query] = expr;
+    else
+	print[query] += ","+expr;
     initializers[query] += initializer;
     definitions[query] += defs;
     headers[query] = header;
@@ -195,7 +198,8 @@ void LT_Print::WriteM4File(ostream& out) {
              it != print.end();){
         QueryID curQuery = it->first;
         out << "( " << GetQueryName(it->first)
-                 << it->second << ")";
+                 << ",</(" << it->second;
+	out << ")/>,</" << initializers[it->first] << "/>)";
         ++it;
         // do we need a comma?
         if (it!=print.end())

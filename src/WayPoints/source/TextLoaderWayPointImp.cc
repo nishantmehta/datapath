@@ -18,7 +18,7 @@
 #include "CPUWorkerPool.h"
 #include "Stl.h"
 #include "Logging.h"
-
+#include "DictionaryManager.h"
 
 TextLoaderWayPointImp :: TextLoaderWayPointImp () {
 	PDEBUG ("TextLoaderWayPointImp :: TextLoaderWayPointImp ()");
@@ -241,7 +241,7 @@ void TextLoaderWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, His
 
 		// make sure we merge the local dictionaries and flush
 		HString::SaveDictionary();
-
+		DictionaryManager::Flush();
 	}
 	
 }

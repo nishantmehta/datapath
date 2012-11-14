@@ -53,6 +53,8 @@ public:
     // const and destr
     SelectionWayPointImp ();
     virtual ~SelectionWayPointImp ();
+
+    void TypeSpecificConfigure( WayPointConfigureData& config );
 };
 
 #endif // SELECTION_WAY_POINT_IMP

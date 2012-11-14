@@ -41,15 +41,15 @@ int JoinLHSHashWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEng
     // get the waypoint identifier
     unsigned int wayPointID = myWork.get_wayPointID ();
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-dnl M4_ACCESS_COLUMNS(m4_quote(reval(</m4_args/>M4_LHS_Attr)),</input/>)dnl
+dnl M4_ACCESS_COLUMNS(m4_quote(reval(</m4_args/>M4_LHS_Attr)),</input/>)<//>dnl
 <//>m4_foreach(</_A_/>, m4_quote(reval(</m4_args/>M4_LHS_Attr)), </dnl
     QueryIDSet M4_ATT_AQ(_A_)<//>_Qrys(M4_QUERIES_AQ(_A_), true);
-    M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)dnl
-<//>/>)dnl
+    M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)<//>dnl
+<//>/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
 
     int totalNum = 0; // counter for the tuples processed
 
@@ -70,7 +70,7 @@ dnl     // extract values of attributes from streams
         HT_INDEX_TYPE hashValue = HASH_INIT;
 <//><//>m4_foreach(</_A_/>, m4_quote(reval(</m4_args/>M4_LHS_Hash)),</dnl
         hashValue = CongruentHash(Hash(_A_), hashValue);
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
         // figure out which of the hash buckets it goes into
         unsigned int index = WHICH_SEGMENT (hashValue);
@@ -105,7 +105,7 @@ dnl     // extract values of attributes from streams
         location =  M4_OPTIMIZED_SERIALIZE(M4_ATT_TYPE(_A_), _A_, serializeHere);
         serializedSegments[index].Append (M4_ATT_SLOT(_A_), location, bytesUsed);
 
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 <//><//>m4_foreach(</_AQ_/>,m4_quote(reval(</m4_args/>M4_Atrribute_Queries_LHS_copy)),</dnl
         if (qry.Overlaps(QueryIDSet(M4_QUERIES_AQ(_AQ_), true))){
 
@@ -120,14 +120,14 @@ dnl     // extract values of attributes from streams
             location =  M4_OPTIMIZED_SERIALIZE(M4_ATT_TYPE(M4_ATT_AQ(_AQ_)), M4_ATT_AQ(_AQ_), serializeHere);
             serializedSegments[index].Append (M4_ATT_SLOT(M4_ATT_AQ(_AQ_)), location, bytesUsed);
         }
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
 dnl // lastly, we need to advance in the INPUT tuples
 dnl <//>m4_foreach( </_A_/>, m4_quote(reval(</m4_args/>M4_LHS_Attr)), </dnl
 dnl <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
 dnl M4_ATT_DATA(M4_ATT_AQ(_A_)).Advance();
-dnl <//>/>)dnl
-dnl <//>/>)dnl
+dnl <//>/>)<//>dnl
+dnl <//>/>)<//>dnl
 
     } // for each tuple
 

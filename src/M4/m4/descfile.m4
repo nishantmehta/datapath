@@ -183,6 +183,12 @@ m4_ifndef(</DESC_OUT_MULTI/>, </dnl
 <//>m4_divert_push(D_RESULT)dnl
 <//> -> $1<//>dnl
 <//>m4_divert_pop(D_RESULT)dnl
+/>, </dnl
+<//>m4_if($1, state, </dnl
+<//><//>m4_divert_push(D_RESULT)dnl
+<//><//> -> (STATE)<//>dnl
+<//><//>m4_divert_pop(D_RESULT)dnl
+<//>/>)dnl
 />)dnl
 />)dnl
 

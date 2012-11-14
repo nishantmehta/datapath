@@ -44,19 +44,27 @@ int PrintWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineDat
     Chunk &input = myWork.get_chunkToPrint ();
     QueryToFileMap& streams = myWork.get_streams();
 
-<//>M4_DECLARE_QUERYIDS(</M4_Print_List/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_Print_List/>,</M4_Attribute_Queries/>)<//>dnl
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
-<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
+<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
+
+dnl # definition of constants used
+<//>m4_foreach(</_P_/>, </M4_Print_List/>, </dnl
+<//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
+    // constants for query M4_QUERY_NAME(_P_)
+<//>_PRINT_INITIALIZER(_P_)<//>dnl # the initializer should have a new line
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     // for each query, define a stream variable
 <//>m4_foreach(</_Q_/>, </M4_Print_List/>, </dnl
     PrintFileObj& pfo_<//>M4_QUERY_NAME(_Q_) = streams.Find(M4_QUERY_NAME(_Q_)).GetData();
     FILE* file_<//>M4_QUERY_NAME(_Q_) = pfo_<//>M4_QUERY_NAME(_Q_)<//>.file;
     const char * DELIM_<//>M4_QUERY_NAME(_Q_) = pfo_<//>M4_QUERY_NAME(_Q_)<//>.separator.c_str();
-<//>/>)dnl
+<//>/>)<//>dnl
     // PRINTING
     char buffer[10000]; // ALIN, CHANGE THIS TO A DEFINED CONSTANT
 
@@ -75,18 +83,18 @@ dnl     qry.Print();
             //strcpy(buffer, "OUTPUT M4_QUERY_NAME(_Q_)<//>|");
             //curr = strlen(buffer);
 
-<//><//>m4_foreach(</_A_/>, M4_PRINT_LIST(_Q_),</dnl
+<//><//>m4_foreach(</_A_/>, m4_quote(M4_PRINT_LIST(_Q_)),</dnl
             curr+=ToString(M4_VAL_SUBST(_A_),buffer+curr);
             curr += sprintf(buffer + (curr-1), DELIM_<//>M4_QUERY_NAME(_Q_)) - 1;
 
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
             // now we print the buffer
             buffer[curr-1]='\n';
             buffer[curr]=0; // end of string
             fprintf(file_<//>M4_QUERY_NAME(_Q_), "%s", buffer);
         }
 
-<//>/>)dnl
+<//>/>)<//>dnl
 
 <//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }

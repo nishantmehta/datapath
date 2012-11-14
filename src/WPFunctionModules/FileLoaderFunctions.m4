@@ -18,7 +18,7 @@ dnl # DEFAULT VALUE DEFINITIONS
 dnl # -------------------------
 
 dnl # default value for the maximum line size
-m4_ifndef(</MAX_LINE_SIZE/>, m4_define(</MAX_LINE_SIZE/>, 10000))dnl
+m4_ifndef(</MAX_LINE_SIZE/>, m4_define(</MAX_LINE_SIZE/>, 10000))<//>dnl
 
 dnl # HELPING MACROS
 dnl # --------------
@@ -48,8 +48,8 @@ m4_define(</M4_DECLARE_COLUMN/>, </dnl
   Column $1<//>Column( $1<//>Storage );
   M4_ITERATOR_TYPE(M4_ATT_TYPE($1)) $1<//>Iterator ( dnl #
 <//> $1<//>Column M4_ITERATOR_EXTRA_ARG(M4_ATT_TYPE($1)) );  
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 
 dnl # macro to declare the correct iterator type
 dnl # $1=column type
@@ -73,4 +73,4 @@ dnl # if column is of type HString we use HStringIterator otherwise
 dnl # we use ColumnIterator<type>
 <//>m4_case($1,VARCHAR,</HString/>,</$1/>) dnl
 />)
-m4_divert(0)dnl
+m4_divert(0)<//>dnl

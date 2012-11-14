@@ -121,7 +121,7 @@ dnl # macro to get the expression for an aggregate in an Agglist
 m4_define(</M4_AGG_EXPR/>,</m4_third($1)/>)
 
 dnl # macro to get the list of expressions for print 
-m4_define(</M4_PRINT_LIST/>,</m4_shift<//>$1/>)
+m4_define(</M4_PRINT_LIST/>,</reval(</m4_args/>m4_second($1))/>)
 
 dnl ################################################################
 dnl # THE FOLLWING MACROS DEAL WITH BUILDING THE SET OF ATTRIBUTES
@@ -138,12 +138,12 @@ dnl # $1=the set that is created
 dnl # $2=the expression to be processed
 m4_define(</M4_EXTRACT_ATT/>,</dnl
 dnl # start a new set
-m4_pushdef(</M4_CURR_SET/>,</$1/>)dnl
+m4_pushdef(</M4_CURR_SET/>,</$1/>)<//>dnl
 dnl # redefine val so it adds elements to this set
-m4_pushdef(</val/>,m4_defn(</M4_ADD_CURR_SET/>))dnl
-m4_divert(-1)$2<//>m4_divert(0)dnl
-m4_popdef(</val/>)dnl
-m4_popdef(</M4_CURR_SET/>)dnl
+m4_pushdef(</val/>,m4_defn(</M4_ADD_CURR_SET/>))<//>dnl
+m4_divert(-1)$2<//>m4_divert(0)<//>dnl
+m4_popdef(</val/>)<//>dnl
+m4_popdef(</M4_CURR_SET/>)<//>dnl
 />)
 
 
@@ -180,12 +180,12 @@ dnl # it is formed from the HASH_RHS list
 dnl # $1= the entry in the M4_Joins list for the query
 m4_define(</M4_QUERY_PART_NAME/>, </dnl
 dnl we use m4_append on the HASH_RHS
-<//>m4_pushdef(</LOCAL_VAR/>, </M4_WPName<//>_QSet/>)dnl
+<//>m4_pushdef(</LOCAL_VAR/>, </M4_WPName<//>_QSet/>)<//>dnl
 <//>m4_foreach(</_A_/>, M4_JOIN_HASH_RHS($1), </dnl
-<//><//>m4_append(</LOCAL_VAR/>, _A_, </_/>)dnl
-<//>/>)dnl
+<//><//>m4_append(</LOCAL_VAR/>, _A_, </_/>)<//>dnl
+<//>/>)<//>dnl
 <//>LOCAL_VAR<//>dnl
-m4_popdef(</LOCAL_VAR/>)dnl
+m4_popdef(</LOCAL_VAR/>)<//>dnl
 />)
 
 dnl # macro to inject code if argument is a valid attribute
@@ -213,7 +213,7 @@ dnl <//>m4_changecom()<//>dnl
 dnl />)
 
 dnl m4_define(</EString/>, </dnl
-dnl <//>m4_changecom(</#/>)dnl										
+dnl <//>m4_changecom(</#/>)<//>dnl										
 dnl />)
 
 dnl ####################################################################
@@ -222,7 +222,7 @@ dnl # DEBUGGING MACROS
 dnl # Macro to print a set 
 dnl # $1=set
 m4_define(</M4_PRINT_SET/>,</dnl
-dnl <//>m4_foreach(</_A_/>, </m4_set_list($1)/>, </_A_ |/>)dnl
+dnl <//>m4_foreach(</_A_/>, </m4_set_list($1)/>, </_A_ |/>)<//>dnl
 cucu
 />)
-m4_divert(0)dnl
+m4_divert(0)<//>dnl

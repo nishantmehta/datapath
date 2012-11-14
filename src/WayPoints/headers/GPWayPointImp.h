@@ -142,6 +142,10 @@ protected:
     // The data from any other return code is discarded.
     void SetResultExitCode( ExitCode exitCode );
 
+    // Handles generic configuration functions for these kinds of waypoints.
+    // Should be called by the specific waypoint's TypeSpecificConfigure
+    void Configure( WayPointConfigureData& configData );
+
 private:
 
     ExitCode resultExitCode;
@@ -169,9 +173,7 @@ public:
     void ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message);
     void ProcessHoppingUpstreamMsg( HoppingUpstreamMsg& message);
 
-    // Handles generic configuration functions for these kinds of waypoints.
-    // Should be called by the specific waypoint's TypeSpecificConfigure
-    virtual void TypeSpecificConfigure( WayPointConfigureData& configData );
+    virtual void TypeSpecificConfigure( WayPointConfigureData& config ) = 0;
 };
 
 #endif

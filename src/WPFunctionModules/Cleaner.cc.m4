@@ -121,8 +121,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     Column _A_<//>_Column_LHS[numDyingWaypoints];
     ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter_LHS[numDyingWaypoints];
     int _A_<//>_Column_LHSIsUsed[numDyingWaypoints];
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
     // now, actually set up all of these columns
     for (int i = 0; i < numDyingWaypoints; i++) {
@@ -150,8 +150,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
         ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter (_A_<//>_Col);
         _A_<//>_ColumnIter.swap (_A_<//>_ColumnIter_LHS[i]);
         _A_<//>_Column_LHSIsUsed[i] = 0;
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
     }
 
@@ -172,8 +172,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     Column _A_<//>_Column_RHS[numDyingWaypoints];
     ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter_RHS[numDyingWaypoints];
     int _A_<//>_Column_RHSIsUsed[numDyingWaypoints];
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
     // now, actually set up all of these columns
     for (int i = 0; i < numDyingWaypoints; i++) {
@@ -200,8 +200,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
         ColumnIterator <M4_ATT_TYPE(_A_)> _A_<//>_ColumnIter (_A_<//>_Col);
         _A_<//>_ColumnIter.swap (_A_<//>_ColumnIter_RHS[i]);
         _A_<//>_Column_RHSIsUsed[i] = 0;
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
 }
 
@@ -224,13 +224,13 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_LHS_Attr)),</dnl
 <//><//><//>M4_IFVALID_ATT(_A_, </dnl
         _A_<//>_ColumnIter_LHS[IDX].MarkFragment ();
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_RHS_Attr)),</dnl
 <//><//><//>M4_IFVALID_ATT(_A_, </dnl
         _A_<//>_ColumnIter_RHS[IDX].MarkFragment ();
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
     }
 
     // now, loop through the hash table!
@@ -338,8 +338,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
             // if we finished the tuple, stop serializing
             if (done)
                 goto end;
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
             // NOW DO RHS COLUMNS
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_RHS_Attr)),</dnl
@@ -376,8 +376,8 @@ int CleanerWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
             // if we finished the tuple, stop serializing
             if (done)
                 goto end;
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
 end:        // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
 
@@ -400,13 +400,13 @@ end:        // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_LHS_Attr)),</dnl
 <//><//><//>M4_IFVALID_ATT(_A_, </dnl
                 _A_<//>_ColumnIter_LHS[IDX].MarkFragment ();
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_RHS_Attr)),</dnl
 <//><//><//>M4_IFVALID_ATT(_A_, </dnl
                 _A_<//>_ColumnIter_RHS[IDX].MarkFragment ();
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
             }
         }
     }
@@ -467,8 +467,8 @@ end:        // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
                 _A_<//>_ColumnIter_LHS[i].Done (col);
                 myChunk.SwapColumn (col, M4_ATT_SLOT(_A_));
             }
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
             // at this point, we have totally constructed the LHS chunk, so package it up
             // first, find out which of the join waypoints was put in this slot
@@ -530,8 +530,8 @@ end:        // AT THIS POINT, DONE WITH ALL OF THE COLUMNS!!
                 _A_<//>_ColumnIter_RHS[i].Done (col);
                 myChunk.SwapColumn (col, M4_ATT_SLOT(_A_));
             }
-<//><//><//>/>)dnl
-<//><//>/>)dnl
+<//><//><//>/>)<//>dnl
+<//><//>/>)<//>dnl
 
             // first, find out which of the join waypoints was put in this slot
             unsigned int whichJoin = 0;

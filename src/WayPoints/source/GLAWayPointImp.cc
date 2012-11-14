@@ -54,7 +54,7 @@ void GLAWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configData)
 
     tempConfig.swap(configData);
 
-    GPWayPointImp::TypeSpecificConfigure(configData);
+    GPWayPointImp::Configure(configData);
 }
 
 bool GLAWayPointImp::PreProcessingPossible( CPUWorkToken& token ) {

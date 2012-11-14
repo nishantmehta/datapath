@@ -45,7 +45,7 @@ int GISTPreProcessWorkFunc_<//>M4_WPName
     QueryToGLASContMap generatedStates;
     QueryToGLAStateMap gists;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
 <//>m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
@@ -66,7 +66,7 @@ int GISTPreProcessWorkFunc_<//>M4_WPName
 
                 myConstStates.Append(newPtr);
             }
-/>)dnl
+/>)<//>dnl
 
             key = iter.query;
             generatedStates.Insert( key, myConstStates );
@@ -101,20 +101,20 @@ int GISTPreProcessWorkFunc_<//>M4_WPName
                 myReceivedStates.Advance();
                 ++recStateIndex;
             }
-<//><//><//>/>)dnl
+<//><//><//>/>)<//>dnl
 
             // Create the GIST state using const states
             G_TYPE(_Q_) * G_STATE(_Q_) = new G_TYPE(_Q_) ( dnl
-m4_ifdef_undef(</_FIRST_/>)dnl
+m4_ifdef_undef(</_FIRST_/>)<//>dnl
 m4_foreach(</_S_/>, G_CONST_STATES(_Q_), </dnl
-<//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)dnl
+<//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)<//>dnl
 <//>*(GLA_STATE(_Q_)</_/>VAR(_S_))<//>dnl
-/>)dnl
+/>)<//>dnl
 );
 />, </dnl # this query doesn't need constant states
             // Create the GIST state using constant arguments
             G_TYPE(_Q_) * G_STATE(_Q_) = new G_TYPE(_Q_) G_INIT_STATE(_Q_);
-<//><//><//>/>)dnl
+<//><//><//>/>)<//>dnl
 
             // Package up the GIST state put it in the map
             GLAPtr gistPtr(M4_HASH_NAME(G_TYPE(_Q_)), (void *) G_STATE(_Q_));
@@ -124,8 +124,8 @@ m4_foreach(</_S_/>, G_CONST_STATES(_Q_), </dnl
 
             gists.Insert(key, gistState);
         }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     GISTPreProcessRez myRez(generatedStates, gists);
@@ -148,7 +148,7 @@ int GISTNewRoundWorkFunc</_/>M4_WPName
     QueryToGistWUContainer workUnits;
     QueryToGLAStateMap globalSchedulers;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>,<//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>,<//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
         FATALIF(!gists.IsThere(iter.query),
@@ -198,8 +198,8 @@ int GISTNewRoundWorkFunc</_/>M4_WPName
             QueryID key = iter.query;
             workUnits.Insert(key, myWorkUnits);
         }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     GISTNewRoundRez myResult(workUnits);
@@ -222,7 +222,7 @@ int GISTDoStepsWorkFunc</_/>M4_WPName
     QueryToGistWorkUnit unfinishedWork;
     QueryToGLAStateMap finishedWork;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>,<//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>,<//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
         FATALIF(!workUnits.IsThere(iter.query),
@@ -274,8 +274,8 @@ m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
             delete localScheduler;
             workFinished = true;
         }
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
 
         if( workFinished ) {
             GLAState finishedGLA;
@@ -315,7 +315,7 @@ int GISTMergeStatesWorkFunc</_/>M4_WPName
     // Outputs
     QueryToGLAStateMap glaStates;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
         FATALIF(!toMerge.IsThere(iter.query),
@@ -357,8 +357,8 @@ int GISTMergeStatesWorkFunc</_/>M4_WPName
                 delete localGLA;
             } END_FOREACH;
         }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
         QueryID key = iter.query;
         glaStates.Insert(key, mainPtr);
@@ -385,7 +385,7 @@ int GISTShouldIterateWorkFunc</_/>M4_WPName
     QueryIDToInt fragInfo;
     QueryIDSet queriesToIterate;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
         FATALIF(!gists.IsThere(iter.query),
@@ -429,13 +429,13 @@ int GISTShouldIterateWorkFunc</_/>M4_WPName
 
 <//><//>m4_if(G_KIND(_Q_), fragment, </dnl
             numFrags = G_STATE(_Q_)->GetNumFragments();
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
             Swapify<int> valFrag(numFrags);
             fragInfo.Insert(key, valFrag);
         }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     GISTShouldIterateRez myResult(fragInfo, queriesToIterate);
@@ -459,7 +459,7 @@ int GISTProduceResultsWorkFunc</_/>M4_WPName
     // Outputs
     Chunk output;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>)<//>dnl
 
     QueryIDSet queriesToRun = whichOne.query;
 
@@ -472,8 +472,8 @@ int GISTProduceResultsWorkFunc</_/>M4_WPName
     Column _A_<//>_Column_Ocol(_A_<//>_Column_store);
     M4_COL_TYPE(_A_) _A_<//>_Column_Out(_A_<//>_Column_Ocol);
     M4_ATT_TYPE(_A_) _A_; // container for value
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
     // Output bitstring
     MMappedStorage myStore;
@@ -506,11 +506,11 @@ int GISTProduceResultsWorkFunc</_/>M4_WPName
         {
 m4_if(G_FINALIZE_AS_STATE(_Q_), 1, </dnl
             G_STATE(_Q_)->FinalizeState();
-/>)dnl
+/>)<//>dnl
             reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)G_STATE(_Q_), M4_HASH_NAME(G_TYPE(_Q_)));
 />, </dnl
     m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_) [GLA_KIND(_Q_)])
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
             // Advance the columns
             myOutBStringIter.Insert(M4_QUERY_NAME(_Q_));
             myOutBStringIter.Advance();
@@ -520,15 +520,15 @@ m4_if(G_FINALIZE_AS_STATE(_Q_), 1, </dnl
 
             _A_<//>_Column_Out.Insert(_A_);
             _A_<//>_Column_Out.Advance();
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
         }
 m4_if( G_KIND(_Q_), fragment, </dnl
         // Delete the iterator;
         delete G_TYPE(_Q_)</_It/>;
-/>)dnl
+/>)<//>dnl
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
     myOutBStringIter.Done();
     output.SwapBitmap(myOutBStringIter);
@@ -541,9 +541,9 @@ m4_if( G_KIND(_Q_), fragment, </dnl
         _A_<//>_Column_Out.Done(col_<//>_A_);
         output.SwapColumn(col_<//>_A_, M4_ATT_SLOT(_A_));
 
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
     ChunkContainer tempResult(output);
     tempResult.swap(result);
@@ -561,7 +561,7 @@ int GISTProduceStateWorkFunc</_/>M4_WPName
     QueryExit& whichOne = myWork.get_whichOne();
     GLAState& gist = myWork.get_gist();
 
-<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>, <//>)<//>dnl
 
 <//>m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
 <//><//>m4_if(G_FINALIZE_AS_STATE(_Q_), </dnl
@@ -578,8 +578,8 @@ int GISTProduceStateWorkFunc</_/>M4_WPName
         G_STATE(_Q_)->FinalizeState();
         state.swap(gist);
     }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     WayPointID myID = WayPointID::GetIdByName("M4_WPName");
     StateContainer stateCont( myID, whichOne, gist );

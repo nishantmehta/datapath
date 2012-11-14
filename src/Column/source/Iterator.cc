@@ -22,19 +22,19 @@ using namespace std;
 #include "Swap.h"
 
 Iterator :: Iterator (Column &iterateMe, 
-											int minByteToGetLength,
-											int stepSize) :
-																		myData (NULL),
-																		bytesToRequest (stepSize),
-																		curPosInColumn (0),
-																		firstInvalidByte (0),
-																		objLen (0),
-																		colLength (0),
-																		isWriteOnly (false),
-																		myMinByteToGetLength (minByteToGetLength),
-																		isInValid (false)
+		      int minByteToGetLength,
+		      int stepSize) :
+  myData (NULL),
+  bytesToRequest (stepSize),
+  curPosInColumn (0),
+  firstInvalidByte (0),
+  objLen (0),
+  colLength (0),
+  isWriteOnly (false),
+  myMinByteToGetLength (minByteToGetLength),
+  isInValid (false)
 {
-
+  
   if (!iterateMe.IsValid()) {
 		isInValid = true;
 		bytesToRequest = 0;
@@ -99,6 +99,13 @@ Iterator :: Iterator (Column &iterateMe,
 	int requestLen = stepSize;
 	myData = myColumn.GetNewData (curPosInColumn, requestLen);
 	firstInvalidByte = curPosInColumn + requestLen;
+}
+
+void Iterator::Restart(void){
+  colLength = curPosInColumn; // so we do not loose the correct end
+  curPosInColumn=0;
+  firstInvalidByte=bytesToRequest;
+  myData = myColumn.GetNewData (curPosInColumn, firstInvalidByte);
 }
 
 void Iterator :: SetFragmentRange (int start, int end) {

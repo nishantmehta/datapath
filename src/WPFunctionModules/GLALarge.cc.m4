@@ -56,13 +56,13 @@ int GLALargeProcessChunkWorkFunc_<//>M4_WPName  (WorkDescription &workDescriptio
 
   QueryToGlobalGLAPtrMap& glaStates = myWork.get_glaStates();
 
-  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
-    M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+    M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-  M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+  M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)<//>dnl
 
-    M4_EXTRACT_BITMAP(</input/>)dnl
+    M4_EXTRACT_BITMAP(</input/>)<//>dnl
 
 
   // Defining the GLA states needed
@@ -84,15 +84,15 @@ int GLALargeProcessChunkWorkFunc_<//>M4_WPName  (WorkDescription &workDescriptio
   dnl # vector<gla_type> state_name_local( numSegments, gla_type( constructor arguments ) );
   dnl # Note: the number of segments is defined by the system-wide constant NUM_SEGS
   vector<GLA_TYPE(_Q_)> GLA_STATE(_Q_)<//>_local( NUM_SEGS , GLA_TYPE(_Q_)<//>GLA_INIT_STATE(_Q_) );
-<//>/>)dnl
+<//>/>)<//>dnl
 
 dnl # definition of constants used in expressions
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
     // constants for query M4_QUERY_NAME(_Q_)
-        _GLA_INITIALIZER(_Q_)dnl # the initializer should have a new line
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+        _GLA_INITIALIZER(_Q_)<//>dnl # the initializer should have a new line
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     FOR_EACH_TUPLE(</input/>){
         QueryIDSet qry;
@@ -111,7 +111,7 @@ dnl # definition of constants used in expressions
 
             GLA_STATE(_Q_)<//>_local[seg].AddItem<//>GLA_EXPRESSION(_Q_);
         }
-<//>/>)dnl
+<//>/>)<//>dnl
 
 <//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }
@@ -181,8 +181,8 @@ dnl # <//><//>m4_ifdef(GLA_CHUNKBOUNDARY_<//>GLA_TYPE(_Q_),</dnl
 dnl #     if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
 dnl #             GLA_STATE(_Q_)->ChunkBoundary();
 dnl #     }
-dnl # <//><//>/>)dnl
-dnl # <//>/>)dnl
+dnl # <//><//>/>)<//>dnl
+dnl # <//>/>)<//>dnl
 
   // finally, if there were any results, put the data back in the chunk
 <//>M4_PUTBACK_COLUMNS(</M4_Attribute_Queries/>,</input/>)
@@ -209,7 +209,7 @@ int GLALargeFragmentCountWorkFunc_<//>M4_WPName
 
   QueryToGlobalGLAPtrMap& glaStates = myWork.get_glaStates();
 
-  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)dnl
+  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)<//>dnl
 
   FOREACH_TWL(iter, queries) {
     FATALIF(!glaStates.IsThere(iter.query), "Why did we get a query in the list but no GlobalStatePtr for it?");
@@ -238,8 +238,8 @@ int GLALargeFragmentCountWorkFunc_<//>M4_WPName
     // Put the segment back into the global state
     localState.swap(g);
     }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
   }END_FOREACH;
 
@@ -257,12 +257,12 @@ int GLALargeFinalizeWorkFunc_<//>M4_WPName
     myWork.swap (workDescription);
     QueryToGLAStateMap& queryGLAMap = myWork.get_glaStates();
 
-  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
     // set up the output chunk
     Chunk output;
 
-    M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+    M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
   // do M4_QUERY_NAME(_Q_)
@@ -276,7 +276,7 @@ int GLALargeFinalizeWorkFunc_<//>M4_WPName
         FATALIF(GLA_STATE(_Q_) == NULL, "Why do not we have a state?");
         state.swap(stateB);
   }
-<//>/>)dnl
+<//>/>)<//>dnl
 
         // start columns for all possible outputs
 <//>m4_foreach(</_Q_/>,</M4_GLADesc/>,</dnl
@@ -286,8 +286,8 @@ int GLALargeFinalizeWorkFunc_<//>M4_WPName
     Column  _A_<//>_Column_Ocol(_A_<//>_Column_store);
     M4_COL_TYPE(_A_) _A_<//>_Column_Out(_A_<//>_Column_Ocol);
     M4_ATT_TYPE(_A_) _A_;// containter for value to be written
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
     // this is the ouput bitstring
     MMappedStorage myStore;
@@ -316,7 +316,7 @@ dnl # get the queries out of queriesToRun
                     <//><//>/>,</dnl
       {
                 FATAL("Do not know how to deal with this type");
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 dnl # write the tuple
       myOutBStringIter.Insert (M4_QUERY_NAME(_Q_));
       myOutBStringIter.Advance ();
@@ -325,11 +325,11 @@ dnl # write the tuple
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>GLA_OUTPUTS(_Q_))),</dnl
        _A_<//>_Column_Out.Insert (_A_);
     _A_<//>_Column_Out.Advance();
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
         }
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
   myOutBStringIter.Done();
     output.SwapBitmap(myOutBStringIter);
@@ -340,9 +340,9 @@ dnl # write the tuple
         Column col_<//>_A_;
         _A_<//>_Column_Out.Done(col_<//>_A_);
                 output.SwapColumn (col_<//>_A_, M4_ATT_SLOT(_A_));
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
         }
-<//>/>)dnl
+<//>/>)<//>dnl
     // and get outta here!
     ChunkContainer tempResult (output);
     tempResult.swap (result);
@@ -363,7 +363,7 @@ int GLALargeDeallocateWorkFunc_<//>M4_WPName
   QueryToGLASContMap& queryGLACont = myWork.get_glaStates();
   QueryExitContainer& queries = myWork.get_whichQueryExits();
 
-  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)dnl
+  M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)<//>dnl
 
   FOREACH_TWL(iter, queries) {
     FATALIF(!queryGLACont.IsThere(iter.query), "Why did we get a query in the list but no stateContainer for it?");
@@ -380,8 +380,8 @@ int GLALargeDeallocateWorkFunc_<//>M4_WPName
     delete localGLA;
       }
     }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
   }END_FOREACH;
 
@@ -396,5 +396,5 @@ dnl # perfectly matched, but it won't compile without these extras.
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl # this is a valid query
 }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl

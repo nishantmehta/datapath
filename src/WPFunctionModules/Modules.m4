@@ -32,7 +32,7 @@ dnl Include other headers needed for the specific modules in the module definiti
 dnl Alternativelly, this can be changed to always include only 
 dnl once the modules needed
 m4_define(</M4_CODE_GENERATION_PREAMBLE/>,</dnl
-<//>m4_divert(0)dnl
+<//>m4_divert(0)<//>dnl
 #include "WorkDescription.h"
 #include "ExecEngineData.h"
 #include "Chunk.h"

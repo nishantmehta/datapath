@@ -186,7 +186,7 @@ complexStatement
   | ^(DELWAYPOINT ID) /* nothing for now, add */
   | ^(DELQUERY ID) { QueryID q=qm.GetQueryID(TXT($ID)); lT->DeleteQuery(q); }
   | ^(CRDATATYPE ID s=STRING) { dTM.AddBaseType(STR($ID), STRS($s)); }
-  | ^(CRSYNONYM tp=ID s=ID) { dTM.AddSynonymType(STR($tp), STR($s)); }
+  | ^(CRSYNONYM tp=dType s=ID) { dTM.AddSynonymType($tp.type, STR($s)); }
   | ^(TYPEDEF_GLA name=ID g=glaDef) {
         string glaName = $g.name;
         dTM.AddSynonymType(glaName, STR($name));
@@ -267,7 +267,14 @@ lstArgsGLA returns [vector<string> vecT]
     ;
 
 dType returns[string type]
+@init{ string prefix; qm.GetQueryName(qry, prefix); string attribute; }
   : ID {$type=TXT($ID);}
+  | ^(TYPEOF_ ^(ATT a=ID {attribute = STR($a);} (b=ID {prefix = STR($b);})? )) 
+        { 
+            string longName = prefix + "_" + attribute;      
+            $type = am.GetAttributeType(longName); 
+            FATALIF(!dTM.IsType($type), "Unknown type \%s for attribute \%s in typeof statement.", $type.c_str(), longName.c_str());
+        }
   ;
 
 statement[bool isNew]
@@ -303,13 +310,14 @@ writer :
     ;
 
 scanner
-    @init { string sName; // scanner name
-            string rName; // relatin name
+    @init { string sName; // scanner name, possible alias for relation
+            string rName; // relation name
           }
     :    ^(SCANNER__ a=ID { rName=(char*)$a.text->chars; sName=rName;}
             (b=ID {sName=(char*)$b.text->chars;})?) {
             SlotContainer attribs;
-            am.GetAttributesSlots(rName, attribs); // put attributes in attribs
+            am.AliasAttributesSlots(rName, sName, attribs);
+            //am.GetAttributesSlots(rName, attribs); // put attributes in attribs
             //WayPointID scanner = WayPointID::GetIdByName(sName.c_str());
 
             // Ensure that all the types are known by the system
@@ -672,7 +680,7 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
         string args;
     }
     : /* nothing */
-    | ^(FUNCTEMPLATE ({args += ",";} funcTemplateArg[args, defs] )* )
+    | ^(TEMPLATE_DEF ({args += ",";} funcTemplateArg[args, defs] )* )
         {
             string file;
 
@@ -696,15 +704,16 @@ funcTemplate[string& fName, string& defs, bool isExternal] returns [string name]
 funcTemplateArg[string& args, string & defs]
     : ^(LIST {args += "</";} attC[args] ({args += ",";} attC[args])* {args += "/>";})
     | attC[args]
-    | glaDef {
-      // glue the definitions accumulated
-      defs+=$glaDef.defs;
-      // add the name to current definition
-      args+=$glaDef.name;
-    }
     | s=STRING { args += TXTN($s); }
     | i=INT { args += TXT($i); }
     | f=FLOAT { args += TXT($f); }
+    | t=dType {
+	    string type = $t.type;
+	    FATALIF(!dTM.IsType(type), "Error in function template: \%s is not a type!", type.c_str());
+	    string file = dTM.GetTypeFile(type);
+	    ADD_INCLUDE(defs, file);
+	    args += type;
+	 }
     ;
 
 funcRetType returns [string type, bool external]
@@ -730,7 +739,11 @@ attWT[string& args, string& defs]
 
 attC[string& args]
     : ^(ATTC {args+="(";}  a=ID { args+=TXT($a); }
-            ( b=ID { args+=','; args+=TXT($b);} )* 
+            ( b=dType { args+=',';
+                 string type = $b.type;
+                 FATALIF(!dTM.IsType(type), "Error: type <\%s> does not exist.", type.c_str());
+                 args+=type;} ) 
+            ( c=ID { args+=','; args+=TXT($c);} )* 
         {args+=')';})
     ;
 
@@ -1324,6 +1337,37 @@ expression[SlotContainer& atts, string& cstStr, string& defs] returns [string sE
       }
       $sExpr += ")";
 }
+| ^(MATCH_DP patt=STRING a=expression[atts, cstStr, defs] { lInfo.Add($a.sExpr, $a.type, $a.isCT); } ) // pattern matcher
+    {
+        // for a pattern matcher, we have to build an expression
+        // of the form: PatternMather ctObj(pattern)
+        // then on use do ctObj.IsMatch(expr)
+        $type = "bool";
+        ADD_INCLUDE(defs, dTM.GetTypeFile($type) );
+        ADD_INCLUDE(defs, dTM.GetTypeFile("PatternMatcherOnig"));
+
+        $isCT = lInfo.IsListConstant();
+
+        lInfo.Prepare( $cstStr );
+        vector<string> paramTypes = lInfo.GetListTypes();
+        for( vector<string>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it ) {
+            string file = dTM.GetTypeFile(*it);
+            ADD_INCLUDE(defs, file);
+        }
+        std::vector<string> eVals = lInfo.Generate();
+        // new constant
+        int ctNo = ExprListInfo::NextVar();
+        // add def of matcher object
+        ostringstream match;
+        match << "PatternMatcherOnig ct" << ctNo << "( "
+              <<  TXTN($patt) << " );" << endl;
+
+        ADD_CST($cstStr, match.str());
+        // now the expression
+        ostringstream expr;
+        expr << "ct" << ctNo << ".Filter(" << eVals[0] << ")";
+        $sExpr+=expr.str();
+   }
 | ^(CASE_DP (a=expression[atts, cstStr, defs] {   lInfo.Add($a.sExpr, $a.type, $a.isCT); } )*) // cases
    {
         // just like a function. For now we only support the 3-argument case

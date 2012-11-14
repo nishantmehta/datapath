@@ -67,6 +67,9 @@ bool LT_Selection::GetConfig(WayPointConfigureData& where){
         myReqStates.Insert( curID, stateList );
     }
 
+    myReqStates.MoveToStart();
+    FATALIF(myReqStates.AtEnd(), "Query to Required States Mapping empty for Selection WayPoint!");
+
     // here is the waypoint configuration data
     SelectionConfigureData selectionConfigure (selectionID, mySelectionWorkFuncs, mySelectionEndingQueryExits, mySelectionFlowThroughQueryExits, myReqStates);
 
@@ -159,6 +162,10 @@ bool LT_Selection::AddSynthesized(QueryID query, SlotID att,
     else {
         // add to filter
         definitions[query] += "\n" + defs;
+    }
+
+    if( states.find(query) == states.end() ) {
+	states[query] = StateSourceVec();
     }
 
     return true;

@@ -50,7 +50,7 @@ dnl The aggregates only support doubles but the result can be converted to INT w
 
 dnl # selection code for all the predicate
 
-M4_DEFINE_AGG_STATES(</M4_Aggregates/>)dnl
+M4_DEFINE_AGG_STATES(</M4_Aggregates/>)<//>dnl
 
 
 extern "C"
@@ -60,12 +60,12 @@ int AggFinishUpWorkFunc_<//>M4_WPName
     FinishAggregate myWork;
     myWork.swap (workDescription);
 
-<//>M4_DECLARE_QUERYIDS(</M4_Aggregates/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_Aggregates/>,</M4_Attribute_Queries/>)<//>dnl
 
     // set up the output chunk
     Chunk output;
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
     Bitstring allQueries;
 
@@ -85,13 +85,13 @@ m4_foreach(</_Q_/>, </M4_Aggregates/>, </dnl
         M4_QUERY_STATE_TYPE(_Q_)& M4_QUERY_STATE(_Q_) = *content_<//>M4_QUERY_STATE_TYPE(_Q_);
         myMap.Unlock ();
 
-<//><//>M4_COMPUTE_AGGREGATE(</_Q_/>)dnl
+<//><//>M4_COMPUTE_AGGREGATE(</_Q_/>)<//>dnl
 
         allQueries.Union(M4_QUERY_NAME(_Q_));
         agg.Reset(); // to avoid errors on destructor
         delete content_<//>M4_QUERY_STATE_TYPE(_Q_);
     }
-  />)dnl
+  />)<//>dnl
 
     MMappedStorage bitStore;
     Column outBitCol(bitStore);
@@ -118,23 +118,23 @@ int AggOneChunkWorkFunc_<//>M4_WPName  (WorkDescription &workDescription, ExecEn
     myWork.swap (workDescription);
     Chunk &input = myWork.get_chunkToProcess ();
 
-<//>M4_DECLARE_QUERYIDS(</M4_Aggregates/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_Aggregates/>,</M4_Attribute_Queries/>)<//>dnl
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
-<//>M4_DEFINE_STATES(</M4_Aggregates/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
+<//>M4_DEFINE_STATES(</M4_Aggregates/>)<//>dnl
 
 
 dnl # definition of constants used in expressions
 <//>m4_foreach(</_Q_/>, </M4_Aggregates/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
     // constants for query M4_QUERY_NAME(_Q_)
-<//>_AGG_INITIALIZER(_Q_)dnl # the initializer should have a new line
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//>_AGG_INITIALIZER(_Q_)<//>dnl # the initializer should have a new line
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     FOR_EACH_TUPLE(</input/>){
 
@@ -145,14 +145,14 @@ dnl # definition of constants used in expressions
 <//><//>m4_foreach(</_A_/>, </M4_Attribute_Queries/>, </dnl
 <//>dnl access only valid attributes
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
 <//>m4_foreach(</_Q_/>, </M4_Aggregates/>, </dnl
         // do M4_QUERY_NAME(_Q_)
         if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
-<//><//><//>M4_ADD_ITEM_TO_STATE(_Q_)dnl
+<//><//><//>M4_ADD_ITEM_TO_STATE(_Q_)<//>dnl
         }
-<//>/>)dnl
+<//>/>)<//>dnl
 <//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>, queriesToRun)
     }
 
@@ -179,8 +179,8 @@ dnl # definition of constants used in expressions
     // now add the new state to the old state
 <//><//>m4_foreach(</_A_/>, m4_quote(M4_ATT_LIST((M4_ATT_LIST(</_Q_/>)))), </dnl
 <//><//><//>M4_QUERY_STATE(_Q_)<//>oldPtr->M4_AGG_NAME(_A_).AddState(M4_QUERY_STATE(_Q_).M4_AGG_NAME(_A_));
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
     myMap.Unlock ();
 
     // finally, if there were any results, put the data back in the chunk

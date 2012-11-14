@@ -153,7 +153,7 @@ void GISTWayPointImp :: TypeSpecificConfigure( WayPointConfigureData &configData
     resultIsState.SuckUp(retStates);
 
     tempConfig.swap(configData);
-    GPWayPointImp::TypeSpecificConfigure(configData);
+    GPWayPointImp::Configure(configData);
 
 }
 

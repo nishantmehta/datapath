@@ -95,6 +95,8 @@ bool LT_GLA::GetConfig(WayPointConfigureData& where){
         myReturnStates.Insert( curID, retState );
     }
 
+    myReqStates.MoveToStart();
+    FATALIF(myReqStates.AtEnd(), "There should be something in this map"); 
 
     // here is the waypoint configuration data
     GLAConfigureData glaConfigure (glaIDOne, myGLAWorkFuncs,  myGLAEndingQueryExits, myGLAFlowThroughQueryExits,

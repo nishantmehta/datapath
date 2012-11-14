@@ -61,17 +61,17 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // get the waypoint ID from the chunk
     int wayPointID = myWork.get_wayPointID ();
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
     // get ready the input columns
 <//>dnl SS Find some easy way to write qrys in here, not like JoinMerge way
-<//>dnl M4_ACCESS_COLUMNS(</M4_Attribute_Queries_LHS/>,</input/>)dnl
+<//>dnl M4_ACCESS_COLUMNS(</M4_Attribute_Queries_LHS/>,</input/>)<//>dnl
 <//>m4_foreach( </_A_/>, m4_quote(reval(</m4_args/>M4_Attribute_Queries_LHS)), </dnl
     QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
-<//>M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)dnl
-<//>/>)dnl
+<//>M4_EXTRACT_COLUMN(M4_ATT_AQ(_A_),input)<//>dnl
+<//>/>)<//>dnl
 
-<//>dnl SS M4_EXTRACT_BITMAP(</input/>)dnl
+<//>dnl SS M4_EXTRACT_BITMAP(</input/>)<//>dnl
 <//>dnl//Column bitmapIn;
 <//>dnl//input.SwapBitmap (bitmapIn);
 <//>dnl//BStringIterator myInBStringIter (bitmapIn);
@@ -82,7 +82,7 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
 <//>m4_foreach(</_AQ_/>,m4_quote(reval(</m4_args/>M4_Atrribute_Queries_LHS_copy)),</dnl
 <//>dnl for attribute bla the iterator is bla_Out
     M4_COL_TYPE(m4_first(_AQ_)) m4_first(_AQ_)<//>_Column_Out;
-<//>/>)dnl
+<//>/>)<//>dnl
 
     // these manage the output columns that come from the RHS (now stored in the hash table)
 <//>m4_foreach(</_AQ_/>,m4_quote(reval(</m4_args/>M4_Atrribute_Queries_RHS_copy)),</dnl
@@ -90,7 +90,7 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
      MMappedStorage m4_first(_AQ_)<//>_Column_store;
     Column  m4_first(_AQ_)<//>_Column_Ocol(m4_first(_AQ_)<//>_Column_store);
     M4_COL_TYPE(m4_first(_AQ_)) M4_ATT_AQ(_AQ_)_Column_Out(M4_ATT_AQ(_AQ_)_Column_Ocol);
-<//>/>)dnl
+<//>/>)<//>dnl
 
     // this is the ouput bitstring
     MMappedStorage myStore;
@@ -118,7 +118,7 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     M4_ATT_TYPE(_A_) _A_<//>RHSShadow;
     M4_ATT_TYPE(_A_) *<//>_A_<//>RHS = NULL;
     M4_ATT_TYPE(_A_) _A_<//>RHSobj;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
     // now actually try to match up all of the tuples!
     int totalNum = 0;
@@ -154,7 +154,7 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>M4_LHS_Hash)),</dnl
 dnl         //hashValue = Hash(M4_ATT_DATA(_A_).GetCurrent(), hashValue);
             hashValue = CongruentHash(Hash(_A_<//>_Column.GetCurrent()), hashValue);
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
             // figure out which of the hash buckets it goes into
             unsigned int index = WHICH_SEGMENT (hashValue);
@@ -177,7 +177,7 @@ dnl         //hashValue = Hash(M4_ATT_DATA(_A_).GetCurrent(), hashValue);
                 // give safe "shadow" values to all of the RHS attributes
 <//><//>m4_foreach(</_A_/>, m4_quote(reval(</m4_args/>M4_Hash_RHS_ATTR)),</dnl
                 _A_<//>RHS = &<//>_A_<//>RHSShadow;
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
                 // here we go through and extract the atts one at a time from the hash
                 // table.  Note that the atts must be extracted IN ORDER.  That is, the
@@ -212,7 +212,7 @@ dnl                 # _A_<//>RHS = ((M4_ATT_TYPE(_A_) *) (serializeHere + lenSoF
                     _A_<//>RHS = &<//>_A_<//>RHSobj;
                     lenSoFar += lastLen;
                 }
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 
                 // see if we have any query matches
                 bitstringRHS->Intersect (curBits);
@@ -223,18 +223,18 @@ dnl                 # _A_<//>RHS = ((M4_ATT_TYPE(_A_) *) (serializeHere + lenSoF
                 // See if any query in query class is eligible for this comparision
                 qBits = QueryIDSet(m4_first(_A_), true);
                 qBits.Intersect(*bitstringRHS);
-<//><//><//><//>m4_define(</list/>, </m4_second(_A_)/>)dnl
+<//><//><//><//>m4_define(</list/>, </m4_second(_A_)/>)<//>dnl
                 if (
                     !qBits.IsEmpty () &&
 <//>m4_foreach( </_B_/>, m4_quote(reval(</m4_args/>list)),</dnl
                      *<//>m4_second(_B_)<//>RHS == m4_first(_B_)<//>_Column.GetCurrent() &&
-<//>/>)dnl
+<//>/>)<//>dnl
                      1 )
                 {
                     bitstringLHS.Union (qBits);
                     //printf("TPL: %f\t%d\t%d\n", *customer_c_acctbalRHS, orders_o_custkey_Column.GetCurrent(), *customer_c_custkeyRHS);
                 }
-<//>/>)dnl
+<//>/>)<//>dnl
 
                 // if any of them hit...
                 if (!bitstringLHS.IsEmpty ()) {
@@ -253,7 +253,7 @@ dnl                     # for attribute bla the iterator is bla_Out
                         M4_ATT_DATA(m4_first(_AQ_))<//>_Out.Insert (M4_ATT_DATA(m4_first(_AQ_)).GetCurrent());
                         M4_ATT_DATA(m4_first(_AQ_))<//>_Out.Advance();
 
-<//>/>)dnl
+<//>/>)<//>dnl
                         stillShallow = 0;
                     }
 
@@ -266,7 +266,7 @@ dnl                     # for attribute bla the iterator is bla_Out
                         M4_ATT_DATA(m4_first(_AQ_))<//>_Out.Insert (M4_ATT_DATA(m4_first(_AQ_)).GetCurrent());
                         M4_ATT_DATA(m4_first(_AQ_))<//>_Out.Advance();
 
-<//>/>)dnl
+<//>/>)<//>dnl
                     }
 
                     // now, deal with the output atts that come from the hash table
@@ -275,7 +275,7 @@ dnl                 # SS Query check is missing
                     M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Insert (*<//>M4_ATT_AQ(_AQ_)RHS);
                     M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Advance();
 
-<//>/>)dnl
+<//>/>)<//>dnl
 
                     // finally, set the bitmap. We are one element behind
 		    if (!oldBitstringLHS.IsEmpty()){
@@ -318,7 +318,7 @@ dnl         # SS Query check is missing
             M4_ATT_TYPE(M4_ATT_AQ(_AQ_)) tmp_<//>M4_ATT_AQ(_AQ_);
             M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Insert (tmp_<//>M4_ATT_AQ(_AQ_));
             M4_ATT_DATA(M4_ATT_AQ(_AQ_))_Out.Advance();
-<//>/>)dnl
+<//>/>)<//>dnl
  
 	    if (oldBitstringLHS.IsEmpty()){ // no not exist and no join match
  	       myOutBStringIter.Insert (oldBitstringLHS);
@@ -330,8 +330,8 @@ dnl         # SS Query check is missing
 <//>m4_foreach( </_A_/>, m4_quote(reval(</m4_args/>M4_Attribute_Queries_LHS)), </dnl
 M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         M4_ATT_DATA(M4_ATT_AQ(_A_)).Advance();
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
 
         // advance the input bitstring
         myInBStringIter.Advance ();
@@ -346,16 +346,16 @@ M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         Column col_<//>M4_ATT_AQ(_A_);
         M4_ATT_DATA(M4_ATT_AQ(_A_)).Done(col_<//>M4_ATT_AQ(_A_));
         output.SwapColumn (col_<//>M4_ATT_AQ(_A_), M4_ATT_SLOT(M4_ATT_AQ(_A_)));
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     } else {
 <//>m4_foreach( </_A_/>, m4_quote(reval(</m4_args/>M4_Atrribute_Queries_LHS_copy)), </dnl
 <//><//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         Column col_<//>M4_ATT_AQ(_A_);
         M4_ATT_DATA(M4_ATT_AQ(_A_))_Out.Done(col_<//>M4_ATT_AQ(_A_));
         output.SwapColumn (col_<//>M4_ATT_AQ(_A_), M4_ATT_SLOT(M4_ATT_AQ(_A_)));
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     }
 
     {
@@ -364,8 +364,8 @@ M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         Column col_<//>M4_ATT_AQ(_A_);
         M4_ATT_DATA(M4_ATT_AQ(_A_))_Out.Done(col_<//>M4_ATT_AQ(_A_));
         output.SwapColumn (col_<//>M4_ATT_AQ(_A_), M4_ATT_SLOT(M4_ATT_AQ(_A_)));
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     }
 
     // put in the output bitmap

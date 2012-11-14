@@ -77,9 +77,12 @@ void HString::InitializeDictionary(void){
     SELECT hash, val
     FROM HDictionary;
   "/>, </(hash, int),(val, text)/>){
-		HString h(hash, strlen(val), val);
-		AddEntryInDictionary(h);
+		AddEntryInDictionary(hash, val);
 	}SQL_END_STATEMENT_TABLE;
+
+	// Add empty string to dictionary
+        const char * tmp = "";
+        AddEntryInDictionary(0, tmp);
 
 	// close the database
 	SQL_CLOSE_DATABASE;

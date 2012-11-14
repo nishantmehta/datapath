@@ -44,6 +44,15 @@ tokens {
   STATE_LIST;
   CLIST;
 
+  // Used for typeof
+  TYPEOF_;
+
+  // Used in definitions
+  DEFINITION;   // Marks the node as a definition
+  CT_ARGS;      // constructor arguments
+  EXPR_LIST;    // list of expressions
+  TEMPLATE_DEF; // Template definition
+
   // Generalized Linear Aggregates
   GLA__;
   GLA_DEF;
@@ -131,7 +140,14 @@ string GenerateTemp(const char* pattern);
 }
 
 type
-    : ID
+    : ID 
+    | TYPEOF LPAREN at=relOrSynAtt RPAREN 
+        -> ^(TYPEOF_ $at)
+    ;
+
+relOrSynAtt
+    : rel=ID DOT at=ID -> ^(ATT $at $rel)
+    | at=ID -> ^(ATT $at) 
     ;
 
 /*
@@ -175,7 +191,7 @@ attC
     ;
 
 fragment attCElem
-    : ID (COLON! type)+
+    : ID (COLON! type) (COLON! ID)*
     ;
 
 idList     :    ID ( COMMA ID)*
@@ -194,9 +210,7 @@ attribute
             longName = (char*)$rel.text->chars;
             longName += "_";
             longName += (char*)$att.text->chars;
-            AttributeManager& am = AttributeManager::GetAttributeManager();
-            SlotID slot = am.GetAttributeSlot(longName.c_str());
-            WARNINGIF( !slot.IsValid(), "Attribute does not exist");
+            
         } -> ATT[$att, longName.c_str()]
      ;
 
@@ -319,26 +333,26 @@ primary_expression
     | LPAREN! expression RPAREN!
     ;
 
-funct
-    :    name=ID LPAREN expressionList RPAREN -> ^(FUNCTION $name expressionList)
-    |    UDF COLON name=ID functionTemplate LPAREN expressionList RPAREN retType=functionRetType ->^(FUNCTION $name $retType functionTemplate expressionList)
+templateDef
+    : /* nothing */ ->
+    | LS argList=templateArgList GT -> ^(TEMPLATE_DEF $argList) 
     ;
 
-fragment functionRetType
-    : /* nothing */
-    | '->' ID -> ^(TYPE_ ID)
+templateArgList
+    : templateArg (COMMA! templateArg)*
     ;
 
-functionTemplate
-    : /* nothing */
-    | '<' a=functionTemplateArg (COMMA b=functionTemplateArg)* '>' ->
-        ^(FUNCTEMPLATE $a $b*)
-    ;
-
-functionTemplateArg
+templateArg
     : LSQ attCList RSQ -> ^(LIST attCList)
     | attC
     | ctAtt
+    | type
+//    | definition
+    ;
+
+funct
+    :    name=ID LPAREN expressionList RPAREN -> ^(FUNCTION $name expressionList)
+    |    UDF COLON name=ID templateDef LPAREN expressionList RPAREN  ->^(FUNCTION $name templateDef expressionList)
     ;
 
 expressionList

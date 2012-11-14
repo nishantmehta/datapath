@@ -121,7 +121,7 @@ actionBody
         ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN ^(ATTS $l2)))
     | FILTER a=ID BY exp=expressionList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] ^(FILTER $exp))
-    | FILTER a=ID BY GF gf=gfDef ct=constArgs st=stateArgs USING exp=expressionList
+    | FILTER a=ID BY gf=gfDef ct=constArgs st=stateArgs USING exp=expressionList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a, qry.c_str()] ^(GF__ $ct $st $gf $exp))
     | FILTER r1=ID USING l1=attEListAlt inStmt r2=ID LPAREN l2=attEListAlt RPAREN
         ->  ^(JOIN ^(ATTS $l1) $r1 TERMCONN $r2) ^(QUERRY__ ID[$r1,qry.c_str()] ^(JOIN inStmt ^(ATTS $l2)))
@@ -221,8 +221,12 @@ constArgs
   ;
 
 stateArgs
-    : REQUIRES! stateArg+
+    : stateArgsReq
     | /* nothing */
+    ;
+
+stateArgsReq
+    : REQUIRES! stateArg (COMMA! stateArg)*
     ;
 
 stateArg

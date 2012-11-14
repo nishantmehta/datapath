@@ -25,6 +25,10 @@ SelectionWayPointImp :: SelectionWayPointImp () {
 }
 SelectionWayPointImp :: ~SelectionWayPointImp () {PDEBUG("SelectionWayPointImp :: SelectionWayPointImp ()");}
 
+void SelectionWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& config ) {
+    GPWayPointImp::Configure(config);
+}
+
 bool SelectionWayPointImp :: ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne ) {
     PDEBUG( "SelectionWayPointImp :: ReceivedStartProducingMsg ()" );
 

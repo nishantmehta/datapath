@@ -81,19 +81,19 @@ class GLAWayPointImp : public GPWayPointImp {
 
     void GotAllStates( QueryID query );
 
-    bool PreProcessingPossible( CPUWorkToken& token );
-    bool PostProcessingPossible( CPUWorkToken& token );
-    bool PreFinalizePossible( CPUWorkToken& token );
-    bool FinalizePossible( CPUWorkToken& token );
+    virtual bool PreProcessingPossible( CPUWorkToken& token );
+    virtual bool PostProcessingPossible( CPUWorkToken& token );
+    virtual bool PreFinalizePossible( CPUWorkToken& token );
+    virtual bool FinalizePossible( CPUWorkToken& token );
 
-    bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
-    bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
-    bool PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
-    bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
-    bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool PreProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool ProcessChunkComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data);
+    virtual bool PostProcessingComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool PreFinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
+    virtual bool FinalizeComplete( QueryExitContainer& whichOnes, HistoryList& history, ExecEngineData& data );
 
-    bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );
-    bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
+    virtual bool ReceivedQueryDoneMsg( QueryExitContainer& whichOnes );
+    virtual bool ReceivedStartProducingMsg( HoppingUpstreamMsg& message, QueryExit& whichOne );
 
 public:
 
@@ -102,9 +102,9 @@ public:
     virtual ~GLAWayPointImp ();
 
 
-    void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
-    void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
-    void TypeSpecificConfigure (WayPointConfigureData &configData);
+    virtual void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
+    virtual void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
+    virtual void TypeSpecificConfigure (WayPointConfigureData &configData);
 
 };
 

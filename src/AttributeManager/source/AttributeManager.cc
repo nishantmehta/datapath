@@ -34,6 +34,7 @@ AttributeManager* AttributeManager::instance = NULL;
 
 AttributeInfoInternal :: AttributeInfoInternal(string _relationName, string _name,
 	string _type, int _column, int _slot){
+    shortName = _name;
 	name = REL_ATT_KEY(_relationName, _name);
 	type=_type;
 
@@ -49,6 +50,7 @@ AttributeInfoInternal :: AttributeInfoInternal(string _relationName, string _nam
 
 AttributeInfoInternal::AttributeInfoInternal(QueryID& id, string _name,
 	string _type, int _slot){
+    shortName = _name;
 	QueryManager& qm=QueryManager::GetQueryManager();
 	string qName;
 	if (!qm.GetQueryName(id,qName)){
@@ -360,6 +362,80 @@ void AttributeManager::GetAttributesSlots(string tableName, SlotContainer& where
 	pthread_mutex_unlock(&attributeManagerMutex);
 }
 
+void AttributeManager::AliasAttributesSlots(string tableName, string alias, SlotContainer& where ) {
+    // Lock the mutex
+    pthread_mutex_lock(&attributeManagerMutex);
+
+    // Does the alias already exist?
+    RelationToSlotsMap::iterator aliasItr = relationToSlots.find(alias);
+
+    if( aliasItr != relationToSlots.end() ) {
+        // If so, just get the slots and return
+        SlotToSlotMap& slotMap = *(aliasItr->second);
+        slotMap.MoveToStart();
+
+        while(!slotMap.AtEnd()) {
+            SlotID slot = slotMap.CurrentData();
+            where.Append(slot);
+            slotMap.Advance();
+        }
+    }
+    else {
+        // Alias not already created. Make sure that the base relation exists.
+        RelationToSlotsMap::iterator baseItr = relationToSlots.find(tableName);
+
+        if( baseItr != relationToSlots.end() ) {
+            SlotToSlotMap& baseSlotMap = *(baseItr->second);
+
+            SlotToSlotMap* aliasSlotMap = new SlotToSlotMap();
+
+            FOREACH_EM( colSot, baseSlot, baseSlotMap) {
+                string baseName = reverseMap[baseSlot];
+                AttributeInfoInternal* baseInfo = myAttributes[baseName];
+
+                // Remove the tableName_ from the name of the attribute
+                string baseAttrName = baseInfo->ShortName();
+
+                // Get a new slot ID for the attribute
+                int newSlot = NextEmptySlot();
+                slotUsage.at(newSlot-firstSynthSlot) = true;
+
+                // Get column # from base attribute info
+                SlotID colID = baseInfo->Column();
+                int colNo = colID.GetInt();
+
+                // Create a new AttributeInfoInternal for the attribute
+                AttributeInfoInternal *aliasInfo = new AttributeInfoInternal(
+                    alias, baseAttrName, baseInfo->Type(), colNo, newSlot );
+
+                // This should already have the alias name prefixed
+                string aliasAttrName = aliasInfo->Name();
+
+                // Add the attribute info to the myAttributes map
+                myAttributes[aliasAttrName] = aliasInfo;
+                reverseMap[aliasInfo->Slot()] = aliasAttrName;
+
+                // Make copies of the column and slot just to be sure we don't
+                // swap out the values in aliasInfo
+                SlotID tCol = aliasInfo->Column();
+                SlotID tSlot = aliasInfo->Slot();
+                aliasSlotMap->Insert(tCol, tSlot);
+
+                SlotID sID = aliasInfo->Slot();
+                where.Append(sID);
+
+            } END_FOREACH;
+
+            relationToSlots[alias] = aliasSlotMap; 
+        }
+        else {
+            FATAL("Unable to create alias for non-existent relation %s.", tableName.c_str());
+        }
+    }    
+
+    // Unlock the mutex
+    pthread_mutex_unlock(&attributeManagerMutex);
+}
 
 string AttributeManager::GetAttributeType(string longName){
 	string rez; /* initially empty */

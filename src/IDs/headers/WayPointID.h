@@ -141,6 +141,7 @@ WayPointID WayPointID::GetIdByName(const char* name){
     map<string, size_t>::iterator it=nameToID.find(name);
     if (it==nameToID.end()){
         // did not find it. Return default id
+      WARNING("Did not find waypoint ID of %s\n", name);
         return WayPointID();
     } else {
         WayPointID rez;

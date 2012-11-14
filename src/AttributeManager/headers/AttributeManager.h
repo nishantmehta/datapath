@@ -90,6 +90,10 @@ public:
 	// retrieve the name of an attribute by SlotID
 	string GetAttributeName(SlotID slot);
 
+    // Alias all attributes from tablename to alias, creating slotsw if needed,
+    // and returning the slots for the aliased attributes
+    void AliasAttributesSlots(string tableName, string alias, SlotContainer& where);
+
 	/////////////////////////
 	// METHODS TO GET INFORMATION ABOUT GROUPS OF ATTRIBUTES
 

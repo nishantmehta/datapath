@@ -3,7 +3,7 @@
 # make -f MK-generaged -DOBJECTS="WP1.O ..." 
 # The macro OBJECTS must list the objects needed
 
-#LIBS = -lonig # -lgsl -lgslcblas -lonig
+LINK_PATH = -L../../../../Libs/libraries
 
 # COMPILER SELECTION
 CC=g++
@@ -14,7 +14,8 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
 # use C++11 standard
-CCFLAGS += -std=c++11
+# CCFLAGS += -std=c++11
+CCFLAGS += -std=gnu++0x
 
 M4=m4 
 
@@ -66,4 +67,4 @@ libfile: ${OBJECTS:.o=.lib}
 	rm libfile.temp
 
 Generated.so: ${OBJECTS} libfile
-	${CC} ${OPT} -rdynamic -shared  -o Generated.so   ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)
+	${CC} ${OPT} -rdynamic -shared  -o Generated.so   $(LINK_PATH) ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)

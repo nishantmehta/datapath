@@ -86,7 +86,7 @@ m4_define(</FIND_MIN/>, </dnl
     // remove this after debugging
     FATALIF(best$1 != MAX_HASH && WHICH_SEGMENT(best$1) !=0, "Hash out of range %llu", (unsigned long long) best$1);
 
-/>)dnl
+/>)<//>dnl
 
 /*
 void check_correctness(int start, int end, BStringIterator& biter, ColumnIterator<__uint64_t>& hiter) {
@@ -132,11 +132,11 @@ m4_define(</M4_ADVANCE_CALL/>, </dnl
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_$1/>, </dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
     col$1IterVec_<//>M4_ATT_AQ(_A_)[$2].Advance();
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
     myInBStringIter$3Vec[$2].Advance();
     col$1IterVecHash[$2].Advance();
-/>)dnl
+/>)<//>dnl
 
 m4_define(</M4_ADVANCE_SEARCH_CALL/>, </dnl
     //while (!myInBStringIter$4Vec[$2].AtEndOfColumn()) {
@@ -166,8 +166,8 @@ m4_define(</M4_ADVANCE_SEARCH_CALL/>, </dnl
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_$3/>, </dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
         col$3IterVec_<//>M4_ATT_AQ(_A_)[$2].Advance();
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
         myInBStringIter$4Vec[$2].Advance();
         col$3IterVecHash[$2].Advance();
     }
@@ -177,7 +177,7 @@ m4_define(</M4_ADVANCE_SEARCH_CALL/>, </dnl
     //make_heap(minHeap$3.begin(), minHeap$3.end(), $5());
     FIND_MIN($3)
 #endif
-/>)dnl
+/>)<//>dnl
 
 /*
     This takes two sorted list of chunks, lhs list and rhs list, and do the sort merge join.
@@ -270,7 +270,7 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
     }
 
     // get all of the queries that are active here
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
     // this is the output chunk
     Chunk output;
@@ -281,16 +281,16 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
     MMappedStorage store_<//>M4_ATT_AQ(_A_);
     Column col_<//>M4_ATT_AQ(_A_)(store_<//>M4_ATT_AQ(_A_));
     M4_COL_TYPE(M4_ATT_AQ(_A_)) colLHSOutIter_<//>M4_ATT_AQ(_A_)(col_<//>M4_ATT_AQ(_A_));
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_RHS_Copy/>, </dnl
 <//><//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
     MMappedStorage store_<//>M4_ATT_AQ(_A_);
     Column col_<//>M4_ATT_AQ(_A_)(store_<//>M4_ATT_AQ(_A_));
     M4_COL_TYPE(M4_ATT_AQ(_A_)) colRHSOutIter_<//>M4_ATT_AQ(_A_)(col_<//>M4_ATT_AQ(_A_));
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
     // Create output BitString
     MMappedStorage myStore;
@@ -305,15 +305,15 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
 <//><//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
     vector<M4_COL_TYPE(M4_ATT_AQ(_A_)) > colLHSIterVec_<//>M4_ATT_AQ(_A_);
     colLHSIterVec_<//>M4_ATT_AQ(_A_).resize(numLHSChunks);
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_RHS/>, </dnl
 <//><//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
     vector<M4_COL_TYPE(M4_ATT_AQ(_A_)) > colRHSIterVec_<//>M4_ATT_AQ(_A_);
     colRHSIterVec_<//>M4_ATT_AQ(_A_).resize(numRHSChunks);
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
     // Extract columns now.
     // This extracts columns if there is any query for it in this WP
@@ -325,17 +325,17 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
         while (inputLHSList.RightLength()) {
             // WP node queries intersect Translator provided queries
             QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
-<//><//><//>M4_EXTRACT_COLUMN_FRAGMENT(M4_ATT_AQ(_A_),inputLHSList.Current(), start, end)dnl
+<//><//><//>M4_EXTRACT_COLUMN_FRAGMENT(M4_ATT_AQ(_A_),inputLHSList.Current(), start, end)<//>dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
             if (M4_ATT_AQ(_A_)_Qrys.Overlaps(queriesToRun)){
                 colLHSIterVec_<//>M4_ATT_AQ(_A_)[i].swap(M4_ATT_DATA(M4_ATT_AQ(_A_)));
             }
-<//>/>)dnl
+<//>/>)<//>dnl
             inputLHSList.Advance ();
             i++;
         }
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_RHS/>, </dnl
     {
@@ -344,17 +344,17 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
         while (inputRHSList.RightLength()) {
             // WP node queries intersect Translator provided queries
             QueryIDSet M4_ATT_AQ(_A_)_Qrys(M4_QUERIES_AQ(_A_), true);
-<//><//><//>M4_EXTRACT_COLUMN_FRAGMENT(M4_ATT_AQ(_A_),inputRHSList.Current(),start,end)dnl
+<//><//><//>M4_EXTRACT_COLUMN_FRAGMENT(M4_ATT_AQ(_A_),inputRHSList.Current(),start,end)<//>dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
                 if (M4_ATT_AQ(_A_)_Qrys.Overlaps(queriesToRun)){
                     colRHSIterVec_<//>M4_ATT_AQ(_A_)[i].swap(M4_ATT_DATA(M4_ATT_AQ(_A_)));
                 }
-<//>/>)dnl
+<//>/>)<//>dnl
             inputRHSList.Advance ();
             i++;
         }
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
 
     // Here we start the sort merge join
@@ -448,8 +448,8 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_RHS/>, </dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
                     colRHSIterVec_<//>M4_ATT_AQ(_A_)[chk].CheckpointSave();
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
                 myInBStringIterRhsVec[chk].CheckpointSave();
                 colRHSIterVecHash[chk].CheckpointSave();
             }
@@ -489,8 +489,8 @@ dnl                 colLHSIterVecHash[i].swap(iter_<//>M4_ATT_AQ(_A_));
 <//>m4_foreach( </_A_/>, </M4_Attribute_Queries_RHS/>, </dnl
 <//>M4_IFVALID_ATT(M4_ATT_AQ(_A_), </dnl
                             colRHSIterVec_<//>M4_ATT_AQ(_A_)[chk].CheckpointRestore();
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
                             myInBStringIterRhsVec[chk].CheckpointRestore();
                             colRHSIterVecHash[chk].CheckpointRestore();
                     }
@@ -546,12 +546,12 @@ m4_define(</list/>, </m4_second(_A_)/>)
                             /*    !qBits.IsEmpty () && */
 <//>m4_foreach( </_B_/>, m4_quote(reval(</m4_args/>list)), </dnl
                                 colLHSIterVec_<//>m4_first(_B_)[minIndexLHS].GetCurrent() == colRHSIterVec_<//>m4_second(_B_)[minIndexRHS].GetCurrent() &&
-<//>/>)dnl
+<//>/>)<//>dnl
                                 1 ) {
                                 anyOneMatch = true;
                                 uni.Union (qBits);
                             }
-<//>/>)dnl
+<//>/>)<//>dnl
 
                         if (anyOneMatch) {
                             // fill the output iterators
@@ -561,8 +561,8 @@ m4_define(</list/>, </m4_second(_A_)/>)
                                     colLHSOutIter_<//>m4_first(_C_).Insert(colLHSIterVec_<//>m4_first(_C_)[minIndexLHS].GetCurrent());
                                     colLHSOutIter_<//>m4_first(_C_).Advance();
                                 //}
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
 
 <//>m4_foreach( </_C_/>, </M4_Attribute_Queries_RHS_Copy/>, </dnl
 <//>M4_IFVALID_ATT(m4_first(_C_), </dnl
@@ -570,8 +570,8 @@ m4_define(</list/>, </m4_second(_A_)/>)
                                     colRHSOutIter_<//>m4_first(_C_).Insert(colRHSIterVec_<//>m4_first(_C_)[minIndexRHS].GetCurrent());
                                     colRHSOutIter_<//>m4_first(_C_).Advance();
                                 //}
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
                             myOutBStringIter.Insert (uni);
                             total++;
                             myOutBStringIter.Advance ();
@@ -616,16 +616,16 @@ m4_define(</list/>, </m4_second(_A_)/>)
     Column collhs_<//>m4_first(_C_);
     colLHSOutIter_<//>m4_first(_C_).Done(collhs_<//>m4_first(_C_));
     output.SwapColumn (collhs_<//>m4_first(_C_), M4_ATT_SLOT(m4_first(_C_)));
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
 
 <//>m4_foreach( </_C_/>, </M4_Attribute_Queries_RHS_Copy/>, </dnl
 <//>M4_IFVALID_ATT(m4_first(_C_), </dnl
     Column colrhs_<//>m4_first(_C_);
     colRHSOutIter_<//>m4_first(_C_).Done(colrhs_<//>m4_first(_C_));
     output.SwapColumn (colrhs_<//>m4_first(_C_), M4_ATT_SLOT(m4_first(_C_)));
-<//>/>)dnl
-<//>/>)dnl
+<//>/>)<//>dnl
+<//>/>)<//>dnl
 
     //myOutBStringIter.Done (bitmapOut);
     myOutBStringIter.Done ();

@@ -29,7 +29,7 @@ bool LT_Scanner::GetConfig(WayPointConfigureData& where){
     // columns to slot?
     SlotToSlotMap columnsToSlotsMap;
     AttributeManager& am=AttributeManager::GetAttributeManager();
-    am.GetColumnToSlotMapping(relation, columnsToSlotsMap);
+    am.GetColumnToSlotMapping(GetId().getName(), columnsToSlotsMap);
 
     // query to slot map
     QueryExitToSlotsMap queryColumnsMap;

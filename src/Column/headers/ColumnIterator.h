@@ -29,6 +29,7 @@ class Column;
 
 template <class DataType> class ColumnIterator {
 
+protected:
 	Iterator it;
 
 public:
@@ -49,6 +50,9 @@ public:
 	// the end of the column will be included in the column from now on.  The column
 	// is taken out of the iterator and put into iterateMe
 	void Done (Column &iterateMe);
+
+  // start from the beggining
+  void Restart(void);
 
 	// advance to the next object in the column... 
 	void Advance ();
@@ -123,6 +127,13 @@ template <class DataType>
 inline void ColumnIterator <DataType> :: Advance () {
   it.Advance();
 }
+
+
+template <class DataType>
+inline void ColumnIterator <DataType> :: Restart () {
+  it.Restart();
+}
+
 
 template <class DataType>
 inline void ColumnIterator <DataType> :: MarkFragment () {

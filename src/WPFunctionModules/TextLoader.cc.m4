@@ -17,6 +17,9 @@ dnl We assume tha this file is included from Modules.m4 and that all
 dnl the m4 libraries needed are loaded
 dnl
 
+#include "Dictionary.h"
+#include "DictionaryManager.h"
+
 dnl Arguments:
 dnl
 dnl M4_WPName -- name of the waypoint
@@ -36,10 +39,17 @@ int TextLoaderWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngi
     HString::DictionaryWrapper& localDictionaryWrp = myWork.get_localDictionary();
     HString::Dictionary&  localDictionary = localDictionaryWrp.GetDictionary();
 
+dnl # Declare local dictionaries for columns that need it
+m4_foreach(</_C_/>, </M4_Columns/>, </dnl
+<//>m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </dnl
+    Dictionary _C_</_Local_Dict/>;
+<//>/>)dnl
+/>)dnl
+
     // the file we are reading from (state preserved accross calls
     FILE* stream = myWork.get_stream();
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
     int noTuples=0;
     char* curr;
@@ -52,7 +62,7 @@ int TextLoaderWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngi
     // Start new columns and allocate storage for them
     // One column/attribute
 m4_foreach(</_C_/>, </M4_Columns/>, </dnl
-<//><//>M4_DECLARE_COLUMN(_C_)dnl
+<//><//>M4_DECLARE_COLUMN(_C_)<//>dnl
 />)
 
     while(true){
@@ -80,10 +90,12 @@ m4_foreach(</_C_/>, </M4_Columns/>, </dnl
         // temporary variable to read the attribute
         M4_BASIC_TYPE(M4_ATT_TYPE(_C_)) _C_<//>Att;
         // populate it from the token
-        FromString( _C_<//>Att, curr);
+        FromString( _C_<//>Att, curr dnl
+m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </, _C_</_Local_Dict/>/>)<//>dnl
+);
         _C_<//>Iterator.Insert(_C_<//>Att);
         _C_<//>Iterator.Advance();
-<//>/>)dnl
+<//>/>)<//>dnl
 />)
 dnl # END OF M4 CODE
 
@@ -95,6 +107,12 @@ dnl # END OF M4 CODE
 
     // deallocate the buffer (not needed anymore)
     free(buffer);
+
+    // Deal with the PreDone() calls to release read locks
+m4_foreach(</_C_/>, </M4_Columns/>, </dnl
+m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </_C_<//>Iterator.PreDone();/>)
+/>)
+
 
     // form the chunk and put the columns in it
     Chunk chunk;
@@ -110,11 +128,13 @@ m4_foreach(</_C_/>, </M4_Columns/>, </dnl
 
     cSlot = M4_ATT_SLOT(_C_);
 
-    _C_<//>Iterator.Done(_C_<//>Column);
+    _C_<//>Iterator.Done(_C_<//>Column dnl
+m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </, _C_</_Local_Dict/>/>)<//>dnl
+);
 dnl _C_<//>Column.Compress(false); // compress the
 dnl  //column. Keep both compressed and decompressed
     chunk.SwapColumn( _C_<//>Column, cSlot );
-<//>/>)dnl
+<//>/>)<//>dnl
 />)
 
     MMappedStorage bitStore;

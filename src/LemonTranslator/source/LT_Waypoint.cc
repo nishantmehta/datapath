@@ -74,7 +74,8 @@ bool LT_Waypoint::IsSubSet(QueryToSlotSet& subset, QueryToSlotSet& superset)
         }
         if (!IsSubSet(it_sub->second, it_super->second))
         {
-            cout << "\nSome subset attributes are not found in superset query : " << (GetQueryName(it_sub->first)).c_str();
+	    cout << "\n " << myId.getName() << " -> ";
+            cout << "Some subset attributes are not found in superset query : " << (GetQueryName(it_sub->first)).c_str();
             return false;
         }
     }

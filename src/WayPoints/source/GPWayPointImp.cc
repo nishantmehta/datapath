@@ -26,7 +26,7 @@ GPWayPointImp :: ~GPWayPointImp () {
     PDEBUG ("GPWayPointImp :: GPWayPointImp ()");
 }
 
-void GPWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData ) {
+void GPWayPointImp :: Configure( WayPointConfigureData& configData ) {
     PDEBUG("GPWayPointImp :: TypeSpecificConfigure()");
 
     GPWConfigureData myConfig;
@@ -43,6 +43,8 @@ void GPWayPointImp :: TypeSpecificConfigure( WayPointConfigureData& configData )
     } END_FOREACH;
 
     QueryToReqStates& reqStates = myConfig.get_reqStates();
+    reqStates.MoveToStart();
+    FATALIF(reqStates.AtEnd(), "Why is the mapping of queries to required states empty?");
 
     InitConstStates( reqStates );
 }
@@ -56,6 +58,8 @@ QueryExit GPWayPointImp :: GetExit( QueryID qID ) {
 
 void GPWayPointImp :: InitConstStates( QueryToReqStates& reqStates ) {
     PDEBUG ("GPWayPointImp :: InitConstStates ()");
+    reqStates.MoveToStart();
+    FATALIF(reqStates.AtEnd(), "Why is the mapping of queries to required states empty?");
     FOREACH_EM(query, list, reqStates) {
         int index = 0;
         GLAStateContainer myConstStates;

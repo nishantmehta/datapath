@@ -48,8 +48,8 @@
 #define STR_HASH_MASK 0x1FFFFFFFFFFFFFFFUL
 
 // Macros to assist looking up items in the dictionary
-#define MASK_MAYBE_IN_DICT(x) ((x) | DICT_BIT & DICT_HASH_MASK)
 #define MASK_IN_DICT(x) ((x) & DICT_HASH_MASK)
+#define MASK_MAYBE_IN_DICT(x) ((MASK_IN_DICT(x)) | DICT_BIT)
 
 // Macro for masking hashes for comparison with other hashes
 #define MASK_HASH(x) ((x) & STR_HASH_MASK)
@@ -187,6 +187,7 @@ public:
          string in dictionary (virtually allowing it to be infrequent category).
     */
     static void AddEntryInDictionary(HString& h, Dictionary& dict = globalDictionary);
+    static void AddEntryInDictionary(uint64_t hash, const char *value, Dictionary& dict = globalDictionary);
 
     /* It will initialize the dictionary from the dictionary already saved on disk.
     */
@@ -235,12 +236,49 @@ public:
   operator const char *() const;
 #endif
 
+  bool ShouldBeInDict(void) const {
+      if( !IN_DICT(mHash) ) {
+          Dictionary::const_iterator it = globalDictionary.find(MASK_MAYBE_IN_DICT(mHash));
+          if( it != globalDictionary.end() && strcmp(it->second.c_str(), mStr) == 0 ) {
+              return true;
+          }
+      }
+      return false;
+  }
+
+private:
+  /* function to set state to invalid/NULL */
+  void SetInvalid(){ mHash=DICT_BIT; mStrLen=-1; mStr=NULL; }
+
+  void CheckIfInDict() {
+#ifdef CHECK_HSTRING
+    if( ShouldBeInDict() ) {
+        ConvertToDictionary();
+    }
+#endif
+  }
+
+  void CheckIfInvalid() {
+    //CheckIfInDict();
+#ifdef CHECK_HSTRING
+    if(__builtin_expect( IN_DICT(mHash) && globalDictionary.find(MASK_IN_DICT(mHash)) == globalDictionary.end(), 0 ) ) {
+        SetInvalid();
+    }
+#endif
+
+  }
+
+public:
+
   /* Functin to be used when HString is placed on top of binary data */
   void Set(__uint64_t h, __uint64_t l, const char* aux){
     mHash=h;
     CLEAR_LOCAL_BIT(mHash);  /* not our storage */
     mStrLen=l;
     mStr=aux;
+
+    // Validate string
+    CheckIfInvalid();
   }
 
   void Set(void* myData){
@@ -248,11 +286,10 @@ public:
     CLEAR_LOCAL_BIT(mHash); /* not our storage */
     mStrLen = *((__uint64_t*) myData + 1);
     mStr = (char*) myData +  2*sizeof(__uint64_t);
+
+    // Validate string
+    CheckIfInvalid();
   }
-
-  /* function to set state to invalid/NULL */
-  void SetInvalid(){ mHash=DICT_BIT; mStrLen=-1; mStr=NULL; }
-
 
   // default constructor
  HString(){SetInvalid();}
@@ -367,9 +404,11 @@ public:
     // BEGIN DEBUG
     void print(void) const {
         cerr << this->GetStr() << "|" << MASK_HASH(mHash) << " LOCAL: "
-            << (LOCAL(mHash) ? "true" : "false")
-            << " DICT: " << (IN_DICT(mHash) ? "true" : "false") << endl;
+            << (LOCAL(mHash) ? "true " : "false")
+            << " DICT: " << (IN_DICT(mHash) ? "true " : "false")
+            << " SBID: " << (ShouldBeInDict() ? "true " : "false") << endl;
     }
+    
     // END DEBUG
 };
 
@@ -442,9 +481,9 @@ inline const char* HString::GetStr() const {
     FATALIF( IN_DICT(mHash) && LOCAL(mHash), "String marked as both in dictionary and local! hash: %lu", mHash);
 
     if (IN_DICT(mHash)) {
-        WARNINGIF( globalDictionary.find( MASK_IN_DICT(mHash) ) == globalDictionary.end(),
-                "Entry should be in the dictionary. mHash: %ld", mHash);
-        return (globalDictionary[MASK_IN_DICT(mHash)]).c_str(); // No risk since this is private (to be used internally)
+        WARNINGIF(globalDictionary.find( MASK_IN_DICT(mHash) ) == globalDictionary.end(),
+	    "Entry should be in the dictionary. mHash: %ld", mHash);
+        return (globalDictionary[MASK_IN_DICT(mHash)]).c_str();
     }
     else {
         return mStr;
@@ -527,7 +566,7 @@ inline unsigned int HString::GetObjLength() const {
         return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
     else {
 
-        FATALIF(mStrLen<0 || mStrLen>1024, "String is too large");
+        WARNINGIF(mStrLen>1024UL, "String is too large. Length: %llu.", mStrLen);
         int x = BYTE_ALIGN(mStrLen);
         return sizeof(__uint64_t) * 2 + x;
     }
@@ -538,6 +577,10 @@ inline unsigned int HString::ComputeObjLength() {
         return sizeof(__uint64_t); // we dont have any associated string with us, we are in dictionary
     else {
         mStrLen = strlen(mStr) + 1;
+	if (mStrLen>256){
+	  mStrLen=3;
+	  mStr="Null";
+	}
         int x = BYTE_ALIGN(mStrLen);
         return sizeof(__uint64_t) * 2 + x;
     }
@@ -563,6 +606,17 @@ inline void* HString::OptimizedSerialize(const HString& hstr, void* buffer) cons
 inline HString HString::Deserialize(void* buffer) {
     return HString(*(__uint64_t*)buffer, *((__uint64_t*)buffer + 1), ((char*)buffer)+16);
 }
+
+inline void HString::AddEntryInDictionary(uint64_t hash, const char* value, Dictionary& dict) {
+   SET_DICT_BIT(hash);
+   // Make sure the value isn't already in the dictionary
+   if( dict.find(hash) != dict.end() )
+       return;
+
+   char *tmp = strdup(value);
+   dict[hash] = tmp; 
+}
+
 
 /* This function is used by HStringIterator to add entries in dictionary. It sets 62nd bit
      high indicating the given string is in dictionary. It modifies the hash value received
@@ -663,7 +717,10 @@ inline
 HString :: HString( const HString & other ) {
     mHash = other.mHash;
     mStrLen = other.mStrLen;
+    mStr = other.mStr;
+    CLEAR_LOCAL_BIT(mHash);
 
+    CheckIfInDict();
     if( !IN_DICT(mHash) ) {
         mStr = strdup( other.mStr );
         SET_LOCAL_BIT(mHash);
@@ -676,8 +733,10 @@ HString & HString :: operator = (const HString & other ) {
     mHash = other.mHash;
     mStrLen = other.mStrLen;
     mStr = other.mStr;
+    CLEAR_LOCAL_BIT(mHash);
 
-    if( LOCAL(mHash) ) {
+    // Alin: THIS CREATES PROBLEMS    CheckIfInDict();
+    if( (!IN_DICT(mHash)) && LOCAL(other.mHash) ) {
         mStr = strdup( other.mStr );
     }
 

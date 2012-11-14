@@ -53,6 +53,10 @@ public:
   // advance to the next object in the column...
   void Advance ();
 
+  // start from the beggining
+  // usefull to read what we wrote
+  void Restart();
+
   // returns true if the object under the cursor has never been written to and so
   // it should not be read (it is undefined what happens if you read it)
   int AtUnwrittenByte ();

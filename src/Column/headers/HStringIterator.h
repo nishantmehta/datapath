@@ -152,6 +152,13 @@ int HStringIterator :: AtUnwrittenByte () {
 inline
 bool HStringIterator :: IsFrequent (__uint64_t hashVal) {
 
+  return false; // nothing is frequent anymore
+
+  /* USE THIS STUFF IF YOU WANT TO FORCE THINGS INTO DICTIONARY
+  return true; //WARNING. This is here as a temporary hack, remove it before loading any large relation;
+
+  WE NEED A BETTER SOLUTION
+  */
     hashVal = MASK_IN_DICT(hashVal);
 	totalCNT++;
 
@@ -211,9 +218,11 @@ void HStringIterator :: Insert (HString &addMe) {
     // infrequent and not in dictionary, just write rest of the details
     // GetStrLength() is valid only when ComputeObjLength is called above
     *((__uint64_t*) myData + 1) = addMe.GetStrLength();
+    WARNINGIF(addMe.GetStrLength() > 256, "String is too weird size %lld", (long long) addMe.GetStrLength());
+
     // GetString() is sure to have some value if string is not in dictionary
     strcpy(myData + 16, addMe.GetString());
-	FATALIF(addMe.GetStrLength() > 256, "String is too weird size %lld", (long long) addMe.GetStrLength());
+
   }
   
   myValue.Set(myData);

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PKG_CONFIG_PATH=../pkgconfig:$PKG_CONFIG_PATH
+
 # Ensure that we have all of the required libraries installed
 REQUIRED_LIBS="lemon sqlite3 antlr3c"
 

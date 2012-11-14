@@ -30,6 +30,9 @@ FILE : 'file' | 'File' | 'FILE' ;
 FLUSH : 'flush' | 'Flush' | 'FLUSH';
 QUIT : 'quit' | 'Quit' | 'QUIT';
 
+
+TYPEOF : 'typeof' | 'TypeOf' | 'TYPEOF';
+
 // matching operator
 // we use an operator since it needs a special treatment
 // when we get a partial function instantiation, we might be able to use that
@@ -114,6 +117,8 @@ DIVIDE : '/';
 MOD : '%';
 
 ARROW : '->';
+LCB : '{';
+RCB : '}';
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;

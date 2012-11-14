@@ -119,10 +119,16 @@ m4_define(</_DESC_TASK_TYPE/>, </dnl
 
 dnl # Options for type descriptions.
 m4_define(</_DESC_SIMPLE_TYPE/>, </dnl
-<//></$0/>dnl
+<//></$0($@)/>dnl
 <//>m4_if(__META_TYPE, </DATATYPE/>, <//>, </m4_fatal(</Can only declare types as simple!/>[__META_TYPE])/>)dnl
 <//>m4_define(</DT_TYPE_/>__META_NAME, </DT_SIMPLE/>)dnl
+m4_case($#, 0, </
 <//>m4_define(</DT_ITERATOR_/>__META_NAME, </ColumnIterator< />__META_NAME</ >/>)dnl
+/>, 1, </dnl
+<//>m4_define(</DT_ITERATOR_/>__META_NAME, </$1/>)dnl
+/>, </dnl
+m4_fatal(</Can't give more than 1 argument to SIMPLE_TYPE/>)dnl
+/>)dnl
 />)dnl
 
 m4_define(</_DESC_COMPLEX_TYPE/>, </dnl
@@ -130,6 +136,12 @@ m4_define(</_DESC_COMPLEX_TYPE/>, </dnl
 <//>m4_if(__META_TYPE, </DATATYPE/>, <//>, </m4_fatal(</Can only declare types as complex!/>)/>)dnl
 <//>m4_define(</DT_TYPE_/>__META_NAME, </DT_COMPLEX/>)dnl
 <//>m4_define(</DT_ITERATOR_/>__META_NAME, </$1/>)dnl
+/>)dnl
+
+dnl # For types that require a dictionary
+m4_define(</_DESC_DICTIONARY/>, </dnl
+<//></$0($1)/>dnl
+<//>m4_define(__META_NAME</_DICT/>, </$1/>)dnl
 />)dnl
 
 dnl # Macro for defining what libraries a GLA requires to be linked
@@ -268,6 +280,7 @@ m4_define(</__SET_DATATYPE_OPTIONS/>, </dnl
 <//>__SET_OPTION(</SIMPLE_TYPE/>)dnl
 <//>__SET_OPTION(</COMPLEX_TYPE/>)dnl
 <//>__SET_OPTION(</LIBS/>)dnl
+<//>__SET_OPTION(</DICTIONARY/>)dnl
 />)dnl
 
 m4_define(</__UNSET_DATATYPE_OPTIONS/>, </dnl
@@ -275,6 +288,7 @@ m4_define(</__UNSET_DATATYPE_OPTIONS/>, </dnl
 <//>__UNSET_OPTION(</SIMPLE_TYPE/>)dnl
 <//>__UNSET_OPTION(</COMPLEX_TYPE/>)dnl
 <//>__UNSET_OPTION(</LIBS/>)dnl
+<//>__UNSET_OPTION(</DICTIONARY/>)dnl
 />)dnl
 
 dnl # Macros to make it easier to specify meta-information about GLAs.

@@ -56,7 +56,7 @@ int GLAPreProcessWorkFunc_<//>M4_WPName
 
     QueryToGLASContMap constStates;
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>, <//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>, <//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
@@ -77,16 +77,16 @@ int GLAPreProcessWorkFunc_<//>M4_WPName
 
                 myConstStates.Append(newPtr);
             }
-/>)dnl
+/>)<//>dnl
             QueryID key;
 
             key = iter.query;
             constStates.Insert( key, myConstStates );
 />, </dnl # this query doesn't need constant states
-<//><//><//>/>)dnl
+<//><//><//>/>)<//>dnl
         }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     GLAPreProcessRez myRez( constStates );
@@ -104,7 +104,7 @@ int GLAMergeStatesWorkFunc_<//>M4_WPName
     QueryToGLASContMap& queryGLACont = myWork.get_glaStates();
     QueryExitContainer& queries = myWork.get_whichQueryExits();
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)<//>dnl
 
     QueryToGLAStateMap resultQueryGLASt;
     FOREACH_TWL(iter, queries){
@@ -133,8 +133,8 @@ int GLAMergeStatesWorkFunc_<//>M4_WPName
             }END_FOREACH;
 dnl # result must be in mainState object at the end
         }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
         resultQueryGLASt.Insert(iter.query, mainState);
     } END_FOREACH;
 
@@ -157,7 +157,7 @@ int GLAPreFinalizeWorkFunc_<//>M4_WPName
     QueryIDToInt fragments; // fragments for the GLAs that need it
     QueryIDSet iterateMap; // Whether or not each GLA needs to iterate after producing output (if any)
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,<//>)<//>dnl
 
     FOREACH_TWL(iter, queries){
         FATALIF(!queryGLAStates.IsThere(iter.query), "Why did we get a query in the list but no stateContainer for it");
@@ -185,7 +185,7 @@ dnl # otherwise insert default number of fragments for every query.
 <//><//>m4_if(GLA_ITERABLE(_Q_), 1, </dnl
 m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
             TYPE(_S_) * GLA_STATE(_Q_)</_/>VAR(_S_) = NULL;
-/>)dnl
+/>)<//>dnl
             if( queryConstStates.IsThere( iter.query ) ) {
                 GLAStateContainer & myCont = queryConstStates.Find( iter.query );
                 myCont.MoveToStart();
@@ -197,25 +197,25 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
                     GLA_STATE(_Q_)</_/>VAR(_S_) = (TYPE(_S_)*) tPtr.get_glaPtr();
                     tPtr.swap(tempState);
                 }
-/>)dnl
+/>)<//>dnl
             } else {
                 FATAL("Why did we get no constant states for an iterable query?");
             }
 
             bool iterateRet = localGLA->ShouldIterate(<//>dnl
-m4_ifdef_undef(</_FIRST_/>)dnl
+m4_ifdef_undef(</_FIRST_/>)<//>dnl
 m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
-<//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)dnl
+<//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)<//>dnl
 <//>*GLA_STATE(_Q_)</_/>VAR(_S_)<//>dnl
-/>)dnl
+/>)<//>dnl
 );
 
             if( iterateRet )
                 iterateMap.Union(iter.query);
-/>)dnl
+/>)<//>dnl
         }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
     } END_FOREACH;
 
     GLAStatesFrRez rez(queryGLAStates, queryConstStates, fragments, iterateMap);
@@ -233,7 +233,7 @@ int GLAFinalizeWorkFunc_<//>M4_WPName
     QueryExit whichOne = myWork.get_whichQueryExit();
     GLAState& glaState = myWork.get_glaState();
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
     // set up the output chunk
     Chunk output;
@@ -250,7 +250,7 @@ int GLAFinalizeWorkFunc_<//>M4_WPName
         GLA_STATE(_Q_) = (GLA_TYPE(_Q_)*) state.get_glaPtr();
         FATALIF(GLA_STATE(_Q_) == NULL, "Why do not we have a state?");
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
     // start columns for all possible outputs
 <//>m4_foreach(</_Q_/>,</M4_GLADesc/>,</dnl
@@ -260,8 +260,8 @@ int GLAFinalizeWorkFunc_<//>M4_WPName
     Column  _A_<//>_Column_Ocol(_A_<//>_Column_store);
     M4_COL_TYPE(_A_) _A_<//>_Column_Out(_A_<//>_Column_Ocol);
     M4_ATT_TYPE(_A_) _A_;// containter for value to be written
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
     // this is the ouput bitstring
     MMappedStorage myStore;
@@ -292,16 +292,16 @@ dnl # get the queries out of queriesToRun
     {
 m4_if(G_FINALIZE_AS_STATE(_Q_), 1, </dnl
         G_STATE(_Q_)->FinalizeState();
-/>)dnl
+/>)<//>dnl
         reval(</m4_args/>m4_fifth(_Q_)) = STATE((void*)GLA_STATE(_Q_), M4_HASH_NAME(GLA_TYPE(_Q_)));
 <//><//>/>,</dnl
         {
             m4_fatal(Do not know how to deal with output type of GLA GLA_TYPE(_Q_));
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 <//><//>/>, </dnl
         {
         FATAL("Chunk finalize function called for query M4_QUERY_NAME(_Q_), has a result type of GLA_OUTPUT_TYPE(_Q_)");
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
 dnl # write the tuple
             myOutBStringIter.Insert (M4_QUERY_NAME(_Q_));
             myOutBStringIter.Advance ();
@@ -310,11 +310,11 @@ dnl # write the tuple
 <//><//>m4_foreach(</_A_/>,m4_quote(reval(</m4_args/>m4_fifth(_Q_))),</dnl
             _A_<//>_Column_Out.Insert (_A_);
             _A_<//>_Column_Out.Advance();
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
         }
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
     myOutBStringIter.Done();
     output.SwapBitmap(myOutBStringIter);
@@ -325,9 +325,9 @@ dnl # write the tuple
         Column col_<//>_A_;
         _A_<//>_Column_Out.Done(col_<//>_A_);
         output.SwapColumn (col_<//>_A_, M4_ATT_SLOT(_A_));
-<//><//>/>)dnl
+<//><//>/>)<//>dnl
     }
-<//>/>)dnl
+<//>/>)<//>dnl
     // and get outta here!
     ChunkContainer tempResult (output);
     tempResult.swap (result);
@@ -341,7 +341,7 @@ int GLAFinalizeStateWorkFunc_<//>M4_WPName (WorkDescription &workDescription, Ex
     QueryExit& whichOne = myWork.get_whichQueryExit();
     GLAState& glaState = myWork.get_glaState();
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
 <//><//>m4_if(GLA_FINALIZE_AS_STATE(_Q_), </dnl
@@ -354,8 +354,8 @@ int GLAFinalizeStateWorkFunc_<//>M4_WPName (WorkDescription &workDescription, Ex
         GLA_STATE(_Q_)->FinalizeState();
         state.swap(glaState);
     }
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     WayPointID myID = WayPointID::GetIdByName("M4_WPName");
     StateContainer stateCont( myID, whichOne, glaState );
@@ -374,13 +374,13 @@ int GLAProcessChunkWorkFunc_<//>M4_WPName  (WorkDescription &workDescription, Ex
     QueryToGLASContMap& constStates = myWork.get_constStates();
     QueryToGLAStateMap& garbageStates = myWork.get_garbageStates();
 
-<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)dnl
+<//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
-<//>M4_GET_QUERIES_TO_RUN(</myWork/>)dnl
+<//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
 
-<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)dnl
+<//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>,</input/>)<//>dnl
 
-<//>M4_EXTRACT_BITMAP(</input/>)dnl
+<//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
 
     // Garbage collect old states, if there are any.
 m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
@@ -395,7 +395,7 @@ m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
             delete garbage;
         }
     }
-/>)dnl
+/>)<//>dnl
 
     // Defining the GLA states needed
     // for each one we will look for an existing state.
@@ -405,8 +405,8 @@ m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
 m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
 <//>m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
     const TYPE(_S_) * GLA_STATE(_Q_)</_/>VAR(_S_) = NULL;
-<//>/>)dnl
-/>)dnl
+<//>/>)<//>dnl
+/>)<//>dnl
     if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){ m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
         if( constStates.IsThere(M4_QUERY_NAME(_Q_)) ) {
             GLAStateContainer& myCont = constStates.Find(M4_QUERY_NAME(_Q_));
@@ -421,12 +421,12 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
 
                 myCont.Advance();
             }
-/>)dnl
+/>)<//>dnl
         }
         else {
             FATAL("Why did we receive no const states for a GLA that requires them?");
         }
-/>)dnl
+/>)<//>dnl
         if (glaStates.IsThere(M4_QUERY_NAME(_Q_))) {
             GLAPtr tState;
             GLAState& state = glaStates.Find(M4_QUERY_NAME(_Q_));
@@ -437,30 +437,30 @@ m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
 m4_if(GLA_REQ_CONST_STATE(_Q_), 1, </dnl
             // Const states
             GLA_STATE(_Q_) = new GLA_TYPE(_Q_)</(/>dnl
-<//>m4_ifdef_undef(</_FIRST_/>)dnl
+<//>m4_ifdef_undef(</_FIRST_/>)<//>dnl
 <//>m4_foreach(</_S_/>, GLA_CONST_STATES(_Q_), </dnl
-<//><//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)dnl
+<//><//>m4_ifndef(</_FIRST_/>, </m4_define(</_FIRST_/>, <//>)/>, </, />)<//>dnl
 <//><//>*GLA_STATE(_Q_)</_/>VAR(_S_)<//>dnl
-<//>/>)dnl
+<//>/>)<//>dnl
 <//></);/>
 />, </dnl
             // GLA_INIT_STATE
             GLA_STATE(_Q_) = new GLA_TYPE(_Q_)GLA_INIT_STATE(_Q_);
-/>)dnl
+/>)<//>dnl
             GLAPtr newPtr(M4_HASH_NAME(GLA_TYPE(_Q_)), (void*)GLA_STATE(_Q_));
             QueryIDSet  qry=M4_QUERY_NAME(_Q_);
             glaStates.Insert(qry, newPtr); // put new state in glaStates (returned)
         }
     }
-<//>/>)dnl
+<//>/>)<//>dnl
 
 dnl # definition of constants used in expressions
 <//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
     // constants for query M4_QUERY_NAME(_Q_)
-<//>_GLA_INITIALIZER(_Q_)dnl # the initializer should have a new line
-<//><//>/>, <//>)dnl
-<//>/>)dnl
+<//>_GLA_INITIALIZER(_Q_)<//>dnl # the initializer should have a new line
+<//><//>/>, <//>)<//>dnl
+<//>/>)<//>dnl
 
     int numTuples = 0;
 
@@ -475,7 +475,7 @@ dnl # definition of constants used in expressions
         if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
             GLA_STATE(_Q_)->AddItem<//>GLA_EXPRESSION(_Q_);
         }
-<//>/>)dnl
+<//>/>)<//>dnl
 
 <//><//>M4_ADVANCE_ATTRIBUTES_TUPLE(</M4_Attribute_Queries/>,queriesToRun)
     }
@@ -486,8 +486,8 @@ dnl # definition of constants used in expressions
     if (queriesToRun.Overlaps(M4_QUERY_NAME(_Q_))){
         GLA_STATE(_Q_)->ChunkBoundary();
     }
-<//><//>/>)dnl
-<//>/>)dnl
+<//><//>/>)<//>dnl
+<//>/>)<//>dnl
 
 	PROFILING2("GLA", numTuples);
 	PROFILING2_FLUSH;
