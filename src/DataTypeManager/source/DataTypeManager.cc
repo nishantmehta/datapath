@@ -605,10 +605,12 @@ bool DataTypeManager :: IsCorrectFuncExact (string type, string fName, vector<st
 
     FuncInfo* f;
     set<FuncInfo*>::const_iterator iter = it->second.begin();
+    set<FuncInfo*> possibleMatches;
     for( ; iter != it->second.end(); ++iter )
     {
         bool matchesSoFar = true;
         f = *iter;
+        possibleMatches.insert(f);
 
         // Check if class type matches if function is method of class
         if (type != f->type)
@@ -660,6 +662,38 @@ bool DataTypeManager :: IsCorrectFuncExact (string type, string fName, vector<st
         // match
         if( matchesSoFar ) {
             return true;
+        }
+    }
+
+    cout << "\nExact match not found for function ";
+
+    if( type != "" )
+        cout << type << ".";
+
+    cout << fName << "(";
+    vector<string>::const_iterator argIter = args.begin();
+
+    if( argIter != args.end() )
+    {
+        cout << *argIter;
+        ++argIter;
+    }
+
+    for( ; argIter != args.end(); ++argIter )
+    {
+        cout << ", " << *argIter;
+    }
+
+    cout << "). Exact match required.";
+    
+    if ( possibleMatches.size() == 0 ) {
+        cout << endl << "  No possible matches found.";
+    }
+    else {
+        cout << endl << "  Possible matches:";
+        for( set<FuncInfo*>::const_iterator iter = possibleMatches.begin(); iter != possibleMatches.end(); ++iter ) {
+            FuncInfo* fInf = *iter;
+           cout << endl << "    " << fInf->toString(fName); 
         }
     }
 

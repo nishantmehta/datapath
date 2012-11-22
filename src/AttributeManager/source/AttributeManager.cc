@@ -225,7 +225,7 @@ SlotID AttributeManager::AddSynthesizedAttribute(QueryID id, string attName,
 		}
 		else
 		{
-			WARNING("Attribute with same name already present for the query id.");
+			WARNING("Attribute with the name %s already present for the query id.", attName.c_str());
 		}
 	}
 	else

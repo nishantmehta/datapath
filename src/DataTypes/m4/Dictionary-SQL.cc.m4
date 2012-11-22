@@ -40,17 +40,21 @@ void Dictionary::Load(const char* name){
       indexMap[id] = str;
       
       if( id != InvalidID )
-	reverseMap[str] = id;
+        reverseMap[str] = id;
 
-      if (nextID<id)
-	nextID=id;
+      if (nextID <= id)
+        nextID = id+1;
 
     } SQL_END_STATEMENT_TABLE;
     
     SQL_CLOSE_DATABASE;
-    
-    nextID++;
+
+    StringType nullStr("NULL");
+    indexMap[InvalidID] = nullStr;
+
     modified = false;
+
+    ComputeOrder();
 }
 
 void Dictionary::Save(const char* name){
