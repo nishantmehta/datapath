@@ -6,11 +6,12 @@
 #include <unordered_map>
 // DataPath library includes
 #include "base/Types/INT.h"
+#include "base/Types/STRING.h"
 /*  System Description of GLA
  *  GLA_DESC
  *      NAME(</MentionsGLA/>)
  * 	INPUTS(</(doc, INT), (para, INT), (num_word, INT), (mention, VARCHAR), (pos, VARCHAR), (ner, VARCHAR)/>)
- *  	OUTPUTS(</(stringL, HString), (len, INT), (doc, INT), (para, INT), (word, INT), (pos, HString), (ner, HString)/>)
+ *  	OUTPUTS(</(stringL, STRING ), (len, INT), (doc, INT), (para, INT), (word, INT), (pos, STRING ), (ner, STRING )/>)
  *      RESULT_TYPE(</multi/>)
  *  END_DESC
  */
@@ -138,17 +139,17 @@ public:
     }
     void set(const INT& doc, const INT& para, const INT& num_word, 
                  const VARCHAR& token, const VARCHAR& pos, const VARCHAR& ner) {
-        len = min(50, (int)strlen(token.GetStr())); 
-        memcpy(stringL,token.GetStr(),len);
+        len = min(50, (int) token.Length()); 
+        memcpy(stringL,token.ToString(),len);
         char temp[3]= {'\0'};
-        memcpy(temp,token.GetStr(),min(3,(int)strlen(token.GetStr())));
+        memcpy(temp,token.ToString(),min(3,(int)strlen(token.ToString())));
 
         this->doc = doc;
         this->para = para;
         this->word = num_word;
 
-        memcpy(this->pos,pos.GetStr(),strlen(pos.GetStr())+1);
-        memcpy(this->ner,ner.GetStr(),strlen(ner.GetStr())+1);
+        memcpy(this->pos,pos.ToString(),strlen(pos.ToString())+1);
+        memcpy(this->ner,ner.ToString(),strlen(ner.ToString())+1);
         prefixf.set(temp[0],temp[1],temp[2]);
         substrf.set(stringL,len);
         lengthf.set(len);
@@ -186,7 +187,7 @@ public:
     void Finalize( void ) {
 	outIter = mentionVector.begin();
     }
-    bool GetNextResult( HString& stringL, INT& len, INT& doc, INT& para, INT& word, HString& pos, HString& ner  ) {
+    bool GetNextResult( STRING& stringL, INT& len, INT& doc, INT& para, INT& word, STRING& pos, STRING& ner  ) {
 	if( outIter != mentionVector.end() ) {
 	    stringL = outIter->stringL;
 	    len = outIter->len;

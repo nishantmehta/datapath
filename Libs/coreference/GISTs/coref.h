@@ -24,9 +24,7 @@
 #include <sstream>
 
 #define COREF_USE_SINGLE
-#define num_iter 2
-
-#define DEBUG true
+#define num_iter 10
 
 class Entity {
 public:
@@ -63,22 +61,22 @@ public:
     }
 };
 
-void printMention(const Mention& mm, ostream& out, bool debug = DEBUG) {
-    if(debug) {
+void printMention(const Mention& mm, ostream& out) {
+#ifdef DEBUG
         out << "<" << mm.stringL << "| " << mm.doc << " " << mm.para <<
             " " << mm.entityId <<  ">" << endl;
-    }
+#endif
 }
 
-void printEntity(const Entity& e, vector<Mention> &ml, ostream& out, bool debug = DEBUG) {
-    if(debug) {
+void printEntity(const Entity& e, vector<Mention> &ml, ostream& out) {
+#ifdef DEBUG
         out << endl<< "printEntity:"<<"entity id=" <<  e.id << endl <<"[" <<endl;
         for(auto it = e.mentionSet.begin(); it != e.mentionSet.end(); it++) {
             //cerr << (*it) << " ";
             printMention( ml[*it], out);
         }
         out << "]" << endl<<endl;
-    }
+#endif
 }
 
 
@@ -104,16 +102,18 @@ public:
 class LocalScheduler {
     int numMentions;
     int numToGenerate; // how many tasks we still need to generate?
-    vector<Entity> entities;
-    vector<Mention> mentions;
+    vector<Entity>& entities;
+    vector<Mention>& mentions;
 public:
-    LocalScheduler(int _numMentions, int numThreads):
-        numMentions(_numMentions), numToGenerate(_numMentions/numThreads) {}
+    LocalScheduler(int _numMentions, int numThreads, vector<Entity>& ent, vector<Mention>& men):
+        numMentions(_numMentions), numToGenerate(_numMentions/numThreads), entities(ent), mentions(men) {}
 
-    void set(vector<Entity> entities, vector<Mention> mentions) {
+/*
+    void set(vector<Entity>& entities, vector<Mention>& mentions) {
         this->entities = entities;
         this->mentions = mentions;
     }
+*/
 
     size_t findNonEmptyEntity(size_t src_entity, ostream& out = cerr) {
         int Nmen=entities.size();
@@ -122,7 +122,9 @@ public:
             dest_entity=rand()%Nmen;
             if(entities[dest_entity].mentionSet.size()>0 && dest_entity!=src_entity)
             {
-                cerr<<"nonempty:"<<" src_entity="<<src_entity<<" des_entity="<<dest_entity<<endl;
+#ifdef DEBUG
+                out<<"nonempty:"<<" src_entity="<<src_entity<<" des_entity="<<dest_entity<<endl;
+#endif
                 return dest_entity;
             }
         }
@@ -135,14 +137,18 @@ public:
             dest_entity=rand()%Nmen;
             if(entities[dest_entity].mentionSet.size()==0 && dest_entity!=src_entity)
             {
-                cerr<<"emptyentity:"<<" src_entity "<<src_entity<<" des_entity "<<dest_entity<<endl;
+#ifdef DEBUG
+                out<<"emptyentity:"<<" src_entity "<<src_entity<<" des_entity "<<dest_entity<<endl;
+#endif
                 return dest_entity;
             }
         }
     }
 
     bool GetNextTask(Task& task) {
+#ifdef DEBUG
         cout<<"numtogener="<<numToGenerate<<endl;
+#endif
         if (numToGenerate<=0)
             return false;
         else {
@@ -158,7 +164,9 @@ public:
                 task.des_enti_id=findEmptyEntity(src_entity, out);
             }
 
+#ifdef DEBUG
             cerr << out.str();
+#endif
             return true;
         }
     }
@@ -214,8 +222,7 @@ public:
         cout<<"curInter="<<curIter<<endl;
         for(int i=0; i<paraHint; i++) {
             CGLA* cgla = new CGLA(curIter);
-            LocalScheduler* ls = new LocalScheduler(mentions.size(),paraHint);
-            ls->set(entities,mentions);
+            LocalScheduler* ls = new LocalScheduler(mentions.size(),paraHint,entities, mentions);
             workUnits.push_back(make_pair(ls,cgla));
         }
         // Generate pairs of local schedulers and GLAs,
@@ -238,8 +245,10 @@ public:
            small = src_entity;
         }
     
+#ifdef DEBUG
         out << "\nbegin:------------------------------------\n";
         out<<"DoStep: " << "src_entity:"<<src_entity<<" des_entity:"<<des_entity<<endl;
+#endif
         int loss=0;
         int gain=0;
         bool accept = false;
@@ -270,7 +279,7 @@ public:
         if(accept && (src_entity!=des_entity)) {
             //accepted+=1;
             //remove the mention from old entity and place it into the new entity
-            if(DEBUG) {
+#ifdef DEBUG
                 out << "\nthis jump is accepted\n";
                 out << "Mention to move: ";
                 printMention(mentions[src_mention], out);
@@ -279,12 +288,12 @@ public:
                 printEntity(entities[mentions[src_mention].entityId], mentions, out);
                 out << "To entity: ";
                 printEntity(entities[des_entity], mentions, out);
-            }
-            out<<"begin lock"<< " small="<<small<< " large="<<large<<endl;
-            cerr << out.str();
-            cerr.flush();
-            out.str("");
-            out.clear();
+		out<<"begin lock"<< " small="<<small<< " large="<<large<<endl;
+		cerr << out.str();
+		cerr.flush();
+		out.str("");
+		out.clear();
+#endif
             entities[small].lock();
             entities[large].lock();
             entities[src_entity].mentionSet.erase(src_mention);
@@ -292,13 +301,17 @@ public:
             mentions[src_mention].entityId=des_entity;
             entities[large].unlock();
             entities[small].unlock();
-            out<<"end lock"<<endl;
+#ifdef DEBUG
+	    out<<"end lock"<<endl;
+#endif
             //currentEntropy=currentEntropy+gain-loss;
         }
         out << "------------------------------------end\n\n";
         // flip a coin and move mention into entity if heads
 
-        cerr << out.str();
+#ifdef DEBUG
+            cerr << out.str();
+#endif
     }
 
 
@@ -360,6 +373,5 @@ public:
 // typedef for fragment interface
 typedef CoreferenceState::Iterator Coreference_Iterator;
 #endif
-
 
 #endif //  COREFERENCE_H_
