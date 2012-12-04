@@ -24,67 +24,65 @@ using namespace std;
 
 #define _dp_max(x,y) ((x)>(y)? (x) : (y))
 
-// 2nd argument is zero for innder iterator 'it', because we assume this iterator is for fixed size types
-template <class DataType> 
-ColumnIterator <DataType> :: ColumnIterator (Column &iterateMe, int stepSize) : it (iterateMe, 0, _dp_max(stepSize, sizeof(DataType))) {
+template <class DataType, int headerSize, int dtSize > 
+ColumnIterator <DataType, headerSize, dtSize> :: ColumnIterator (Column &iterateMe, int stepSize ) : it (iterateMe, headerSize, _dp_max(stepSize, dtSize)) {
 
 	// return if invalid column, because otherwise we set objLen and that is used in Advance unnecessarily to advance
 	if (it.IsInvalid ())
 		return;
 
 	// Set the object size
-	it.SetObjLen (sizeof(DataType));
+	it.SetObjLen (dtSize);
 }
 
-// 2nd argument is zero for innder iterator 'it', because we assume this iterator is for fixed size types
-template <class DataType> 
-ColumnIterator <DataType> :: ColumnIterator (Column &iterateMe, int fragmentStart, int fragmentEnd, int stepSize) :
-														 it (iterateMe, fragmentStart, fragmentEnd, 0, _dp_max(stepSize, sizeof(DataType))) {
+template <class DataType, int headerSize, int dtSize > 
+ColumnIterator <DataType, headerSize, dtSize> :: ColumnIterator (Column &iterateMe, int fragmentStart, int fragmentEnd, int stepSize) :
+														 it (iterateMe, fragmentStart, fragmentEnd, headerSize, _dp_max(stepSize, dtSize)) {
 
 	// return if invalid column, because otherwise we set objLen and that is used in Advance unnecessarily to advance
 	if (it.IsInvalid ())
 		return;
 
 	// Set the object size
-	it.SetObjLen (sizeof(DataType));
+	it.SetObjLen (dtSize);
 }
 
-template <class DataType> 
-ColumnIterator <DataType> :: ColumnIterator () : it () {
+template <class DataType, int headerSize, int dtSize> 
+ColumnIterator <DataType, headerSize, dtSize> :: ColumnIterator () : it () {
 	// This is iterator with no column, hence invalid state set
 }
 
-template <class DataType>
-ColumnIterator <DataType> :: ~ColumnIterator () {
+template <class DataType, int headerSize, int dtSize>
+ColumnIterator <DataType, headerSize, dtSize> :: ~ColumnIterator () {
 } 
 
-template <class DataType>
-void ColumnIterator <DataType> :: Done (Column &iterateMe) {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: Done (Column &iterateMe) {
 	it.Done(iterateMe);
 }
 
-template <class DataType>
-void ColumnIterator <DataType> :: CreateDeepCopy (ColumnIterator<DataType>& fromMe) {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: CreateDeepCopy (ColumnIterator<DataType, headerSize, dtSize>& fromMe) {
 	it.CreateDeepCopy(fromMe.it);
 }
 
-template <class DataType>
-void ColumnIterator <DataType> :: swap (ColumnIterator& swapMe) {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: swap (ColumnIterator& swapMe) {
 	it.swap (swapMe.it);
 }
 
-template <class DataType>
-void ColumnIterator <DataType> :: CreateShallowCopy (ColumnIterator& copyMe) {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: CreateShallowCopy (ColumnIterator& copyMe) {
 	it.CreateShallowCopy (copyMe.it);
 }
 
-template <class DataType>
-void ColumnIterator <DataType> :: CheckpointSave () {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: CheckpointSave () {
 	it.CheckpointSave ();
 }
 
-template <class DataType>
-void ColumnIterator <DataType> :: CheckpointRestore () {
+template <class DataType, int headerSize, int dtSize>
+void ColumnIterator <DataType, headerSize, dtSize> :: CheckpointRestore () {
 	it.CheckpointRestore ();
 }
 

@@ -221,6 +221,7 @@ EfficientMap <Key, Data> :: Find (Key &key) {
 	}
 
 	// if we made it here, we did not find it
+	// This creates problems	return invalidData;
 }
 
 template <class Key, class Data> int

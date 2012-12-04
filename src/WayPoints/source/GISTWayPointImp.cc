@@ -385,6 +385,7 @@ bool GISTWayPointImp :: ProcessingComplete( QueryExitContainer& whichOnes,
             curWorkList.Append(work);
         }
 
+        int numToMerge = 0;
         if( finishedWork.IsThere( query) ) {
             GLAState& gla = finishedWork.Find(query);
 
@@ -396,13 +397,31 @@ bool GISTWayPointImp :: ProcessingComplete( QueryExitContainer& whichOnes,
 
             GLAStateContainer& toMerge = glasToMerge.Find(query);
             toMerge.Append(gla);
+
+            numToMerge = toMerge.Length();
         }
 
         if( DecrementInt( processingJobsOut, query ) == 0 && curWorkList.Length() == 0 ) {
             // We have no processing jobs out and no more work left.
             // Time to merge the glas!
             queriesProcessing.Difference(query);
-            queriesMerging.Union(query);
+
+            if( numToMerge > 1 ) {
+                // If more than one GLA, merge them
+                queriesMerging.Union(query);
+            }
+            else {
+                // Otherwise, skip to counting
+                FATALIF( numToMerge == 0, "Finished processing a round but have no GLAs!" );
+                GLAStateContainer& toMerge = glasToMerge.Find(query);
+                toMerge.MoveToStart();
+                GLAState gla;
+                toMerge.Remove(gla);
+
+                QueryID key = iter.query;
+                queriesToCount.Union(key);
+                mergedGLAs.Insert(key, gla);
+            }
         }
     } END_FOREACH;
 
@@ -522,13 +541,12 @@ bool GISTWayPointImp :: PreFinalizePossible( CPUWorkToken& token ) {
     while( !curQueries.IsEmpty() ) {
         QueryID curID = curQueries.GetFirst();
 
-        FATALIF(!mergedGLAs.IsThere(curID),
-                "No merged GLA found for query %s",
-                curID.GetStr().c_str());
-
-        QueryID key;
-        GLAState state;
-        mergedGLAs.Remove(curID, key, state);
+        if( mergedGLAs.IsThere(curID) ) {
+            QueryID key;
+            GLAState state;
+            mergedGLAs.Remove(curID, key, state);
+            curGLAs.Insert( key, state );
+        }
 
         FATALIF(!gistStates.IsThere(curID),
                 "No GIST state found for query %s",
@@ -538,9 +556,7 @@ bool GISTWayPointImp :: PreFinalizePossible( CPUWorkToken& token ) {
         GLAState curGist;
         curGist.copy(temp);
 
-        key = curID;
-        curGLAs.Insert( key, state );
-        key = curID;
+        QueryID key = curID;
         curGists.Insert(key, curGist);
 
         QueryExit qe = GetExit(curID);

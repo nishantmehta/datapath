@@ -69,7 +69,11 @@ bool LT_Print::GetConfig(WayPointConfigureData& where){
                 fileName+=buff;
             }
             else {
-                fileName+=fileOut[query];
+	      string fileN=fileOut[query];
+	      if (fileN[0]=='/') // absolute path
+		fileName=fileN;
+	      else // normal filename, put in directory RESULTS
+                fileName+=fileN;
             }
 
             PrintFileInfo inf(fileName, header, separators[query]);

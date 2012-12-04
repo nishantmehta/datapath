@@ -601,6 +601,12 @@ inline uint64_t Hash( const DATE val ) {
     return val.GetJulianDay();
 }
 
+// Deep copy function
+inline
+void Copy( DATE& to, const DATE& from ) {
+    to = from;
+}
+
 #ifdef _HAS_CPP_11
 #include <functional>
 // C++11 STL-compliant hash struct specialization

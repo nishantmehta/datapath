@@ -27,7 +27,8 @@
 */
 class Column;
 
-template <class DataType> class ColumnIterator {
+template <class DataType, int headerSize = 0, int dtSize = sizeof(DataType) >
+class ColumnIterator {
 
 protected:
 	Iterator it;
@@ -51,8 +52,8 @@ public:
 	// is taken out of the iterator and put into iterateMe
 	void Done (Column &iterateMe);
 
-  // start from the beggining
-  void Restart(void);
+    // start from the beggining
+    void Restart(void);
 
 	// advance to the next object in the column... 
 	void Advance ();
@@ -101,8 +102,8 @@ public:
 	void MarkFragment ();
 };
 
-template <class DataType>
-inline const DataType &ColumnIterator <DataType> :: GetCurrent () {
+template <class DataType, int headerSize, int dtSize >
+inline const DataType &ColumnIterator <DataType, headerSize, dtSize > :: GetCurrent () {
 
 	// For invalid columns this statement will turn out to be *((DataType*)NULL), this looks like
 	// dereferencing a NULL ptr, but if you write like this, "const DataType& obj = iter.GetCurrent()",
@@ -110,33 +111,33 @@ inline const DataType &ColumnIterator <DataType> :: GetCurrent () {
   return *((DataType*)it.GetData ());
 }
 
-template <class DataType>
-inline int ColumnIterator <DataType> :: AtUnwrittenByte () {
+template <class DataType, int headerSize, int dtSize >
+inline int ColumnIterator <DataType, headerSize, dtSize > :: AtUnwrittenByte () {
   return it.AtUnwrittenByte ();
 }
 
-template <class DataType>
-inline void ColumnIterator <DataType> :: Insert (const DataType &addMe) {
+template <class DataType, int headerSize, int dtSize >
+inline void ColumnIterator <DataType, headerSize, dtSize > :: Insert (const DataType &addMe) {
 	if (it.IsInvalid ()) return;
   assert (it.IsWriteOnly() == true);
   it.EnsureWriteSpace ();
   *((DataType *) it.GetData()) = addMe;
 }
 
-template <class DataType>
-inline void ColumnIterator <DataType> :: Advance () {
+template <class DataType, int headerSize, int dtSize >
+inline void ColumnIterator <DataType, headerSize, dtSize > :: Advance () {
   it.Advance();
 }
 
 
-template <class DataType>
-inline void ColumnIterator <DataType> :: Restart () {
+template <class DataType, int headerSize, int dtSize >
+inline void ColumnIterator <DataType, headerSize, dtSize > :: Restart () {
   it.Restart();
 }
 
 
-template <class DataType>
-inline void ColumnIterator <DataType> :: MarkFragment () {
+template <class DataType, int headerSize, int dtSize >
+inline void ColumnIterator <DataType, headerSize, dtSize > :: MarkFragment () {
   if (it.IsInvalid())
 	return;
   it.MarkFragment ();

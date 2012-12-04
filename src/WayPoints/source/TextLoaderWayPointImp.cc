@@ -41,17 +41,17 @@ void TextLoaderWayPointImp :: RequestTokens(){
 
 	// requests to keep all loaders bussy
 	int noReq = tasks.Length() - tokensRequested;
+	FATALIF (noReq < 0, "This should not be smaller than 0");
 
 	// is that too many?
 	int dblBuf = 2*numStreams - chunksOut - tokensRequested; 
-	if (noReq > dblBuf)
-		noReq = dblBuf;
+	WARNINGIF(noReq > dblBuf, "Too many request: %d\n", noReq);
 
 	// queue up some more work requests
 	// one for each element of the list
 	for (int i=0; i<noReq; i++) {
-		RequestTokenDelayOK (CPUWorkToken::type);
 		tokensRequested++;
+		RequestTokenDelayOK (CPUWorkToken::type);
 	}		
 }
 
@@ -105,14 +105,17 @@ void TextLoaderWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 	CPUWorkToken myToken;
 	myToken.swap (returnVal);
 
+	// the token is not out no matter what
+	tokensRequested--;
+
 	// do we even have some work we could do?
   // this shoudl probably not happen but better safe than sorry
-	if (tasks.Length() == 0) {
-		GiveBackToken (returnVal);
-		return;
+	FATALIF(tasks.Length() == 0, "This Should never happen");
+	/*
+	  GiveBackToken (returnVal);
+	  return;
 	}
-
-	tokensRequested--;
+	*/
 
 	// get a task out
 	TextLoaderDS task;

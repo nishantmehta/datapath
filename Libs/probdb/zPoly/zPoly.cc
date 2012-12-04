@@ -103,6 +103,11 @@ void zPoly :: ComputePolynomialCoeffN2(int _maxDegree){
 }
 
 void zPoly :: ComputePolynomialCoefficients(void){
+  if (NN==0){
+    coefs[0]=1.0;
+    return;
+  }
+  
   // the algorithm consists in recursive multiplicaiton of larger and arger polynomials 
   // starting with the first deggree polynomials at  the bottom
   
@@ -226,6 +231,15 @@ void zPoly :: ComputePolynomialCoefficients(void){
 void zPoly::AddState(zPoly& other, int numThreads){
 
   ensureComputed();
+
+  if (other.NN==0)
+    return; // the other guy is empty
+
+  if (NN==0){ // I'm empty
+    Swap(other);
+    return;
+  }
+
 	// figure out the size of the result polynomial and allocate space for the direct ffts
 
 	int newN = NN+other.NN; // fix

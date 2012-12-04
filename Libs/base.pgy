@@ -1,7 +1,7 @@
 #ifndef _base_PGY_
 #define _base_PGY_
 // Piggy description file for library base
-// generated on Monday, November 12, 2012 at 19:50 EST
+// generated on Tuesday, November 27, 2012 at 13:27 EST
 
 // base/Types/bool.h
 DEFINE DATATYPE bool FROM "base/Types/bool.h";
@@ -20,10 +20,9 @@ DEFINE DATATYPE BIGINT FROM "base/Types/BIGINT.h";
 DEFINE IDENTIFIER AS BIGINT;
 DEFINE IDENTIFIER AS BIGINT;
 
-// base/Types/HString.h
-DEFINE DATATYPE HString FROM "base/Types/HString.h";
-DEFINE VARCHAR AS HString;
-DEFINE STRING AS HString;
+// base/Types/STRING.h
+DEFINE DATATYPE STRING FROM "base/Types/STRING.h";
+DEFINE VARCHAR AS STRING;
 
 // base/Types/STRING_LITERAL.h
 DEFINE DATATYPE STRING_LITERAL FROM "base/Types/STRING_LITERAL.h";
@@ -261,6 +260,18 @@ DEFINE FUNCTION Hash ( BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( INT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( BIGINT, BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 
+// base/Functions/STRING-Funcs.h
+DEFINE FUNCTION STRING ( STRING_LITERAL  ) -> STRING FROM "base/Functions/STRING-Funcs.h";
+DEFINE FUNCTION Hash ( STRING  ) -> BIGINT FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR "==" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR "!=" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR ">" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR ">=" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR "<" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE OPERATOR "<=" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Funcs.h";
+DEFINE FUNCTION ToStringLit ( STRING  ) -> STRING_LITERAL FROM "base/Functions/STRING-Funcs.h";
+DEFINE FUNCTION Length ( STRING  ) -> INT FROM "base/Functions/STRING-Funcs.h";
+
 // base/Functions/MACADDR-Funcs.h
 DEFINE FUNCTION macAddr ( STRING_LITERAL  ) -> macAddr FROM "base/Functions/MACADDR-Funcs.h";
 DEFINE OPERATOR "==" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
@@ -270,18 +281,6 @@ DEFINE OPERATOR "<=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-F
 DEFINE OPERATOR ">" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
 DEFINE OPERATOR ">=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
 DEFINE FUNCTION Hash ( macAddr  ) -> BIGINT FROM "base/Functions/MACADDR-Funcs.h";
-
-// base/Functions/HString-Funcs.h
-DEFINE FUNCTION HString ( STRING_LITERAL  ) -> HString FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR "==" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR "!=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR ">" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR "<" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR ">=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR "<=" ( HString, HString ) -> bool FROM "base/Functions/HString-Funcs.h";
-DEFINE OPERATOR "+" ( HString, HString ) -> HString FROM "base/Functions/HString-Funcs.h";
-DEFINE FUNCTION Hash ( HString  ) -> BIGINT FROM "base/Functions/HString-Funcs.h";
-DEFINE FUNCTION ToString ( HString  ) -> STRING_LITERAL FROM "base/Functions/HString-Funcs.h";
 
 // base/Functions/IPVRADDR-Funcs.h
 DEFINE FUNCTION IPv4 ( INT, INT, INT, INT  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
@@ -342,9 +341,6 @@ DEFINE TEMPLATE FUNCTION AbsoluteValue FROM "base/UDFs/AbsoluteValue.h.m4";
 
 // base/GFs/AndGF.m4
 DEFINE TEMPLATE GF AndGF FROM "base/GFs/AndGF.m4";
-
-// base/GFs/PatternMatcher.h
-DEFINE GF PatternMatcher ( HString ) FROM "base/GFs/PatternMatcher.h";
 
 // base/GFs/PatternMatcherOnig.h
 DEFINE GF PatternMatcherOnig ( STRING_LITERAL ) FROM "base/GFs/PatternMatcherOnig.h";

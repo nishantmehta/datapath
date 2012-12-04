@@ -196,6 +196,12 @@ inline unsigned int Hash(const macAddr mac1){
   return mac1.mac.asInt;
 }
 
+// Deep copy
+inline
+void Copy( macAddr& to, const macAddr& from ) {
+    to = from;
+}
+
 #ifdef _HAS_CPP_11
 #include <functional>
 // C++11 STL-compliant hash struct specialization

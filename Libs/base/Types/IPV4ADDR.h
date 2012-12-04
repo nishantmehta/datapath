@@ -128,6 +128,11 @@ public:
         return (d1.addr.asInt!=d2.addr.asInt);
     }
 
+    IPv4& operator =( const IPv4& other ) {
+        addr.asInt = other.addr.asInt;
+        return *this;
+    }
+
     friend uint64_t Hash(const IPv4 d);
 
     friend IPv4 Domain(IPv4 x){
@@ -151,6 +156,12 @@ inline int ToString(const IPv4& x, char* text){
 
 // hash function, just return the unsigned int inside
 inline uint64_t Hash(const IPv4 d){ return d.addr.asInt; }
+
+// Deep copy
+inline
+void Copy( IPv4& to, const IPv4& from ) {
+    to = from;
+}
 
 // compatibility with the other type definitions
 typedef IPv4 IPV4ADDR;

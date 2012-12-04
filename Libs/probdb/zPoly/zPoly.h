@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "Constants.h"
-
+#include "Swap.h"
 #include "probdb/zPoly/DFT.h"
 
 #if 1
@@ -58,6 +58,10 @@ class zPoly {
  public:
   zPoly(void);
   zPoly(const zPoly& o);
+
+  void Swap(zPoly& other){
+    SWAP_memmove(zPoly, other);
+  }
 
   // add event to the list of events
   void AddEvent(double p);

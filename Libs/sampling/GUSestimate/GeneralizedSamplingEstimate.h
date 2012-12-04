@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <algorithm>
 #include <math.h>
 #include <vector>
@@ -7,7 +9,7 @@
 
 // EXACTLY ONE OF THE FOLLOWING SHOULD BE UNCOMMENTED
 
-// #define USE_SORT
+//#define USE_SORT
 #define USE_HASH
 
 using namespace std;
@@ -15,6 +17,7 @@ using namespace std;
 #ifndef _GeneralizedSamplingEstimate_H_
 #define _GeneralizedSamplingEstimate_H_
 
+ofstream myfile("ys_readings_107.txt");
 int order;
 int NumberOfSetBits(int i) {
   i = i - ((i >> 1) & 0x55555555);
@@ -58,15 +61,15 @@ inline __uint64_t CongruentHashModified(const __uint64_t x, const __uint64_t b =
 
 
 template<int k>
-struct tuple {
+struct mytuple {
   uint64_t ch[k];
   double agg;
 	
-  tuple(uint64_t _ch[k], double _agg):
+  mytuple(uint64_t _ch[k], double _agg):
     agg(_agg) { memcpy(ch, _ch, k*sizeof(uint64_t));}
   
   // selective constructor. Used to ensure that tuples form groups
-  tuple(tuple& other, int order):agg(0.0){
+  mytuple(mytuple& other, int order):agg(0.0){
     for (int i = 0; i < k; i++) {
       if ((order & (1 << i)) != 0) {
 	ch[k-i-1]=other.ch[k-i-1];
@@ -77,7 +80,7 @@ struct tuple {
   }
 
 public:
-  friend ostream& operator<<(ostream& Ostr, const tuple& Tup) {
+  friend ostream& operator<<(ostream& Ostr, const mytuple& Tup) {
     Ostr <<"( "<< Tup.ch[0] << ", "<< Tup.ch[1] << ", "<< Tup.ch[2] << "), "<< Tup.agg << endl;
     return Ostr;
   }
@@ -102,7 +105,7 @@ public:
     return hash;
   }
 
-  bool operator==(const tuple& o) const {
+  bool operator==(const mytuple& o) const {
     for (int i = 0; i < k; i++) {
       if ((order & (1 << i)) != 0) {
 	if (ch[k-i-1] != o.ch[k-i-1])
@@ -113,7 +116,7 @@ public:
     return true;
   }
 
-  bool operator<(const tuple& o) const {
+  bool operator<(const mytuple& o) const {
     for (int i = 0; i < k; i++) {
       if ((order & (1 << i)) != 0) {
 	//attribute i is included in sorting
@@ -127,7 +130,7 @@ public:
 
 template<int k>
 struct HashKey_tuple {
-  size_t operator() (const tuple<k>& o) const {
+  size_t operator() (const mytuple<k>& o) const {
     return o.Hash();
   }
 };
@@ -152,7 +155,7 @@ class GeneralizedSamplingData {
   int relations_no;
   
   //data -structure that keeps the resized tuples for final computation
-  std::vector< tuple<3> > V;
+  std::vector< mytuple<3> > V;
   
   /*biased y_s - the raw summations obtained from the data*/
   double *coefficients;
@@ -180,7 +183,7 @@ class GeneralizedSamplingData {
   /* Note: If there has been no subsampling, then the bernoulli parameters are all 1*/
   /* and the ultimate parameters are equal to the input parameters*/
 
-  GeneralizedSamplingData(int numR, double _a, double* _b, double p, std::vector< tuple<3> > _V) {
+  GeneralizedSamplingData(int numR, double _a, double* _b, double p, std::vector< mytuple<3> > _V) {
     a = _a;
     a_sub = _a * pow(p, numR);
     cout<<" a after resampling= "<< a_sub<< endl;
@@ -260,7 +263,7 @@ class GeneralizedSamplingData {
    double p_res = V[0].agg; // group aggregate
    //cout << "Initial p_res = " <<p_res<< endl;
    
-   for (int i=1; i<V.size(); i++){
+   for (size_t i=1; i<V.size(); i++){
      // new group?
      if (V[i-1] < V[i]){ // yes
        res+=p_res*p_res;
@@ -282,11 +285,11 @@ class GeneralizedSamplingData {
    
    cout << "Order=" << _order << endl;
 
-   typedef std::tr1::unordered_map < tuple<3>, double, HashKey_tuple<3> > MapType;
+   typedef std::tr1::unordered_map < mytuple<3>, double, HashKey_tuple<3> > MapType;
    MapType mymap;
    
-   for (int i = 0; i <V.size(); i++) {
-     const tuple<3> key=V[i];
+   for (size_t i = 0; i <V.size(); i++) {
+     const mytuple<3> key=V[i];
 
      if (mymap.find(key)==mymap.end())
        mymap.insert(make_pair(key,V[i].agg));
@@ -318,10 +321,24 @@ class GeneralizedSamplingData {
 #ifdef USE_SORT
       coefficients[S] = ComputeOrderCoefSortBased(S);
 #endif
-
-      cout <<"Raw coefficients"<< coefficients[S]<< endl;
+      if (myfile.is_open()){
+	myfile <<setprecision(15) << coefficients[S] << "\t";
+	cout <<"Raw coefficients"<< setprecision(15)<< coefficients[S]<< endl;
+	//myfile.close();
+      }
+      else {
+	cout << "Unable to open file ys_readings";
+      }	
     }
     return;
+
+    if (myfile.is_open()) {
+      myfile << "\n";
+      myfile.close(); 
+    }
+    else {
+      cout<< "Unable to open file ys_readings";
+    }
   }
 		
   /* computes C_s for a given s*/
@@ -439,7 +456,7 @@ class GeneralizedSamplingData {
     for (int i = 0; i < (1 << relations_no); i++) {
       unbiased_coefficients[i] = ComputeUnbiasedCoef(i);
       is_unbiased_computed[i] = 1;
-      cout<< "Unbiased coefficients:" << unbiased_coefficients[i]<<endl;
+      cout<< "Unbiased coefficients:" << setprecision(9) <<unbiased_coefficients[i]<<endl;
     }
   }
 

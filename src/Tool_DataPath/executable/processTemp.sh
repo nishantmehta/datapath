@@ -1,7 +1,16 @@
 #!/bin/bash
 # $1 = base of the file names
+# Note: this file is run in the context of the executable folder
 
-M4INCLUDES="-I ../../../M4/m4 -I ../../../WPFunctionModules -I ../../../GLAs -I ../../../UDFs -I ../../../../Libs"
+DP_EXEC_DIR=$(realpath .)
+DP_SRC_DIR=$(realpath $DP_EXEC_DIR/../..)
+M4_DIR=$DP_SRC_DIR/M4/m4
+WPF_DIR=$DP_SRC_DIR/WPFunctionModules
+GLA_DIR=$DP_SRC_DIR/GLAs
+UDF_DIR=$DP_SRC_DIR/UDFs
+LIB_DIR=$(realpath $DP_EXEC_DIR/Libs)
+
+M4INCLUDES="-I $M4_DIR -I $WPF_DIR -I $GLA_DIR -I $UDF_DIR -I $LIB_DIR"
 
 DESC_M4="descfile.m4"
 

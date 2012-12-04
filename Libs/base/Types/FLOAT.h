@@ -54,6 +54,13 @@ inline int ToString(const FLOAT& x, char* text){
 inline uint64_t Hash(const FLOAT val){
     return *( (const unsigned int*)(&val) );
 }
+
+// Deep copy
+inline
+void Copy( FLOAT& to, const FLOAT& from ) {
+    to = from;
+}
+
 //////////////
 // Operators
 

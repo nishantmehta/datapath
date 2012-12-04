@@ -187,7 +187,7 @@ bool FACTOR_NAME :: operator <( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID < other.myID;
+    return globalDictionary.Compare(myID, other.myID) < 0;
 }
 
 // OP_DEF(<=, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
@@ -196,7 +196,7 @@ bool FACTOR_NAME :: operator <=( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID <= other.myID;
+    return globalDictionary.Compare(myID, other.myID) <= 0;
 }
 
 // OP_DEF(>, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
@@ -205,7 +205,7 @@ bool FACTOR_NAME :: operator >( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID > other.myID;
+    return globalDictionary.Compare(myID, other.myID) > 0;
 }
 
 // OP_DEF(>=, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
@@ -214,7 +214,7 @@ bool FACTOR_NAME :: operator >=( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID >= other.myID;
+    return globalDictionary.Compare(myID, other.myID) >= 0;
 }
 
 

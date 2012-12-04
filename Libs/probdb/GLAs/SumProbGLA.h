@@ -7,15 +7,17 @@
  *
  * NAME(</SumProbGLA/>)
  * INPUTS(</(v, INT),(p, DOUBLE)/>)
- * RESULT_TYPE(</state/>)
+ * OUTPUTS(</(confLow, INT), (confHigh, INT)/>)
+ * RESULT_TYPE(</single/>)
  * LIBS(zPoly)
  *
  * END_DESC
  */
 
 #include <map>
-#include "zPoly.h"
-#include "CountProbGLA.h"
+#include "base/Types.h"
+#include "probdb/zPoly/zPoly.h"
+#include "probdb/GLAs/CountProbGLA.h"
 
 #define VALTYPE INT
 
@@ -40,8 +42,17 @@ class SumProbGLA {
 }
 
   void AddState(SumProbGLA& other){
-    for(Map::iterator it = other.poly.begin(); it != other.poly.end(); it++)
-      poly[it->first]->AddState(*(it->second));
+    for(Map::iterator it = other.poly.begin(); it != other.poly.end(); it++){
+      int v = it->first;
+      Map::iterator it2=poly.find(v);
+      if ( it2 == poly.end() ){ // not in
+	CountProbGLA* gla = new CountProbGLA;
+	poly.insert(make_pair(v,gla));
+      } 
+      
+      poly[v]->AddState(*(it->second));
+      
+    }
   }
  
   void Finalize(){

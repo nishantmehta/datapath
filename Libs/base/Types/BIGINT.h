@@ -55,6 +55,10 @@ inline uint64_t Hash(const BIGINT val){
     return val;
 }
 
+// Copy function
+inline void Copy( BIGINT& to, const BIGINT& from ) {
+    to = from;
+}
 
 //////////////
 // Operators

@@ -97,9 +97,6 @@ using namespace std;
  *      NAME(</HString/>)
  *      COMPLEX_TYPE(</HStringIterator/>)
  *  END_DESC
- *
- *  SYN_DEF(</VARCHAR/>, </HString/>)
- *  SYN_DEF(</STRING/>, </HString/>)
  */
 class HString {
 public:
@@ -397,6 +394,9 @@ public:
     // datatypes. Just returns mHash
     friend uint64_t Hash( const HString val );
 
+    // Explicitly create a deep copy of the string
+    void Copy( const HString& from );
+
     // Method to safely inform the HString that it's value as been placed
     // in the dictionary.
     void ConvertToDictionary(void);
@@ -411,9 +411,6 @@ public:
     
     // END DEBUG
 };
-
-typedef  HString VARCHAR;
-typedef  HString STRING;
 
 ///////////// Functions definitions ///////////////////////////////
 
@@ -720,7 +717,6 @@ HString :: HString( const HString & other ) {
     mStr = other.mStr;
     CLEAR_LOCAL_BIT(mHash);
 
-    CheckIfInDict();
     if( !IN_DICT(mHash) ) {
         mStr = strdup( other.mStr );
         SET_LOCAL_BIT(mHash);
@@ -730,6 +726,10 @@ HString :: HString( const HString & other ) {
 // Assignment operator (shallow copy)
 inline
 HString & HString :: operator = (const HString & other ) {
+    if( LOCAL(mHash) ) {
+        free( (void*) mStr );
+    }
+
     mHash = other.mHash;
     mStrLen = other.mStrLen;
     mStr = other.mStr;
@@ -741,6 +741,29 @@ HString & HString :: operator = (const HString & other ) {
     }
 
     return *this;
+}
+
+// Explicity deep copy
+inline
+void HString :: Copy( const HString& other ) {
+    if( LOCAL(mHash) ) {
+        free( (void*) mStr );
+    }
+
+    mHash = other.mHash;
+    mStrLen = other.mStrLen;
+    mStr = other.mStr;
+
+    if( !IN_DICT(mHash) ) {
+        mStr = strdup( other.mStr );
+        SET_LOCAL_BIT(mHash);
+    }
+}
+
+// Deep copy function
+inline
+void Copy( HString& to, const HString& from ) {
+    to.Copy( from );
 }
 
 inline

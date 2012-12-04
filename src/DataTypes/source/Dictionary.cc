@@ -88,15 +88,15 @@ void Dictionary :: ComputeOrder( void ) {
     if( !orderValid ) {
         list<StringType> sortList;
         for( ReverseMap::const_iterator it = reverseMap.begin(); it != reverseMap.end(); ++it ) {
-            StringType& str = it->first;
+            const StringType& str = it->first;
             sortList.push_back(str);
         }
 
         sortList.sort();
 
         IntType curIndex = sortList.size();
-        for( list<StringType>::const_iterator it = sortList.rbegin(); it != sortList.rend(); ++it ) {
-            StringType& str = *it;
+        for( list<StringType>::const_reverse_iterator it = sortList.rbegin(); it != sortList.rend(); ++it ) {
+            const StringType& str = *it;
             IntType ID = reverseMap[str];
 
             orderMap[ID] = curIndex--;
@@ -106,7 +106,7 @@ void Dictionary :: ComputeOrder( void ) {
     }
 }
 
-Dictionary :: DiffType Dictionary :: Compare( IntType firstID, secondID ) {
+Dictionary :: DiffType Dictionary :: Compare( IntType firstID, IntType secondID ) {
     return orderMap[firstID] - orderMap[secondID];
 }
 

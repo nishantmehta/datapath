@@ -57,6 +57,12 @@ inline int ToString(const INT& x, char* text){
 // we just use conversion to unsigned int
 inline uint64_t Hash(const INT x){ return x;}
 
+// Deep copy
+inline
+void Copy( INT& to, const INT& from ) {
+    to = from;
+}
+
 //////////////
 // Operators
 

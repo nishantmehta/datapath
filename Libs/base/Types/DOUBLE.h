@@ -53,6 +53,13 @@ inline int ToString(const DOUBLE& x, char* text){
 inline uint64_t Hash( const DOUBLE val){
     return   *((const uint64_t*)(&val));
 }
+
+// Deep copy
+inline
+void Copy( DOUBLE& to, const DOUBLE& from ) {
+    to = from;
+}
+
 //////////////
 // Operators
 

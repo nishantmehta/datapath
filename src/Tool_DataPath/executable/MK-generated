@@ -21,7 +21,7 @@ M4=m4
 
 # COMPILER OPTIMIZATION
 ifdef DEBUG_DATAPATH
-OPT= # no optimization
+OPT= -Wall # no optimization, more warnings
 else # full optimization
 OPT= -O3 -march=native -ffast-math
 endif

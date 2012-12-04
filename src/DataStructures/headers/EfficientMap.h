@@ -132,6 +132,9 @@ public:
 	void Print();
 
 private:
+
+	// Data invalidData; // object returned when Find() fails
+
 	// these are versions of the above ops that work only at a specific level of the skip list
 	void Insert (Node *temp, int whichLevel);
 	void Remove (Node *&removeMe, int whichLevel);

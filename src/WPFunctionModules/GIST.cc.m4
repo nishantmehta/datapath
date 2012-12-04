@@ -80,7 +80,7 @@ int GISTPreProcessWorkFunc_<//>M4_WPName
             // For error messages
             int recStateIndex = 0;
 
-<//><//><//>m4_foreach(</_S_/>, G_CONST_RECEIVED(_Q_), </dnl
+<//><//><//>m4_foreach(</_S_/>, G_CONST_RECEIVE(_Q_), </dnl
             const TYPE(_S_) * G_STATE(_Q_)</_/>VAR(_S_) = NULL;
             {
                 FATALIF(myReceivedStates.AtEnd(),

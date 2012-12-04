@@ -85,6 +85,8 @@ echo "Description: Sub-library for DataPath library $1" >> $PC_FILE
 if [ -f $SUBLIB_DIR/VERSION ]; then
     echo -n "Version: " >> $PC_FILE
     cat $SUBLIB_DIR/VERSION >> $PC_FILE
+else
+    echo "Version: 1.0" >> $PC_FILE
 fi
 
 # If the sublibrary has an include directory, add that to the Cflags

@@ -38,7 +38,6 @@
 #include "Logging.h"
 #include "Constants.h"
 #include "DPMessages.h"
-#include "HString.h"
 #include "ExecEngine.h"
 #include "CPUWorkerPool.h"
 #include "Timer.h"
@@ -139,8 +138,6 @@ int main(int argc, char** argv){
 	//	diagnose.StartDiagnose();
 
 	DiskArray::LoadDiskArray(rdOnly);
-
-	HString::InitializeDictionary();
 
 	cout << "Initializing the hash table" << endl;
 	Timer clock;

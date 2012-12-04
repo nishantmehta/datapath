@@ -33,8 +33,8 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 *     Make sure it is set to a sum of few 2^k numbers so that % operator is implemented
 *     efficiently by the compiler.
 */
-#define NUM_SLOTS_IN_SEGMENT_BITS 26
-#define NUM_SEGS (128+64+32)
+#define NUM_SLOTS_IN_SEGMENT_BITS  26
+#define NUM_SEGS  16
 
 
 

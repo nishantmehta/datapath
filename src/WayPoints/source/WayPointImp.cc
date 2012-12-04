@@ -256,12 +256,12 @@ void WayPointImp :: TokenRequestCompleted( off_t requestType ) {
 void WayPointImp :: GenerateTokenRequests( void ) {
     for( TokenRequestMap::iterator it = tokensToRequest.begin(); it != tokensToRequest.end(); ++it ) {
         off_t type = it->first;
-        int maxReq = it->second.first;
-        int priority = it->second.second;
+        const int& maxReq = it->second.first;
+        const int& priority = it->second.second;
 
         while( tokenRequestsOut[type] < maxReq ) {
-            RequestTokenDelayOK( type, priority );
             tokenRequestsOut[type] += 1;
+            RequestTokenDelayOK( type, priority );
         }
     }
 }
@@ -271,12 +271,12 @@ void WayPointImp :: GenerateTokenRequests( off_t requestType ) {
 
     if( it != tokensToRequest.end() ) {
         off_t type = it->first;
-        int maxReq = it->second.first;
-        int priority = it->second.second;
+        const int& maxReq = it->second.first;
+        const int& priority = it->second.second;
 
         while( tokenRequestsOut[type] < maxReq ) {
-            RequestTokenDelayOK( type, priority );
             tokenRequestsOut[type] += 1;
+            RequestTokenDelayOK( type, priority );
         }
     }
 }
