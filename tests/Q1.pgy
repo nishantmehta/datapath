@@ -12,6 +12,8 @@ RESULT_FILE(Q1-result.csv)
 
 */
 
+#include "tpch.pgy"
+
 LOAD lineitem;
 LOAD orders;
 sel = FILTER orders BY orders.o_orderdate < DATE('1998/07/03');

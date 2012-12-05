@@ -1,5 +1,9 @@
 /* Piggy program to create the TPC-H relations
+
+   Creates the probabilistic version
  */
+
+#include "tpch.pgy" // for types
 
 CREATE RELATION customer (
     c_custkey       : INT     ,
@@ -8,7 +12,7 @@ CREATE RELATION customer (
     c_nationkey     : INT     ,
     c_phone         : VARCHAR ,
     c_acctbal       : FLOAT   ,
-    c_mktsegment    : VARCHAR ,
+    c_mktsegment    : mktsegment_F,
     c_comment       : VARCHAR
 );
 
@@ -21,19 +25,19 @@ CREATE RELATION lineitem (
     l_extendedprice : FLOAT   ,
     l_discount      : FLOAT   ,
     l_tax           : FLOAT   ,
-    l_returnflag    : VARCHAR ,
-    l_linestatus    : VARCHAR ,
+    l_returnflag    : status_F ,
+    l_linestatus    : status_F ,
     l_shipdate      : DATE    ,
     l_commitdate    : DATE    ,
     l_receiptdate   : DATE    ,
-    l_shipinstruct  : VARCHAR ,
-    l_shipmode      : VARCHAR ,
+    l_shipinstruct  : status_F ,
+    l_shipmode      : status_F ,
     l_comment       : VARCHAR
 );
 
 CREATE RELATION nation (
     n_nationkey     : INT     ,
-    n_name          : VARCHAR ,
+    n_name          : nation_F ,
     n_regionkey     : INT     ,
     n_comment       : VARCHAR
 );
@@ -41,23 +45,23 @@ CREATE RELATION nation (
 CREATE RELATION orders (
     o_orderkey      : BIGINT  ,
     o_custkey       : INT     ,
-    o_orderstatus   : VARCHAR ,
+    o_orderstatus   : status_F ,
     o_totalprice    : FLOAT   ,
     o_orderdate     : DATE    ,
-    o_orderpriority : VARCHAR ,
+    o_orderpriority : status_F ,
     o_clerk         : VARCHAR ,
-    o_shippriority  : VARCHAR ,
+    o_shippriority  : status_F ,
     o_comment       : VARCHAR
 );
 
 CREATE RELATION part (
     p_partkey       : INT     ,
     p_name          : VARCHAR ,
-    p_mfgr          : VARCHAR ,
-    p_brand         : VARCHAR ,
-    p_type          : VARCHAR ,
+    p_mfgr          : manufacturer_F ,
+    p_brand         : partbrand_F ,
+    p_type          : parttype_F ,
     p_size          : INT     ,
-    p_container     : VARCHAR ,
+    p_container     : partcontainer_F ,
     p_retailprice   : FLOAT   ,
     p_comment       : VARCHAR
 );
@@ -72,7 +76,7 @@ CREATE RELATION partsupp (
 
 CREATE RELATION region (
     r_regionkey     : INT     ,
-    r_name          : VARCHAR ,
+    r_name          : region_F ,
     r_comment       : VARCHAR
 );
 

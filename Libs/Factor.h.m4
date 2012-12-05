@@ -1,5 +1,8 @@
-#ifndef _mktsegment_F_H_
-#define _mktsegment_F_H_
+m4_dnl # DICT_NAME and STORAGE_TYPE should be defined before running this file.
+m4_define(`FACTOR_NAME', `'DICT_NAME`')m4_dnl
+m4_changecom()`'m4_dnl
+#ifndef _`'FACTOR_NAME`'_H_
+#define _`'FACTOR_NAME`'_H_
 
 #include "Dictionary.h"
 #include "DictionaryManager.h"
@@ -12,16 +15,16 @@
 
 /* Description block
  * TYPE_DESC
- *  NAME(mktsegment_F)
- *  SIMPLE_TYPE(ColumnIteratorDict< mktsegment_F >)
- *  DICTIONARY(mktsegment_F)
+ *  NAME(FACTOR_NAME)
+ *  SIMPLE_TYPE(ColumnIteratorDict< FACTOR_NAME >)
+ *  DICTIONARY(DICT_NAME)
  * END_DESC
  */
 
-class mktsegment_F {
+class FACTOR_NAME {
 public:
     // Type used to store ID.
-    typedef unsigned char StorageType;
+    typedef STORAGE_TYPE StorageType;
 
     static const char* DictionaryName __attribute__((weak));
 
@@ -40,19 +43,19 @@ public:
 
     /* ----- Constructors / Destructors ----- */
     // Default constructor
-    mktsegment_F ( void );
+    FACTOR_NAME ( void );
 
     // Constructor from strings
-    mktsegment_F ( STRING_LITERAL );
+    FACTOR_NAME ( STRING_LITERAL );
 
     // Constructor from storage type
-    mktsegment_F ( StorageType );
+    FACTOR_NAME ( StorageType );
 
     // Copy constructor
-    mktsegment_F ( const mktsegment_F & other );
+    FACTOR_NAME ( const FACTOR_NAME & other );
 
     // Destructor
-    ~mktsegment_F (void);
+    ~FACTOR_NAME (void);
 
     /* ----- Methods ----- */
     // Standard FromString method
@@ -75,59 +78,59 @@ public:
 
     /* ----- Operators ----- */
 
-    bool operator ==( const mktsegment_F & ) const;
-    bool operator !=( const mktsegment_F & ) const;
-    bool operator <( const mktsegment_F & ) const;
-    bool operator <=( const mktsegment_F & ) const;
-    bool operator >( const mktsegment_F & ) const;
-    bool operator >=( const mktsegment_F & ) const;
+    bool operator ==( const FACTOR_NAME & ) const;
+    bool operator !=( const FACTOR_NAME & ) const;
+    bool operator <( const FACTOR_NAME & ) const;
+    bool operator <=( const FACTOR_NAME & ) const;
+    bool operator >( const FACTOR_NAME & ) const;
+    bool operator >=( const FACTOR_NAME & ) const;
 
-    friend uint64_t Hash(const mktsegment_F );
+    friend uint64_t Hash(const FACTOR_NAME );
 };
 
 // Statically Initialized Members
 
-const char * mktsegment_F :: DictionaryName = "mktsegment_F";
+const char * FACTOR_NAME :: DictionaryName = "DICT_NAME";
 
-const mktsegment_F :: StorageType mktsegment_F :: InvalidID = Dictionary::InvalidID;
+const FACTOR_NAME :: StorageType FACTOR_NAME :: InvalidID = Dictionary::InvalidID;
 
-const mktsegment_F :: StorageType mktsegment_F :: MaxID = std::numeric_limits<StorageType>::max();
+const FACTOR_NAME :: StorageType FACTOR_NAME :: MaxID = std::numeric_limits<StorageType>::max();
 
-Dictionary mktsegment_F :: globalDictionary = Dictionary();
+Dictionary FACTOR_NAME :: globalDictionary = Dictionary();
 
 /* ----- Inlined Methods ----- */
 
 inline
-mktsegment_F :: mktsegment_F ( void ) : myID( InvalidID ) {
+FACTOR_NAME :: FACTOR_NAME ( void ) : myID( InvalidID ) {
 }
 
-// FUNC_DEF(mktsegment_F, </(str, STRING_LITERAL)/>, mktsegment_F)
+// FUNC_DEF(FACTOR_NAME, </(str, STRING_LITERAL)/>, FACTOR_NAME)
 inline
-mktsegment_F :: mktsegment_F ( STRING_LITERAL str ) {
+FACTOR_NAME :: FACTOR_NAME ( STRING_LITERAL str ) {
     FromString( str );
 }
 
 // Don't expose this to the user. Only the iterator needs to use this.
 inline
-mktsegment_F :: mktsegment_F ( StorageType id ) : myID( id ) {
+FACTOR_NAME :: FACTOR_NAME ( StorageType id ) : myID( id ) {
 }
 
 inline
-mktsegment_F :: mktsegment_F ( const mktsegment_F & other ) : myID(other.myID) {
+FACTOR_NAME :: FACTOR_NAME ( const FACTOR_NAME & other ) : myID(other.myID) {
 }
 
 inline
-mktsegment_F :: ~mktsegment_F ( void ) {
+FACTOR_NAME :: ~FACTOR_NAME ( void ) {
 }
 
 inline
-void mktsegment_F :: FromString( STRING_LITERAL str ) {
+void FACTOR_NAME :: FromString( STRING_LITERAL str ) {
     // GlobalDictionary will return InvalidID if not found.
     myID = globalDictionary.Lookup( str );
 }
 
 inline
-void mktsegment_F :: FromString( STRING_LITERAL str, Dictionary& localDict ) {
+void FACTOR_NAME :: FromString( STRING_LITERAL str, Dictionary& localDict ) {
     // First check if we are in the local dictionary
     myID = localDict.Lookup( str );
     if( myID != InvalidID )
@@ -145,69 +148,69 @@ void mktsegment_F :: FromString( STRING_LITERAL str, Dictionary& localDict ) {
 }
 
 inline
-STRING_LITERAL mktsegment_F :: ToString( void ) const {
+STRING_LITERAL FACTOR_NAME :: ToString( void ) const {
     return globalDictionary.Lookup( myID );
 }
 
 inline
-bool mktsegment_F :: Invalid( void ) const {
+bool FACTOR_NAME :: Invalid( void ) const {
     return myID == InvalidID;
 }
 
 inline
-void mktsegment_F :: Translate(Dictionary::TranslationTable& trans){	
+void FACTOR_NAME :: Translate(Dictionary::TranslationTable& trans){	
   if (trans.find(myID)!=trans.end())// found
     myID = trans[myID];
 }
 
-// OP_DEF(==, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(==, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator ==( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator ==( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
     return myID == other.myID;
 }
 
-// OP_DEF(!=, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(!=, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator !=( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator !=( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return true;
 
     return myID != other.myID;
 }
 
-// OP_DEF(<, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(<, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator <( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator <( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
     return globalDictionary.Compare(myID, other.myID) < 0;
 }
 
-// OP_DEF(<=, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(<=, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator <=( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator <=( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
     return globalDictionary.Compare(myID, other.myID) <= 0;
 }
 
-// OP_DEF(>, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(>, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator >( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator >( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
     return globalDictionary.Compare(myID, other.myID) > 0;
 }
 
-// OP_DEF(>=, </(f1, mktsegment_F), (f2, mktsegment_F)/>, bool)
+// OP_DEF(>=, </(f1, FACTOR_NAME), (f2, FACTOR_NAME)/>, bool)
 inline
-bool mktsegment_F :: operator >=( const mktsegment_F & other ) const {
+bool FACTOR_NAME :: operator >=( const FACTOR_NAME & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
@@ -218,19 +221,19 @@ bool mktsegment_F :: operator >=( const mktsegment_F & other ) const {
 /* ----- Inline Functions ----- */
 
 inline
-void FromString( mktsegment_F & f, STRING_LITERAL str ) {
+void FromString( FACTOR_NAME & f, STRING_LITERAL str ) {
    f.FromString( str ); 
 }
 
 // This function is used by TextLoader to create Factors.
 inline
-void FromString( mktsegment_F & f, STRING_LITERAL str, Dictionary& localDict ) {
+void FromString( FACTOR_NAME & f, STRING_LITERAL str, Dictionary& localDict ) {
     f.FromString( str, localDict );
 }
 
-// Used to write a mktsegment_F to a buffer.
+// Used to write a FACTOR_NAME to a buffer.
 inline
-int ToString( const mktsegment_F& f, char * buffer ) {
+int ToString( const FACTOR_NAME& f, char * buffer ) {
     const char * str = f.ToString();
     strcpy( buffer, str );
     int len = strlen( buffer );
@@ -238,17 +241,17 @@ int ToString( const mktsegment_F& f, char * buffer ) {
 }
 
 inline
-uint64_t Hash( const mktsegment_F x) {
+uint64_t Hash( const FACTOR_NAME x) {
     return x.myID;
 }
 
 // Eventually there will be a ToString method here exposed to the user that
 // will turn the factor into a VARCHAR
 
-// FUNC_DEF(</ToString/>, </(f, mktsegment_F)/>, </STRING_LITERAL/>)
+// FUNC_DEF(</ToString/>, </(f, FACTOR_NAME)/>, </STRING_LITERAL/>)
 inline
-STRING_LITERAL ToString( const mktsegment_F & f ) {
+STRING_LITERAL ToString( const FACTOR_NAME & f ) {
     return f.ToString();
 }
 
-#endif//_mktsegment_F_H_
+#endif//_`'FACTOR_NAME`'_H_

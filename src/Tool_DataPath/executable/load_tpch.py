@@ -67,7 +67,7 @@ parser.add_argument('-r', '--reload',
 
 parser.add_argument('-q', '--query',
         action='store',
-        default='./LOAD_TPCH/tpch.pgy',
+        default='./LOAD_TPCH/schema.pgy',
         metavar='path',
         help='the query file that creates the tables. [./LOAD_TPCH/tpch.pgy]')
 
@@ -157,6 +157,7 @@ no = {'N', 'n', 'no', 'NO', 'No'}
 
 # Template for generated query files
 bulkload_template = """
+#include "tpch.pgy"
 data = READ "{file}" {striping} SEPARATOR '|' ATTRIBUTES FROM {relation};
 
 STORE data INTO {relation};

@@ -13,6 +13,8 @@ RESULT_FILE(Q2-result.csv)
 
 */
 
+#include "tpch.pgy"
+
 LOAD lineitem;
 
 gl = GLA:Multiplexer< GLA:Sum, GLA:Sum, GLA:Sum, GLA:Count >

@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include "Swap.h"
+#include "Config.h"
 
 // Helper macros for Frequently Done Actions
 // Macro to streamline scan of TwoWayLists
@@ -48,15 +49,15 @@
 //   }END_FOREACH
 //
 //
-#if __cplusplus >= 201103L // c++11
+#ifdef _HAS_AUTO
 #define FOREACH_TWL(el, list) \
     for((list).MoveToStart(); !(list).AtEnd(); (list).Advance()) { \
     auto & el = (list).Current();
-#else
+#else // _HAS_AUTO
 #define FOREACH_TWL(el, list)																		\
 	for((list).MoveToStart();	!(list).AtEnd(); (list).Advance()) {	\
 	typeof((list).Current())& el = (list).Current();
-#endif
+#endif // _HAS_AUTO
 
 #ifndef END_FOREACH
 #define END_FOREACH }

@@ -31,6 +31,7 @@
 #include "HashFunctions.h"
 #include "Swap.h"
 #include "Errors.h"
+#include "Config.h"
 
 // Our 61 bit hash has 3 bit spare at MSB position, we use one of it to
 // denote we have it in our global dictionary. If set, string has entry in
@@ -408,7 +409,7 @@ public:
             << " DICT: " << (IN_DICT(mHash) ? "true " : "false")
             << " SBID: " << (ShouldBeInDict() ? "true " : "false") << endl;
     }
-    
+
     // END DEBUG
 };
 
@@ -611,7 +612,7 @@ inline void HString::AddEntryInDictionary(uint64_t hash, const char* value, Dict
        return;
 
    char *tmp = strdup(value);
-   dict[hash] = tmp; 
+   dict[hash] = tmp;
 }
 
 
@@ -779,7 +780,7 @@ void HString :: ConvertToDictionary( void ) {
     SET_DICT_BIT(mHash);
 }
 
-#ifdef _HAS_CPP_11
+#ifdef _HAS_STD_HASH
 #include <functional>
 // C++11 STL-compliant hash struct specialization
 
@@ -794,7 +795,7 @@ public:
 };
 
 }
-#endif // _HAS_CPP_11
+#endif // _HAS_STD_HASH
 
 #endif // _HSTRING_H_
 

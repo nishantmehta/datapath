@@ -20,6 +20,7 @@
 #include "datecalc.h"
 #include <assert.h>
 #include "Constants.h"
+#include "Config.h"
 
 //---------------------------------------------------------------------------
 //
@@ -607,7 +608,7 @@ void Copy( DATE& to, const DATE& from ) {
     to = from;
 }
 
-#ifdef _HAS_CPP_11
+#ifdef _HAS_STD_HASH
 #include <functional>
 // C++11 STL-compliant hash struct specialization
 
@@ -622,6 +623,6 @@ public:
 };
 
 }
-#endif // _HAS_CPP_11
+#endif // _HAS_STD_HASH
 
 #endif

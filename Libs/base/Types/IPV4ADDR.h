@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "Constants.h"
+#include "Config.h"
 
 /** This type implements an efficient IP v4 address
         Internal representation is an int (for efficiency).
@@ -166,7 +166,7 @@ void Copy( IPv4& to, const IPv4& from ) {
 // compatibility with the other type definitions
 typedef IPv4 IPV4ADDR;
 
-#ifdef _HAS_CPP_11
+#ifdef _HAS_STD_HASH
 #include <functional>
 // C++11 STL-compliant hash struct specialization
 
@@ -181,6 +181,6 @@ public:
 };
 
 }
-#endif // _HAS_CPP_11
+#endif // _HAS_STD_HASH
 
 #endif // _IPV4ADDR_H_

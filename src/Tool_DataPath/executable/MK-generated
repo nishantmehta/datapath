@@ -14,8 +14,8 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
 # use C++11 standard
-# CCFLAGS += -std=c++11
-CCFLAGS += -std=gnu++0x
+CCFLAGS += -std=gnu++11
+#CCFLAGS += -std=gnu++0x
 
 M4=m4 
 

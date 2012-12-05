@@ -22,6 +22,7 @@
 
 #include "HashFunctions.h"
 #include "Constants.h"
+#include "Config.h"
 #include "Errors.h"
 #include "ColumnVarIterator.h"
 
@@ -49,7 +50,7 @@ class STRING {
 
     // the type used for the size
     typedef size_t SizeType;
-    
+
     // The length of the string
     SizeType length;
 
@@ -102,7 +103,7 @@ public:
     void Copy( const STRING& other );
 
     ///// General Methods /////
-    
+
     // Return the length of the string
     SizeType Length( void ) const;
 
@@ -174,7 +175,7 @@ void STRING :: Clear() {
 inline
 void STRING :: Serialize( char * buffer ) const {
 #ifdef DEBUG_STRING
-    std::cout << "Serializing -> " << DebugString() << std::endl; 
+    std::cout << "Serializing -> " << DebugString() << std::endl;
 #endif // DEBUG_STRING
 
     strcpy( buffer, str );
@@ -290,7 +291,7 @@ uint64_t Hash( const STRING& str ) {
     return HashString( str.ToString() );
 }
 
-#ifdef _HAS_CPP_11
+#ifdef _HAS_STD_HASH
 #include <functional>
 // C++11 STL-Compliant hash struct specialization
 
@@ -305,6 +306,6 @@ class hash<STRING> {
 
 }
 
-#endif // _HAS_CPP_11
+#endif // _HAS_STD_HASH
 
 #endif // _BASE_STRING_H_

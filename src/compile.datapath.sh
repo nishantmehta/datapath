@@ -312,28 +312,19 @@ fi
 
 echo
 # Clean old stuff
-if [ -f maker ]; then
-    if [ executables.lemon -nt Makefile ]; then
-        #Compile maker.cc
-    echo "An updated executables.lemon file is found."
-    sleep 2
-
-    echo "Creating Makefile"
-    echo
-    # Prepare Makefile using maker
-    sleep 2
-   ./maker executables.lemon Makefile_prelude
-    fi
-else
+if [ ! -f maker ]; then
     #Compile maker.cc
     echo "No maker exists. Compiling maker.cc"
     echo
     sleep 2
     g++ -o maker maker.cc
-    # Prepare Makefile using maker
-    ./maker executables.lemon Makefile_prelude
-
 fi
+
+echo "Creating Makefile"
+echo
+# Prepare Makefile using maker
+sleep 2
+./maker executables.lemon Makefile_prelude
 
 # Compile DataPath using Makefile
     echo "Compiling DataPath using Makefile"

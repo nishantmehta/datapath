@@ -16,8 +16,10 @@
 #ifndef _STL_H_
 #define _STL_H_
 
-/** his file contains some macros to make life easier with stl
-		containers and maps
+#include "Config.h"
+
+/** This file contains some macros to make life easier with stl
+        containers and maps
 */
 
 
@@ -31,33 +33,32 @@
 //   }END_FOREACH
 //
 //
-#if __cplusplus >= 201103L
+#ifdef _HAS_AUTO
+
 #define FOREACH_STL(el, list) \
     for( auto it = (list).begin(); it != (list).end(); it++ ) { \
     auto el = *it;
-#else
-#define FOREACH_STL(el, list)																		\
-	for(typeof(list.begin()) it = list.begin(); it != list.end(); it++){	\
-	typeof(*it)& el = *it;
-#endif
 
-#if __cplusplus >= 201103L
 #define FOREACH_STL_MAP(key, val, map) \
     for( auto it = (map).begin(); it != (map).end(); ++it ) { \
     auto & key = it->first; \
     auto & val = it->second;
-#else
+
+#else   // _HAS_AUTO
+
+#define FOREACH_STL(el, list) \
+    for(typeof(list.begin()) it = list.begin(); it != list.end(); it++){ \
+    typeof(*it)& el = *it;
+
 #define FOREACH_STL_MAP(key, val, map) \
     for( typeof((map).begin()) it = (map).begin(); it != (map).end(); ++it  ) { \
     typeof(it->first) & key = it->first; \
     typeof(it->second) & val = it->second;
-#endif
+
+#endif  // _HAS_AUTO
 
 #ifndef END_FOREACH
 #define END_FOREACH }
-#endif
-
-
-
+#endif // END_FOREACH
 
 #endif //  _STL_H_

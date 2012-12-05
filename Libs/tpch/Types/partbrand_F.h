@@ -184,7 +184,7 @@ bool partbrand_F :: operator <( const partbrand_F & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID < other.myID;
+    return globalDictionary.Compare(myID, other.myID) < 0;
 }
 
 // OP_DEF(<=, </(f1, partbrand_F), (f2, partbrand_F)/>, bool)
@@ -193,7 +193,7 @@ bool partbrand_F :: operator <=( const partbrand_F & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID <= other.myID;
+    return globalDictionary.Compare(myID, other.myID) <= 0;
 }
 
 // OP_DEF(>, </(f1, partbrand_F), (f2, partbrand_F)/>, bool)
@@ -202,7 +202,7 @@ bool partbrand_F :: operator >( const partbrand_F & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID > other.myID;
+    return globalDictionary.Compare(myID, other.myID) > 0;
 }
 
 // OP_DEF(>=, </(f1, partbrand_F), (f2, partbrand_F)/>, bool)
@@ -211,7 +211,7 @@ bool partbrand_F :: operator >=( const partbrand_F & other ) const {
     if( Invalid() || other.Invalid() )
         return false;
 
-    return myID >= other.myID;
+    return globalDictionary.Compare(myID, other.myID) >= 0;
 }
 
 
@@ -242,8 +242,9 @@ uint64_t Hash( const partbrand_F x) {
     return x.myID;
 }
 
-// Eventually there will be a ToString method here expoded to the user that
+// Eventually there will be a ToString method here exposed to the user that
 // will turn the factor into a VARCHAR
+
 // FUNC_DEF(</ToString/>, </(f, partbrand_F)/>, </STRING_LITERAL/>)
 inline
 STRING_LITERAL ToString( const partbrand_F & f ) {

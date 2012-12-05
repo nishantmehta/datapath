@@ -35,7 +35,7 @@
 #define MAXLEVELS 64
 
 #include <cstddef>
-
+#include "Config.h"
 
 // Helper macros for Frequently Done Actions
 // Macro to streamline scan of TwoWayLists
@@ -47,17 +47,17 @@
 //   }END_FOREACH
 //
 //
-#if __cplusplus >= 201103L  // c++11
+#ifdef _HAS_AUTO
 #define FOREACH_EM(key, data, map) \
     for((map).MoveToStart(); !(map).AtEnd(); (map).Advance()) { \
     auto & key = (map).CurrentKey(); \
     auto & data = (map).CurrentData();
-#else
+#else // _HAS_AUTO
 #define FOREACH_EM(key, data, map)															\
 	for((map).MoveToStart();	!(map).AtEnd(); (map).Advance()) {		\
 	typeof((map).CurrentKey())& key = (map).CurrentKey();						\
 	typeof((map).CurrentData())& data = (map).CurrentData();
-#endif
+#endif // _HAS_AUTO
 
 #ifndef END_FOREACH
 #define END_FOREACH }

@@ -34,6 +34,13 @@ RESULT_FILE(TPCH-Q1-result.csv)
 
 */
 
+#include "tpch.pgy"
+
+LOAD lineitem;
+
+DEFINE T_retflag AS TYPEOF(lineitem.l_returnflag);
+DEFINE T_line AS TYPEOF(lineitem.l_linestatus);
+
 DEFINE GLA:multi AS
     GLA:Multiplexer
     <
@@ -47,11 +54,9 @@ DEFINE GLA:multi AS
 DEFINE GLA:gby AS
     GLA:GroupBy
     <
-        [retturnflag:HString, linestatus:HString],
+        [returnflag:T_retflag, linestatus:T_line],
         GLA:multi
     >;
-
-LOAD lineitem;
 
 sel =
     FILTER lineitem
@@ -70,8 +75,8 @@ USING
     lineitem.l_extendedprice,
     lineitem.l_discount
 AS
-    gl_l_returnflag   : HString ,
-    gl_l_linestatus   : HString ,
+    gl_l_returnflag   : T_retflag ,
+    gl_l_linestatus   : T_line  ,
     gl_sum_disc_price : DOUBLE  , // Sum
     gl_sum_charge     : DOUBLE  , // Sum
     // Average
@@ -91,8 +96,8 @@ orderby =
     GLA:OrderBy
     <
         [
-            l_returnflag   : HString : ASC ,
-            l_linestatus   : HString : ASC
+            l_returnflag   : T_retflag : ASC ,
+            l_linestatus   : T_line : ASC
         ],
         [
             sum_qty        : DOUBLE  ,
@@ -119,8 +124,8 @@ USING
     gl_avg_disc       ,
     gl_count_order
 AS
-    or_l_returnflag   : HString ,
-    or_l_linestatus   : HString ,
+    or_l_returnflag   : T_retflag ,
+    or_l_linestatus   : T_line ,
     or_sum_qty        : DOUBLE  ,
     or_sum_base_price : DOUBLE  ,
     or_sum_disc_price : DOUBLE  ,
@@ -144,8 +149,8 @@ USING
     or_avg_disc       ,
     or_count_order
 AS
-    l_returnflag   : HString ,
-    l_linestatus   : HString ,
+    l_returnflag   : STRING  ,
+    l_linestatus   : STRING  ,
     sum_qty        : DOUBLE  ,
     sum_base_price : DOUBLE  ,
     sum_disc_price : DOUBLE  ,
