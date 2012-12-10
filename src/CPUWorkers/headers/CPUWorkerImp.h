@@ -26,13 +26,17 @@
 #include "PerfCounter.h" // perfrormance counters
 #include "Timer.h"
 
+#ifdef PER_CPU_PROFILE
+#undef PER_CPU_PROFILE
+#endif
+
 class CPUWorker;
 
 // a list of CPU worker threads who are ready for some more work
 typedef DistributedQueue <CPUWorker> CPUWorkerList;
 
 // this data type controls a thread that can be assigned work to do by
-// a waypoint that has a computational task... the thread is asked to 
+// a waypoint that has a computational task... the thread is asked to
 // do some work via a call to the message handler "DoSomeWork".  Note
 // that no one should communicate with an object of this type directly.
 // Instead, all requests for CPU work are made via the CPUWorkerPool
@@ -45,8 +49,9 @@ private:
 	EventProcessor me;
 
 	/* Performance counters to watch what the functions being executed are doing */
-	/* For now the info is just logged but it could be sent the the reciever in a 
+	/* For now the info is just logged but it could be sent the the reciever in a
 	   special package for self-diagnosis */
+#ifdef PER_CPU_PROFILE
 	PerfCounter cycles;
 	PerfCounter instructions;
 	PerfCounter branches;
@@ -54,9 +59,11 @@ private:
 	PerfCounter cache_refs;
 	PerfCounter cache_misses;
 	PerfCounter contexts;
+#endif // PER_CPU_PROFILE
 	Timer clock; /* for real walclock time */
 
 	/* cached values of the counters for convenience */
+#ifdef PER_CPU_PROFILE
 	uint64_t cycles_C;
 	uint64_t instructions_C;
 	uint64_t branches_C;
@@ -64,6 +71,7 @@ private:
 	uint64_t cache_refs_C;
 	uint64_t cache_misses_C;
 	uint64_t contexts_C;
+#endif // PER_CPU_PROFILE
 	double clock_C; // time in seconds
 
 	void ResetAllCounters(void);
@@ -88,8 +96,9 @@ public:
 };
 
 /////////// INLINE METHODS ////////////
-inline 
+inline
 void CPUWorkerImp :: ResetAllCounters(void){
+#ifdef PER_CPU_PROFILE
   cycles.Restart();
   instructions.Restart();
   branches.Restart();
@@ -98,10 +107,12 @@ void CPUWorkerImp :: ResetAllCounters(void){
   cache_misses.Restart();
   contexts.Restart();
   clock.Restart();
+#endif // PER_CPU_PROFILE
 }
 
-inline 
+inline
 void CPUWorkerImp :: ReadAllCounters(void){
+#ifdef PER_CPU_PROFILE
   cycles_C = cycles.GetCount();
   instructions_C = instructions.GetCount();
   branches_C = branches.GetCount();
@@ -110,8 +121,9 @@ void CPUWorkerImp :: ReadAllCounters(void){
   cache_misses_C = cache_misses.GetCount();
   contexts_C = contexts.GetCount();
   clock_C = clock.GetTime();
-  
+
   //printf("Raw read %ld %ld %ld %ld %ld %ld\n", cycles_C, instructions_C, branch_misses_C, cache_refs_C, cache_misses_C, contexts_C);
+#endif // PER_CPU_PROFILE
 }
 
 #endif

@@ -28,6 +28,10 @@
 #define HZ 100
 #endif
 
+#ifdef PER_CPU_PROFILE
+#undef PER_CPU_PROFILE
+#endif
+
 ///////////////////// NO SYSTEM HEADERS SHOULD BE INCLUDED BEYOND THIS POINT ////////////////////
 
 void CPUWorkerImp :: GetCopyOf (EventProcessor &myParent){
@@ -46,7 +50,7 @@ CPUWorkerImp :: CPUWorkerImp ()
   contexts(PerfCounter::Context_Switches)
 #endif
 {
-  
+
 	// register the DoSomeWork method
 	RegisterMessageProcessor (WorkRequestMsg :: type, &DoSomeWork, 1);
 }
@@ -68,8 +72,9 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) {
 	/* Stop the counters */
 	evProc.ReadAllCounters();
 	DIAGNOSE_EXIT(dID);
-	
+
 	/** Statistics we compute */
+#ifdef PER_CPU_PROFILE
 	// instructions per cycle. Below 1.0 means big problems with stalls */
 	float instPerCycle = 1.0*evProc.instructions_C/evProc.cycles_C;
 	/** percentage branch misses */
@@ -86,20 +91,21 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) {
 
 	LOG_ENTRY_P(1, " Function of waypoint %s fihished."
 		    " Tm: %4.5f I/Cy:%1.1f BMs:%2.3f%% CMs:%2.3f%% Cy/T:%5.1f Bms/T:%3.2f CX:%2.1f\n",
-		    msg.currentPos.getName().c_str(), 
-		    evProc.clock_C, instPerCycle, perBranchMiss, perCacheMiss, cyclesTuple, 
+		    msg.currentPos.getName().c_str(),
+		    evProc.clock_C, instPerCycle, perBranchMiss, perCacheMiss, cyclesTuple,
 		    bMissesTuple, cxPerSlice);
+#endif // PER_CPU_PROFILE
 
 	// and finally, store outselves in the queue for future use
 	CPUWorker me;
 	me.copy(evProc.me);
 	if (CHECK_DATA_TYPE(msg.token, CPUWorkToken)) {
-		myCPUWorkers.AddWorker (me);	
+		myCPUWorkers.AddWorker (me);
 	} else if (CHECK_DATA_TYPE(msg.token, DiskWorkToken)) {
-		myDiskWorkers.AddWorker (me);	
+		myDiskWorkers.AddWorker (me);
 	} else
 		FATAL ("Strange work token type!\n");
-	
+
 	// now, send the result back
 	// first, create the object that will have the result
 	HoppingDataMsg result (msg.currentPos, msg.dest, msg.lineage, computationResult);
@@ -108,5 +114,5 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) {
 	// and send it
 	HoppingDataMsgMessage_Factory (executionEngine, returnVal, msg.token, result);
 
-	
+
 }MESSAGE_HANDLER_DEFINITION_END

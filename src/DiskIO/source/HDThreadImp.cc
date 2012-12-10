@@ -62,7 +62,7 @@ HDThreadImp::HDThreadImp(char *_fileName, int _diskNo, EventProcessor &_dispatch
 	exp2 = 0.0;
 	counter = 0;
 
-	int options = isReadOnly ? (O_RDONLY | O_CREAT | O_LARGEFILE) 
+	int options = isReadOnly ? (O_RDONLY | O_CREAT | O_LARGEFILE)
 		:(O_RDWR | O_CREAT | O_LARGEFILE);
 
 #ifdef MMAP_IS_MALLOC // unoptimized IO to allow missaligned malloc pages
@@ -131,10 +131,10 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 		if (msg.operation == WRITE) {
 			if (write (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG) ) == -1){
 				perror("HDThread:");
-				FATAL("Writting of file %s at position %ld of size %ld for job %d failed. Mem: %lx", 
+				FATAL("Writting of file %s at position %ld of size %ld for job %d failed. Mem: %lx",
 							evProc.fileName, page, PAGES_TO_BYTES(numPG),  (int)msg.requestId, where);
 			} else {
-			  PROFILING2("diskW", PAGES_TO_BYTES(numPG));
+              PROFILING2("diskW", PAGES_TO_BYTES(numPG));
 			}
 		}
 		else  if (msg.operation == READ) {

@@ -11,7 +11,7 @@ using namespace std;
 using namespace std;
 
 // PARAMETERS
-#define LOWER_LIMIT 10000000
+#define LOWER_LIMIT 1000000
 #define UPPER_LIMIT 4*LOWER_LIMIT
 
 /** Info for the meta-GLAs
@@ -165,7 +165,7 @@ class BernoulliGLA3limit {
     FATALIF(this == &other, "Why are the two objects identical?");
 
     // put the two sets together
-    cout<<"In AddState"<< endl;
+    cout<<"In AddState - p = "<<p <<", other.p = "<<other.p<<endl;
     if (p <= other.p) {
       cout<<"p <= other.p "<<"V.size() = "<< V.size()<< endl;
       for (size_t i = 0; i <  other.V.size(); i++) {

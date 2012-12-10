@@ -2,13 +2,20 @@
 
  */
 
-#include "SystemCounters.h"
+#include "ProfMSG.h"
+#include "Timer.h"
+#include "Profiler.h"
+#include <ctime>
+#include "Logging.h"
 
 // macro to increment value of counter(a string) by value(a long int)
-#define PROFILING2(counter, value)			\
-  SystemCounters::GetSystemCounters().Increment(counter, value);
+#define PROFILING2(counter, value) { \
+    double wallTime = global_clock.GetTime(); \
+    clock_t cTime = std::clock(); \
+    PCounter cnt(counter, value); \
+    ProfileMessage_Factory(globalProfiler, wallTime, cTime, cnt); \
+}
 
 
 // macro to flush profiling info to screen if the second is up
-#define PROFILING2_FLUSH				\
-  SystemCounters::GetSystemCounters().PrintIfTick();
+#define PROFILING2_FLUSH ;
