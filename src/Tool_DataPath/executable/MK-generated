@@ -19,7 +19,7 @@ CCFLAGS += -std=gnu++11
 
 # profiling information per query
 # Note: has a negative impact on performance
-CCFLAGS += -DPER_QUERY_PROFILE
+#CCFLAGS += -DPER_QUERY_PROFILE
 
 M4=m4 
 
