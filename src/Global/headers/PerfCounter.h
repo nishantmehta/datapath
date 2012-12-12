@@ -107,12 +107,11 @@ class PerfCounter {
 
 #ifdef USE_PERF_LINUX
   int file; // the file descriptor to read performance counter
-  uint64_t offset;
 #endif
 
  public:
   /* default constructor */
- PerfCounter(): file(-1), offset(0){}
+ PerfCounter(): file(-1) {}
 
   /* Constructor. global indicases whether do count per process(true) or per task(false) */
   PerfCounter(EventType evType, bool global = false /* if true, PC per process */);
@@ -136,7 +135,7 @@ class PerfCounter {
 
 ////////// INLINE DEFINITIONS ////////////
 inline
-PerfCounter :: PerfCounter(EventType evType, bool global /* if true, PC per process */): offset(0){
+PerfCounter :: PerfCounter(EventType evType, bool global /* if true, PC per process */) {
 #ifdef USE_PERF_LINUX
     pid_t pid;
     if (global)
@@ -152,7 +151,7 @@ PerfCounter :: PerfCounter(EventType evType, bool global /* if true, PC per proc
         WARNING("Performance counter could not be started. It will return 1 for all calls");
         perror("PerfCounter");
     }
-    std::cout << "New PerfCounter with fd: " << file << std::endl;
+    //std::cout << "New PerfCounter with fd: " << file << " pid: " << pid << std::endl;
 #endif
   }
 
@@ -182,17 +181,7 @@ uint64_t  PerfCounter :: GetCount(void){
             }
         }
 
-        uint64_t change = 0;
-        if( newVal < offset ) {
-            // Overflow
-            const uint64_t MAX_VALUE = 0xFFFFFFFFFFFFFFFFULL;
-            change = (MAX_VALUE - offset) + newVal;
-        }
-        else {
-            change = newVal - offset;
-        }
-        offset = newVal;
-        return change;
+        return newVal;
     }
     return 1;
 #else

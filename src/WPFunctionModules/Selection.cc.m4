@@ -94,6 +94,8 @@ int SelectionProcessChunkWorkFunc_<//>M4_WPName (WorkDescription &workDescriptio
     Chunk &input = myWork.get_chunkToProcess ();
     QueryToGLASContMap& constStates = myWork.get_constStates();
 
+    PROFILING2_START;
+
 <//>M4_DECLARE_QUERYIDS(</M4_QueryDesc/>,</M4_Attribute_Queries/>)<//>dnl
 
 <//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
@@ -156,10 +158,16 @@ dnl # definition of constants used in expressions
 <//><//>m4_ifval( M4_QUERY_NAME(_P_), </dnl is this a valid query
     // constants for query M4_QUERY_NAME(_P_)
 <//>_SEL_INITIALIZER(_P_)<//>dnl # the initializer should have a new line
+
+#ifdef PER_QUERY_PROFILE
+    int64_t numTuples_<//>M4_QUERY_NAME(_P_) = 0;
+#endif // PER_QUERY_PROFILE
 <//><//>/>, <//>)<//>dnl
 <//>/>)<//>dnl
-	
+
+    int64_t numTuples = 0;
     FOR_EACH_TUPLE(</input/>){
+        ++numTuples;
         QueryIDSet qry;
 <//><//>GET_QUERIES(qry)
 
@@ -176,6 +184,9 @@ dnl # definition of constants used in expressions
             qry.Difference(M4_QUERY_NAME(_P_));
         } else { // compute synthesized
 <//><//><//>M4_COMPUTE_SYNTHESIZED(_P_)<//>dnl
+#ifdef PER_QUERY_PROFILE
+            ++numTuples_<//>M4_QUERY_NAME(_P_);
+#endif // PER_QUERY_PROFILE
         }
 
 <//><//>M4_WRITE_SYNTHESIZED(_P_)
@@ -198,9 +209,27 @@ dnl # now synthesized
 <//>/>)<//>dnl
 <//>M4_PUTBACK_OUTBITMAP(</input/>)
 
-    PROFILING2("sel", input.GetNumTuples());
-    PROFILING2_FLUSH;
+    PROFILING2_END;
 
+dnl # finish performance counters
+
+    PCounterList counterList;
+    PCounter totalCnt("tuples", numTuples, "M4_WPName");
+    counterList.Append(totalCnt);
+    PCounter globalCnt("sel", numTuples, "M4_WPName");
+    counterList.Append(globalCnt);
+
+#ifdef PER_QUERY_PROFILE
+<//>m4_foreach(</_P_/>, </M4_QueryDesc/>, </dnl
+    if( M4_QUERY_NAME(_P_).Overlaps(queriesToRun)) {
+        PCounter cnt("M4_QUERY_NAME(_P_)", numTuples_<//>M4_QUERY_NAME(_P_), "M4_WPName");
+        counterList.Append(cnt);
+    }
+/>)dnl
+#endif // PER_QUERY_PROFILE
+
+    PROFILING2_SET(counterList);
+    //PROFILING2_SINGLE("tuples", input.GetNumTuples(), "M4_WPName");
 
 #ifdef COUNT_TUPLES
     cout << "\nCounter ***************** = " << cnt;

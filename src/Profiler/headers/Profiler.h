@@ -12,36 +12,39 @@
 
 class ProfilerImp : public EventProcessorImp {
     typedef int64_t IntType;
-  typedef std::map<std::string, IntType> CounterMap;
-  CounterMap cMap; // map of counters
+    typedef std::map<std::string, IntType> CounterMap;
+    typedef std::map<std::string, CounterMap> GroupMap;
+    GroupMap cMap; // the map of counters
 
-  clock_t lastCpu;
-  double lastTick;
+    const int groupColWidth = 20;
 
-  void AddCounter(PCounter& cnt);
-  void PrintCounters(const clock_t newCpu, const double newClock);
+    clock_t lastCpu;
+    double lastTick;
 
-  void HumanizeNumber( IntType value, std::string& outVal );
+    void AddCounter(PCounter& cnt);
+    void PrintCounters(const clock_t newCpu, const double newClock);
 
- public:
+    void HumanizeNumber( IntType value, std::string& outVal );
 
-  ProfilerImp();
-  ~ProfilerImp();
+    public:
 
-  MESSAGE_HANDLER_DECLARATION(ProfileMessage_H);
-  MESSAGE_HANDLER_DECLARATION(PCProfileMessage_H);
+    ProfilerImp();
+    ~ProfilerImp();
 
+    MESSAGE_HANDLER_DECLARATION(ProfileMessage_H);
+    MESSAGE_HANDLER_DECLARATION(ProfileSetMessage_H);
+    MESSAGE_HANDLER_DECLARATION(ProfileIntervalMessage_H);
 };
 
 
 class Profiler : public EventProcessor {
 
-public:
-  Profiler(void){
-    evProc = new ProfilerImp;
-  }
+    public:
+        Profiler(void){
+            evProc = new ProfilerImp;
+        }
 
-  virtual ~Profiler(){}
+        virtual ~Profiler(){}
 
 };
 
@@ -50,13 +53,10 @@ extern Profiler globalProfiler;
 
 // Inline methods
 inline void ProfilerImp::AddCounter(PCounter& cnt){
-  int64_t value = cnt.get_value();
-  std::string& counter = cnt.get_name();
-  if (cMap.find(counter) == cMap.end()){ // not found
-    cMap.insert(std::make_pair(counter, value));
-  } else {
-    cMap[counter]+=value;
-  }
+    IntType value = cnt.get_value();
+    std::string& counter = cnt.get_name();
+    std::string& group = cnt.get_group();
+    cMap[group][counter] += value;
 }
 
 inline

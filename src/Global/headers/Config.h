@@ -1,3 +1,18 @@
+//
+//  Copyright 2012 Christopher Dudley
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
@@ -34,7 +49,7 @@
         #define _HAS_AUTO
     #endif
 
-    // libstdc++-specific check.
+    // libstdc++ specific check.
     // If _GLIBCXX_USE_NANOSLEEP is not defined, this_thread::sleep_for and
     // this_thread::sleep_until are not declared in <thread>, even though they
     // are required by the C++11 Standard. If libstdc++ is configured with the
@@ -60,6 +75,17 @@
         #endif // _GLIBCXX_USE_NANOSLEEP
     #endif // _HAS_SLEEP_UNTIL
 
+    #ifndef _HAS_STD_RANDOM
+        #define _HAS_STD_RANDOM
+    #endif // _HAS_STD_RANDOM
+
 #endif//_HAS_CPP_11
+
+#ifdef _HAS_THREAD_LOCAL
+    #define THREAD_LOCAL thread_local
+#else
+    // Use __thread and hope it works.
+    #define THREAD_LOCAL __thread
+#endif // _HAS_THREAD_LOCAL
 
 #endif//_CONFIG_H_

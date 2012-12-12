@@ -26,10 +26,6 @@
 #include "PerfCounter.h" // perfrormance counters
 #include "Timer.h"
 
-#ifdef PER_CPU_PROFILE
-#undef PER_CPU_PROFILE
-#endif
-
 class CPUWorker;
 
 // a list of CPU worker threads who are ready for some more work
@@ -51,32 +47,11 @@ private:
 	/* Performance counters to watch what the functions being executed are doing */
 	/* For now the info is just logged but it could be sent the the reciever in a
 	   special package for self-diagnosis */
-#ifdef PER_CPU_PROFILE
-	PerfCounter cycles;
-	PerfCounter instructions;
-	PerfCounter branches;
-	PerfCounter branch_misses;
-	PerfCounter cache_refs;
-	PerfCounter cache_misses;
-	PerfCounter contexts;
-#endif // PER_CPU_PROFILE
 	Timer clock; /* for real walclock time */
 
 	/* cached values of the counters for convenience */
-#ifdef PER_CPU_PROFILE
-	uint64_t cycles_C;
-	uint64_t instructions_C;
-	uint64_t branches_C;
-	uint64_t branch_misses_C;
-	uint64_t cache_refs_C;
-	uint64_t cache_misses_C;
-	uint64_t contexts_C;
-#endif // PER_CPU_PROFILE
 	double clock_C; // time in seconds
 
-	void ResetAllCounters(void);
-	/* fill _C variables with counters */
-	void ReadAllCounters(void);
 
 protected:
 
@@ -96,34 +71,5 @@ public:
 };
 
 /////////// INLINE METHODS ////////////
-inline
-void CPUWorkerImp :: ResetAllCounters(void){
-#ifdef PER_CPU_PROFILE
-  cycles.Restart();
-  instructions.Restart();
-  branches.Restart();
-  branch_misses.Restart();
-  cache_refs.Restart();
-  cache_misses.Restart();
-  contexts.Restart();
-  clock.Restart();
-#endif // PER_CPU_PROFILE
-}
-
-inline
-void CPUWorkerImp :: ReadAllCounters(void){
-#ifdef PER_CPU_PROFILE
-  cycles_C = cycles.GetCount();
-  instructions_C = instructions.GetCount();
-  branches_C = branches.GetCount();
-  branch_misses_C = branch_misses.GetCount();
-  cache_refs_C = cache_refs.GetCount();
-  cache_misses_C = cache_misses.GetCount();
-  contexts_C = contexts.GetCount();
-  clock_C = clock.GetTime();
-
-  //printf("Raw read %ld %ld %ld %ld %ld %ld\n", cycles_C, instructions_C, branch_misses_C, cache_refs_C, cache_misses_C, contexts_C);
-#endif // PER_CPU_PROFILE
-}
 
 #endif

@@ -14,105 +14,119 @@
 //  limitations under the License.
 //
 
+#include <vector>
+
 #include "CPUWorkerImp.h"
 #include "CPUWorkerPool.h"
 #include "EEExternMessages.h"
 #include "ExecEngine.h"
 #include "ExecEngineImp.h"
+#include "Profiling.h"
 #include "Logging.h"
 #include "Diagnose.h"
 
 /** How oftern the system should have context swithes? Need this to determine if we have
-    too many context switches thus we should be worried */
+  too many context switches thus we should be worried */
 #ifndef HZ // linux defines it in asm/param.h
 #define HZ 100
 #endif
 
+/** If the list of performance counters to watch changes, mofify this
+
+  Make sure the list size is set correctly as well
+  */
+
 #ifdef PER_CPU_PROFILE
-#undef PER_CPU_PROFILE
-#endif
+static const PerfCounter::EventType eventsPC[] = {
+    PerfCounter::Cycles,
+    PerfCounter::Instructions,
+    PerfCounter::Branch_Instructions,
+    PerfCounter::Branch_Misses,
+    PerfCounter::Cache_References,
+    PerfCounter::Cache_Misses,
+    PerfCounter::Context_Switches,
+    PerfCounter::Task_Clock
+};
+
+static const size_t eventsPC_size = 8;
+#endif // PER_CPU_PROFILE
 
 ///////////////////// NO SYSTEM HEADERS SHOULD BE INCLUDED BEYOND THIS POINT ////////////////////
 
 void CPUWorkerImp :: GetCopyOf (EventProcessor &myParent){
-	me.copy (myParent);
+    me.copy (myParent);
 }
 
 CPUWorkerImp :: CPUWorkerImp ()
-#ifdef PER_CPU_PROFILE
- :
-  cycles(PerfCounter::Cycles),
-  instructions(PerfCounter::Instructions),
-  branches(PerfCounter::Branch_Instructions),
-  branch_misses(PerfCounter::Branch_Misses),
-  cache_refs(PerfCounter::Cache_References),
-  cache_misses(PerfCounter::Cache_Misses),
-  contexts(PerfCounter::Context_Switches)
-#endif
 {
 
-	// register the DoSomeWork method
-	RegisterMessageProcessor (WorkRequestMsg :: type, &DoSomeWork, 1);
+    // register the DoSomeWork method
+    RegisterMessageProcessor (WorkRequestMsg :: type, &DoSomeWork, 1);
 }
 
 CPUWorkerImp :: ~CPUWorkerImp () {}
 
 MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) {
 
-	// this is where the result of the computation will go
-	ExecEngineData computationResult;
+    // this is where the result of the computation will go
+    ExecEngineData computationResult;
 
-	LOG_ENTRY_P(1, " Function of waypoint %s started\n", msg.currentPos.getName().c_str());
-	DIAG_ID dID = DIAGNOSE_ENTRY("CPUWORKER", msg.currentPos.getName().c_str(), "CPUWORK");
-	/* Reset performance counters */
-	evProc.ResetAllCounters();
-	uint64_t effort = PREFERED_TUPLES_PER_CHUNK; // function fills in the effort
-	// now, call the work function to actually produce the output data
-	int returnVal = msg.myFunc (msg.workDescription, computationResult);
-	/* Stop the counters */
-	evProc.ReadAllCounters();
-	DIAGNOSE_EXIT(dID);
+    LOG_ENTRY_P(1, " Function of waypoint %s started\n", msg.currentPos.getName().c_str());
+    DIAG_ID dID = DIAGNOSE_ENTRY("CPUWORKER", msg.currentPos.getName().c_str(), "CPUWORK");
+    uint64_t effort = PREFERED_TUPLES_PER_CHUNK; // function fills in the effort
 
-	/** Statistics we compute */
 #ifdef PER_CPU_PROFILE
-	// instructions per cycle. Below 1.0 means big problems with stalls */
-	float instPerCycle = 1.0*evProc.instructions_C/evProc.cycles_C;
-	/** percentage branch misses */
-	float perBranchMiss = 100.0*evProc.branch_misses_C/evProc.branches_C;
-	/** percentage cache misses */
-	float perCacheMiss = 100.0*evProc.cache_misses_C/evProc.cache_refs_C;
-	/** number of cycles/tuple */
-	float cyclesTuple = 1.0*evProc.cycles_C/effort;
-	/** number of cache misses/tuple */
-	float bMissesTuple = 1.0*evProc.branch_misses_C/effort;
-	/** number of context switches per system clock tick. A lot more then 1.0
-	    indicates problems with locking (which would cause a lot of switches) */
-	float cxPerSlice = 1.0*evProc.contexts_C/evProc.clock_C/HZ;
-
-	LOG_ENTRY_P(1, " Function of waypoint %s fihished."
-		    " Tm: %4.5f I/Cy:%1.1f BMs:%2.3f%% CMs:%2.3f%% Cy/T:%5.1f Bms/T:%3.2f CX:%2.1f\n",
-		    msg.currentPos.getName().c_str(),
-		    evProc.clock_C, instPerCycle, perBranchMiss, perCacheMiss, cyclesTuple,
-		    bMissesTuple, cxPerSlice);
+    // Start performance counters
+    std::vector<PerfCounter> counters(eventsPC_size);
+    for( size_t i = 0; i < eventsPC_size; ++i ) {
+        PerfCounter cnt(eventsPC[i]);
+        counters[i].Swap(cnt);
+    }
+    PROFILING2_START;
 #endif // PER_CPU_PROFILE
 
-	// and finally, store outselves in the queue for future use
-	CPUWorker me;
-	me.copy(evProc.me);
-	if (CHECK_DATA_TYPE(msg.token, CPUWorkToken)) {
-		myCPUWorkers.AddWorker (me);
-	} else if (CHECK_DATA_TYPE(msg.token, DiskWorkToken)) {
-		myDiskWorkers.AddWorker (me);
-	} else
-		FATAL ("Strange work token type!\n");
+    // now, call the work function to actually produce the output data
+    int returnVal = msg.myFunc (msg.workDescription, computationResult);
 
-	// now, send the result back
-	// first, create the object that will have the result
-	HoppingDataMsg result (msg.currentPos, msg.dest, msg.lineage, computationResult);
+#ifdef PER_CPU_PROFILE
+    PROFILING2_END;
+    // Read performance counters
+    PCounterList waypointList;
+    const string globalGroup("perf global");
+    const string waypointGroup = "perf " + msg.currentPos.getName();
+    for( size_t i = 0; i < eventsPC_size; ++i ) {
+        // Create one counter for global aggregation and one for waypoint aggregation
+        std::string name = PerfCounter::names[eventsPC[i]];
+        int64_t count = counters[i].GetCount();
+        PCounter globalCnt(name, count, globalGroup);
+        PCounter waypointCnt(name, count, waypointGroup);
 
-	//printf("\nData msg from MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) sent");
-	// and send it
-	HoppingDataMsgMessage_Factory (executionEngine, returnVal, msg.token, result);
+        waypointList.Append(globalCnt);
+        waypointList.Append(waypointCnt);
+    }
+
+    PROFILING2_SET(waypointList);
+#endif // PER_CPU_PROFILE
+
+    DIAGNOSE_EXIT(dID);
+
+    // and finally, store outselves in the queue for future use
+    CPUWorker me;
+    me.copy(evProc.me);
+    if (CHECK_DATA_TYPE(msg.token, CPUWorkToken)) {
+        myCPUWorkers.AddWorker (me);
+    } else if (CHECK_DATA_TYPE(msg.token, DiskWorkToken)) {
+        myDiskWorkers.AddWorker (me);
+    } else
+        FATAL ("Strange work token type!\n");
+
+    // now, send the result back
+    // first, create the object that will have the result
+    HoppingDataMsg result (msg.currentPos, msg.dest, msg.lineage, computationResult);
+
+    //printf("\nData msg from MESSAGE_HANDLER_DEFINITION_BEGIN(CPUWorkerImp, DoSomeWork, WorkRequestMsg) sent");
+    // and send it
+    HoppingDataMsgMessage_Factory (executionEngine, returnVal, msg.token, result);
 
 
 }MESSAGE_HANDLER_DEFINITION_END

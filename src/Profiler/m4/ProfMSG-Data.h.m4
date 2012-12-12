@@ -21,14 +21,17 @@ dnl # // END OF M4 CODE
 #ifndef _PROF_MSG_DATA_H_
 #define _PROF_MSG_DATA_H_
 
+#include <inttypes.h>
+#include <string>
+
 #include "Data.h"
 #include "TwoWayList.h"
 
 /** Container for counters
 
 */
-M4_CREATE_DATA_TYPE(PCounter, Data, 
-</(name, string), (value, int64_t)/>,<//>) 
+M4_CREATE_DATA_TYPE(PCounter, DataC,
+</(name, std::string), (value, int64_t), (group, std::string)/>,<//>) 
 
 typedef TwoWayList <PCounter> PCounterList;
 

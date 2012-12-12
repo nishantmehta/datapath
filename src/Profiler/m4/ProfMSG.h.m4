@@ -29,13 +29,17 @@ dnl # END OF M4 CODE
 
 // message with basic counter to be incremented
 M4_CREATE_MESSAGE_TYPE(ProfileMessage,
-</(wallTime, double), (cTime, clock_t)/>,
+</(wallTimeStart, double), (cTimeStart, clock_t), (wallTimeEnd, double), (cTimeEnd, clock_t)/>,
 </(counter, PCounter)/>)
 
 
-// message with performance counters
-M4_CREATE_MESSAGE_TYPE(PCProfileMessage,
-</(wallTime, double), (cTime, clock_t)/>,
+// message with a set of counters
+M4_CREATE_MESSAGE_TYPE(ProfileSetMessage,
+</(wallTimeStart, double), (cTimeStart, clock_t), (wallTimeEnd, double), (cTimeEnd, clock_t)/>,
 </(counters, PCounterList)/>)
+
+// message stating that the current time interval has elapsed
+M4_CREATE_MESSAGE_TYPE(ProfileIntervalMessage,
+</(wallTime, double), (cTime, clock_t)/>, <//>)
 
 #endif //  _PROF_MSG_H_

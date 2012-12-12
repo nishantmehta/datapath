@@ -48,9 +48,6 @@ class PCProfiler : public EventGenerator{
 class PCProfilerImp : public EventGeneratorImp {
   EventProcessor myProfiler; // the profiler we send messages to
 
-  std::vector<PerfCounter> counters;
-  bool createdCounters;
-
 public:
   PCProfilerImp(EventProcessor& profiler);
 

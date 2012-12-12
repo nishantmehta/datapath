@@ -42,7 +42,7 @@ int JoinLHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // M4_NotExistsTarget_ = M4_NotExistsTarget
 
     double start_time = global_clock.GetTime();
-
+    PROFILING2_START;
     // this is the area where all of the intermediate, serialized records are stored
     SerializedSegmentArray serializedSegments [NUM_SEGS];
 
@@ -378,10 +378,20 @@ dnl //output.SwapBitmap (bitmapOut);
     ChunkContainer tempResult (output);
     tempResult.swap (result);
 
+    PROFILING2_END;
+
     PROFILING(start_time, "M4_WPName", "LHS_lookup", "%d", totalNum);
     PROFILING(0.0, "HashTable", "fillrate", "%2.4f", HashTableSegment::globalFillRate*100.0);
-    PROFILING2("jLHS", totalNum);
-    PROFILING2_FLUSH;
+
+    // Finish performance counters
+    // Use the Set functionality in case we add additional counters later.
+    PCounterList counterList;
+    PCounter totalCnt("LHS", totalNum, "M4_WPName");
+    counterList.Append(totalCnt);
+    PCounter globalCnt("jLHS", totalNum, "global");
+    counterList.Append(globalCnt);
+
+    PROFILING2_SET(counterList);
 
     free (serializeHere);
     return 1;

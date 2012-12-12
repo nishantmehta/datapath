@@ -129,21 +129,25 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 
 		// now perform the operation
 		if (msg.operation == WRITE) {
-			if (write (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG) ) == -1){
-				perror("HDThread:");
-				FATAL("Writting of file %s at position %ld of size %ld for job %d failed. Mem: %lx",
-							evProc.fileName, page, PAGES_TO_BYTES(numPG),  (int)msg.requestId, where);
-			} else {
-              PROFILING2("diskW", PAGES_TO_BYTES(numPG));
-			}
-		}
-		else  if (msg.operation == READ) {
-			if (read (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG)) == -1) {
-				perror("HDThread:");
-				FATAL("Reading of file %s at position %d of size %d for job %d failed. Mem: %lx", evProc.fileName, (int)page, PAGES_TO_BYTES(numPG), (int)msg.requestId, where);
-			} else {
-			  PROFILING2("diskR", PAGES_TO_BYTES(numPG));
-			}
+
+            PROFILING2_START;
+            if (write (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG) ) == -1){
+                perror("HDThread:");
+                FATAL("Writting of file %s at position %ld of size %ld for job %d failed. Mem: %lx",
+                        evProc.fileName, page, PAGES_TO_BYTES(numPG),  (int)msg.requestId, where);
+            }
+
+            PROFILING2_END;
+            PROFILING2_SINGLE("bytesW", PAGES_TO_BYTES(numPG), "disk");
+        }
+        else  if (msg.operation == READ) {
+            PROFILING2_START;
+            if (read (evProc.fileDescriptor, where, PAGES_TO_BYTES(numPG)) == -1) {
+                perror("HDThread:");
+                FATAL("Reading of file %s at position %d of size %d for job %d failed. Mem: %lx", evProc.fileName, (int)page, PAGES_TO_BYTES(numPG), (int)msg.requestId, where);
+            }
+            PROFILING2_END;
+            PROFILING2_SINGLE("bytesR", PAGES_TO_BYTES(numPG), "disk");
 
 		}
 		else {
@@ -152,8 +156,6 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(HDThreadImp, ExecuteJob, MegaJob){
 
 		evProc.UpdateStatistics(clock.GetTime()/numPG);
 	}
-
-	PROFILING2_FLUSH;
 
 	//signal the calling thread if these are the last pages to read/write
 	if (msg.counter->Decrement(1) == 0) { // decrease the number of threads that finished
