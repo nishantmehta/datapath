@@ -24,8 +24,7 @@ include(DataFunctions.m4)
 of no interest to the rest of the system */
 
 M4_CREATE_DATA_TYPE(TextLoaderDS, Data,
-</(stream, FILE*), (file, string)/>, 
-</(localDictionary, HString::DictionaryWrapper)/>)
+</(stream, FILE*), (file, string)/>,<//>)
 
 // container for the above
 typedef TwoWayList<TextLoaderDS> TextLoaderDSContainer;

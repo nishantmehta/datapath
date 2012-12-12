@@ -42,7 +42,6 @@ m4_define(</M4_CODE_GENERATION_PREAMBLE/>,</dnl
 #include "ColumnIterator.cc"
 #include "BString.h"
 #include "BStringIterator.h"
-#include "HStringIterator.h"
 #include "Constants.h"
 #include <limits.h>
 #include "QueryManager.h"

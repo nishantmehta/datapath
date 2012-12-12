@@ -49,16 +49,6 @@ COPYRIGHT_NOTICE(2012, Alin Dobra and Christopher Jermaine)
 
 
 /*
-==================HSTRING==================
-* - MIN_FREQUENT: Absolute test for frequent of a value in the chunk.
-* - MIN_THRESHOLD: Relative test for frequent with respect to the total number of tuples
-*/
-#define MIN_FREQUENT 100
-#define MIN_THRESHOLD 0.001
-
-
-
-/*
 ==================Logger Constants==================
 */
 #define LOG_FILE "LOG"
