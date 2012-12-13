@@ -38,7 +38,16 @@ public:
         thirdC=third;
     }
     int prefixScore(prefixFeature& other) {
-        return firstC==other.firstC ? (1+(secondC==other.secondC ? ((thirdC==other.thirdC ? 3 : 0)+2) : -1)): -1;
+	if( firstC == other.firstC ) 
+		if( secondC == other.secondC ) 
+			if( thirdC == other.thirdC ) 
+				return 3;
+			else
+				return 2;
+		else
+			return 1;
+	else
+		return -1;
     }
 };
 

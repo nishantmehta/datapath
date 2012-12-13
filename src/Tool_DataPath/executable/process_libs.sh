@@ -7,7 +7,7 @@
 
 # $1 = file containing the library names, one per line.
 
-LIBS_PKGCONFIG=$(realpath ../Libs/pkgconfig)
+LIBS_PKGCONFIG=$(readlink -f ../Libs/pkgconfig)
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${LIBS_PKGCONFIG}
 
 for lib in $(cat $1)

@@ -16,6 +16,8 @@
 #include "TranslatorImp.h"
 
 #include <sstream>
+#include <fstream>
+#include <utility>
 #include <assert.h>
 #include <stdlib.h>
 #include <iostream>
@@ -38,7 +40,6 @@
 #include "PiggyLexer.h"
 #include "PiggyParser.h"
 #include "DPtree.h"
-#include <fstream>
 
 /* This is needed by the tree grammar to count variables */
 int ExprListInfo::cVarCNT = 0;

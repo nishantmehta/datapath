@@ -21,10 +21,15 @@
 #include "coreference/GLAs/MentionsGLA.h"
 #include <pthread.h>
 #include <iostream>
+#include "Random.h"
+
+#ifdef DEBUG
 #include <sstream>
+#warning "Debuging enabled!"
+#endif // DEBUG
 
 #define COREF_USE_SINGLE
-#define num_iter 10
+#define num_iter 1000
 
 class Entity {
 public:
@@ -61,23 +66,23 @@ public:
     }
 };
 
-void printMention(const Mention& mm, ostream& out) {
 #ifdef DEBUG
+void printMention(const Mention& mm, ostream& out) {
         out << "<" << mm.stringL << "| " << mm.doc << " " << mm.para <<
             " " << mm.entityId <<  ">" << endl;
-#endif
 }
+#endif
 
-void printEntity(const Entity& e, vector<Mention> &ml, ostream& out) {
 #ifdef DEBUG
+void printEntity(const Entity& e, vector<Mention> &ml, ostream& out) {
         out << endl<< "printEntity:"<<"entity id=" <<  e.id << endl <<"[" <<endl;
         for(auto it = e.mentionSet.begin(); it != e.mentionSet.end(); it++) {
             //cerr << (*it) << " ";
             printMention( ml[*it], out);
         }
         out << "]" << endl<<endl;
-#endif
 }
+#endif
 
 
 /** Task, in this case a pair of mentions or entities that should be merged
@@ -119,7 +124,7 @@ public:
         int Nmen=entities.size();
         size_t dest_entity=-1;
         while(true) {
-            dest_entity=rand()%Nmen;
+            dest_entity=RandInt()%Nmen;
             if(entities[dest_entity].mentionSet.size()>0 && dest_entity!=src_entity)
             {
 #ifdef DEBUG
@@ -134,7 +139,7 @@ public:
         int Nmen=entities.size();
         size_t dest_entity=-1;
         while(true) {
-            dest_entity=rand()%Nmen;
+            dest_entity=RandInt()%Nmen;
             if(entities[dest_entity].mentionSet.size()==0 && dest_entity!=src_entity)
             {
 #ifdef DEBUG
@@ -152,16 +157,26 @@ public:
         if (numToGenerate<=0)
             return false;
         else {
+#ifdef DEBUG
             ostringstream out;
+#endif
             numToGenerate--;
-            task.ment_id = rand()%numMentions;
+            task.ment_id = RandInt()%numMentions;
             int src_entity = mentions[task.ment_id].entityId;
             task.src_enti_id=src_entity;
-            if(entities[src_entity].mentionSet.size()==1||((double)rand()/(double)RAND_MAX)<=0.8) {
+            if(entities[src_entity].mentionSet.size()==1||(RandDouble())<=0.8) {
                 task.src_enti_id=src_entity;
-                task.des_enti_id=findNonEmptyEntity(src_entity, out);
+                task.des_enti_id=findNonEmptyEntity(src_entity
+#ifdef DEBUG
+			, out
+#endif
+		);
             } else { // place it in an empty or create a new entity
-                task.des_enti_id=findEmptyEntity(src_entity, out);
+                task.des_enti_id=findEmptyEntity(src_entity
+#ifdef DEBUG
+			, out
+#endif
+			);
             }
 
 #ifdef DEBUG
@@ -204,7 +219,7 @@ public:
 
     // Constructor
     Coreference( const MentionsGLA& mentionsGLA) {
-        mentions=mentionsGLA.GetMentions();
+	mentions = mentionsGLA.GetMentions();
         curIter = 0;
         for(int i=0; i<mentions.size(); i++) {
             mentions[i].entityId = i;
@@ -231,7 +246,9 @@ public:
     }
 
     void DoStep(Task& task, CGLA& cGla) {
+#ifdef DEBUG
         ostringstream out;
+#endif // DEBUG
         int src_mention = task.ment_id;
         int src_entity = task.src_enti_id;
         int des_entity = task.des_enti_id;
@@ -253,7 +270,7 @@ public:
         int gain=0;
         bool accept = false;
         entities[src_entity].lock();
-        unordered_set<size_t> src_mentionSet = entities[src_entity].mentionSet;
+        unordered_set<size_t>& src_mentionSet = entities[src_entity].mentionSet;
         for(auto it=src_mentionSet.begin(); it!=src_mentionSet.end(); ++it)
             if(src_mention!=*it)
                 loss+=mentions[src_mention].pairwiseScore(mentions[*it]);
@@ -261,7 +278,7 @@ public:
         //end calculate loss
         //calcuate gain
         entities[des_entity].lock();
-        unordered_set<size_t> dest_mentionSet = entities[des_entity].mentionSet;
+        unordered_set<size_t>& dest_mentionSet = entities[des_entity].mentionSet;
         for(auto it=dest_mentionSet.begin(); it!=dest_mentionSet.end(); ++it)
             gain+=mentions[src_mention].pairwiseScore(mentions[*it]);
         entities[des_entity].unlock();
@@ -273,7 +290,7 @@ public:
         }
         else {// accept it with a probablity
             double ratio=exp(gain-loss);
-            double p=((double)rand()/(double)RAND_MAX);
+	    double p = RandDouble();
             if(ratio>p) accept=true;
         }
         if(accept && (src_entity!=des_entity)) {
@@ -306,11 +323,11 @@ public:
 #endif
             //currentEntropy=currentEntropy+gain-loss;
         }
-        out << "------------------------------------end\n\n";
         // flip a coin and move mention into entity if heads
 
 #ifdef DEBUG
-            cerr << out.str();
+	out << "------------------------------------end\n\n";
+	cerr << out.str();
 #endif
     }
 

@@ -16,7 +16,7 @@ class ProfilerImp : public EventProcessorImp {
     typedef std::map<std::string, CounterMap> GroupMap;
     GroupMap cMap; // the map of counters
 
-    const int groupColWidth = 20;
+    static const int groupColWidth;
 
     clock_t lastCpu;
     double lastTick;

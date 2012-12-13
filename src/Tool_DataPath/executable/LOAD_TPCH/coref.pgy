@@ -1,4 +1,4 @@
-temp = read "/home/kun/Desktop/nytmentionspy600000.csv" separator ',' attributes from nyt_data600000;
+temp = read "/home/cgrant/nytmentionspy600000.csv" separator ',' attributes from nyt_data600000;
 
 store temp into nyt_data600000;
 

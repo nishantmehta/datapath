@@ -177,7 +177,7 @@ int GISTNewRoundWorkFunc</_/>M4_WPName
             WUVector gistWorkUnits;
 
             // Second parameter is the parallelization hint.
-            G_STATE(_Q_)->PrepareRound( gistWorkUnits, NUM_EXEC_ENGINE_THREADS );
+            G_STATE(_Q_)->PrepareRound( gistWorkUnits, NUM_EXEC_ENGINE_THREADS * 4 );
 
             // Pack the work units into our own data structures.
             GistWUContainer myWorkUnits;
@@ -313,9 +313,9 @@ m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
     PROFILING2_END;
 
     PCounter totalCnt("total", numStepsTotal, "M4_WPName");
-    counterList.append( totalCnt );
+    counterList.Append( totalCnt );
     PCounter globalCnt("GIST", numStepsTotal, "global");
-    counterList.append( globalCnt );
+    counterList.Append( globalCnt );
 
     PROFILING2_SET(counterList);
 

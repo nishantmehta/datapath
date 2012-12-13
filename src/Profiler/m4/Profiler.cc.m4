@@ -13,6 +13,8 @@ using namespace std;
 // Instantiate global profiler
 Profiler globalProfiler;
 
+const int ProfilerImp::groupColWidth = 20;
+
 ProfilerImp::ProfilerImp(): lastCpu(0), lastTick(0)
 #ifdef  DEBUG_EVPROC
   ,EventProcessorImp(true, "Profiler")
