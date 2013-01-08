@@ -1,4 +1,0 @@
-SELECT COUNT(c_custkey) AS agg
-FROM customer
-WHERE
-c_nationkey = 4 ;;

@@ -1,4 +1,0 @@
-SELECT COUNT(c_custkey) AS agg
-FROM customer, nation
-WHERE
-n_nationkey = c_nationkey ;;

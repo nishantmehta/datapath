@@ -1,3 +1,0 @@
-In the Makefile, we are using antlr3.sh which contains below 2 lines and is stored in /usr/bin/
-#!/bin/bash
-java -cp "/home/sarvesh/antlr/antlr-3.3-complete.jar" org.antlr.Tool -o output $1 $2 $3 $4 $5 $6 $7 $8

@@ -1,4 +1,0 @@
-SELECT COUNT(n_nationkey) AS agg
-FROM region, nation
-WHERE
-r_regionkey = n_regionkey ;;

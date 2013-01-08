@@ -1,9 +1,0 @@
-Test for the EventProcessor. The test consists in setting up an event processor that adds number (Adder) and a number of processors that submit jobs (Generators). 
-
-To compile:
-make
-
-To run:
-./test.out
-
-

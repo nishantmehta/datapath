@@ -1,4 +1,0 @@
-SELECT COUNT(c_custkey) AS agg
-FROM customer, orders
-WHERE
-c_custkey = o_orderkey ;;

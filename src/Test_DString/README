@@ -1,4 +1,0 @@
-This directory contains tests for the implementation of DString. Functinality tested includes:
-1. Loading and Saving the dictionary
-2. Speed of translation from strings
-3. String operations

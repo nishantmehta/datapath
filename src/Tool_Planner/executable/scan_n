@@ -1,4 +1,0 @@
-SELECT COUNT(n_nationkey) AS agg
-FROM nation
-WHERE
-n_nationkey > 0 ;;
