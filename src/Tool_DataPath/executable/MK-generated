@@ -17,10 +17,6 @@ CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
 CCFLAGS += -std=gnu++11
 #CCFLAGS += -std=gnu++0x
 
-# profiling information per query
-# Note: has a negative impact on performance
-#CCFLAGS += -DPER_QUERY_PROFILE
-
 M4=m4 
 
 # COMPILER OPTIMIZATION

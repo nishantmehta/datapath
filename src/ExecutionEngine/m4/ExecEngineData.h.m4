@@ -21,6 +21,7 @@ include(DataFunctions.m4)
 
 #include "Data.h"
 #include "Chunk.h"
+#include "HString.h"
 #include "JoinWayPointID.h"
 #include "HashData.h"
 #include "GLAData.h"
@@ -69,7 +70,7 @@ M4_CREATE_DATA_TYPE(ExtractionResult, ExecEngineData,
 //   noTuples: the number of tuples produced by this thread
 M4_CREATE_DATA_TYPE(TextLoaderResult, ExecEngineData,
  </(stream, FILE*), (noTuples, off_t)/>,
- </(myChunk, Chunk)/>)
+ </(localDictionary, HString::DictionaryWrapper), (myChunk, Chunk)/>)
 
 dnl M4_CREATE_DATA_TYPE(JoinMergeChunkContainer, ExecEngineData,
 dnl<//>,

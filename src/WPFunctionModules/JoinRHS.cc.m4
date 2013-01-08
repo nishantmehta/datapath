@@ -57,7 +57,6 @@ int JoinRHSWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineD
     // M4_Queries_Attribute_Comparisio = M4_Queries_Attribute_Comparision
 
     double start_time = global_clock.GetTime();
-    PROFILING2_START;
 
     // this is the area where all of the intermediate, serialized records are stored
     SerializedSegmentArray serializedSegments [NUM_SEGS];
@@ -192,20 +191,11 @@ dnl         Bitstring myInBString(QueryIDSet(m4_first(_QC_), true));
         // and then put the segment back in the hash table
         myWork.get_centralHashTable ().CheckIn (whichOne);
     }
-    PROFILING2_END;
 
     PROFILING(start_time, "M4_WPName", "RHS_hash", "%d", totalNum);
     PROFILING(0.0, "HashTable", "fillrate", "%2.4f", HashTableSegment::globalFillRate*100.0);
-
-    // Finish performance counters
-    // Use the Set functionality in case we add additional counters later.
-    PCounterList counterList;
-    PCounter totalCnt("RHS", totalNum, "M4_WPName");
-    counterList.Append(totalCnt);
-    PCounter globalCnt("jRHS", totalNum, "global");
-    counterList.Append(globalCnt);
-
-    PROFILING2_SET(counterList);
+    PROFILING2("jRHS", totalNum);
+    PROFILING2_FLUSH;
 
     // now we are finally done!
     JoinHashResult myResult (mySamples);

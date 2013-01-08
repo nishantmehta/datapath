@@ -17,7 +17,7 @@
 #define _TIMER_H_
 
 #include <sys/time.h>
-#include <ctime>
+#include <time.h>
 
 /** This class implements a timer that, on Linux, has high
 	* precision. The timer is based on gettimeofday().

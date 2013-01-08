@@ -32,7 +32,7 @@ class CPUWorker;
 typedef DistributedQueue <CPUWorker> CPUWorkerList;
 
 // this data type controls a thread that can be assigned work to do by
-// a waypoint that has a computational task... the thread is asked to
+// a waypoint that has a computational task... the thread is asked to 
 // do some work via a call to the message handler "DoSomeWork".  Note
 // that no one should communicate with an object of this type directly.
 // Instead, all requests for CPU work are made via the CPUWorkerPool
@@ -45,13 +45,30 @@ private:
 	EventProcessor me;
 
 	/* Performance counters to watch what the functions being executed are doing */
-	/* For now the info is just logged but it could be sent the the reciever in a
+	/* For now the info is just logged but it could be sent the the reciever in a 
 	   special package for self-diagnosis */
+	PerfCounter cycles;
+	PerfCounter instructions;
+	PerfCounter branches;
+	PerfCounter branch_misses;
+	PerfCounter cache_refs;
+	PerfCounter cache_misses;
+	PerfCounter contexts;
 	Timer clock; /* for real walclock time */
 
 	/* cached values of the counters for convenience */
+	uint64_t cycles_C;
+	uint64_t instructions_C;
+	uint64_t branches_C;
+	uint64_t branch_misses_C;
+	uint64_t cache_refs_C;
+	uint64_t cache_misses_C;
+	uint64_t contexts_C;
 	double clock_C; // time in seconds
 
+	void ResetAllCounters(void);
+	/* fill _C variables with counters */
+	void ReadAllCounters(void);
 
 protected:
 
@@ -71,5 +88,30 @@ public:
 };
 
 /////////// INLINE METHODS ////////////
+inline 
+void CPUWorkerImp :: ResetAllCounters(void){
+  cycles.Restart();
+  instructions.Restart();
+  branches.Restart();
+  branch_misses.Restart();
+  cache_refs.Restart();
+  cache_misses.Restart();
+  contexts.Restart();
+  clock.Restart();
+}
+
+inline 
+void CPUWorkerImp :: ReadAllCounters(void){
+  cycles_C = cycles.GetCount();
+  instructions_C = instructions.GetCount();
+  branches_C = branches.GetCount();
+  branch_misses_C = branch_misses.GetCount();
+  cache_refs_C = cache_refs.GetCount();
+  cache_misses_C = cache_misses.GetCount();
+  contexts_C = contexts.GetCount();
+  clock_C = clock.GetTime();
+  
+  //printf("Raw read %ld %ld %ld %ld %ld %ld\n", cycles_C, instructions_C, branch_misses_C, cache_refs_C, cache_misses_C, contexts_C);
+}
 
 #endif

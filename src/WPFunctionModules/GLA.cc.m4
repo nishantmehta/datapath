@@ -374,8 +374,6 @@ int GLAProcessChunkWorkFunc_<//>M4_WPName  (WorkDescription &workDescription, Ex
     QueryToGLASContMap& constStates = myWork.get_constStates();
     QueryToGLAStateMap& garbageStates = myWork.get_garbageStates();
 
-    PROFILING2_START;
-
 <//>M4_DECLARE_QUERYIDS(</M4_GLADesc/>,</M4_Attribute_Queries/>)<//>dnl
 
 <//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
@@ -461,16 +459,13 @@ dnl # definition of constants used in expressions
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
     // constants for query M4_QUERY_NAME(_Q_)
 <//>_GLA_INITIALIZER(_Q_)<//>dnl # the initializer should have a new line
-
-#ifdef PER_QUERY_PROFILE
-    int64_t numTuples_<//>M4_QUERY_NAME(_Q_) = 0;
-#endif // PER_QUERY_PROFILE
 <//><//>/>, <//>)<//>dnl
 <//>/>)<//>dnl
 
-    int64_t numTuples = 0;
+    int numTuples = 0;
+
     FOR_EACH_TUPLE(</input/>){
-        ++numTuples;
+	numTuples++;
         QueryIDSet qry;
 <//><//>GET_QUERIES(qry);
 
@@ -479,9 +474,6 @@ dnl # definition of constants used in expressions
         // do M4_QUERY_NAME(_Q_)
         if (qry.Overlaps(M4_QUERY_NAME(_Q_))){
             GLA_STATE(_Q_)->AddItem<//>GLA_EXPRESSION(_Q_);
-#ifdef PER_QUERY_PROFILE
-            ++numTuples_<//>M4_QUERY_NAME(_Q_);
-#endif // PER_QUERY_PROFILE
         }
 <//>/>)<//>dnl
 
@@ -497,23 +489,8 @@ dnl # definition of constants used in expressions
 <//><//>/>)<//>dnl
 <//>/>)<//>dnl
 
-    PROFILING2_END;
-
-    PCounterList counterList;
-    PCounter totalCnt("tuples", numTuples, "M4_WPName");
-    counterList.Append(totalCnt);
-    PCounter globalCnt("GLA", numTuples, "global");
-    counterList.Append(globalCnt);
-
-#ifdef PER_QUERY_PROFILE
-    // add tuple counters to list
-<//>m4_foreach(</_Q_/>, </M4_GLADesc/>, </dnl
-        PCounter cnt("M4_QUERY_NAME(_Q_)", numTuples_<//>M4_QUERY_NAME(_Q_), "M4_WPName");
-        counterList.Append(cnt);
-<//>/>)<//>dnl
-#endif // PER_QUERY_PROFILE
-
-    PROFILING2_SET(counterList);
+	PROFILING2("GLA", numTuples);
+	PROFILING2_FLUSH;
 
     // finally, if there were any results, put the data back in the chunk
 <//>M4_PUTBACK_COLUMNS(</M4_Attribute_Queries/>,</input/>)

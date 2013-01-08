@@ -59,10 +59,18 @@ m4_define(</M4_ITERATOR_TYPE/>, </dnl
 
 dnl # macro to put extra arguments for iterators
 dnl # $1: column type
-m4_define(</M4_ITERATOR_EXTRA_ARG/>, <//>)
+m4_define(</M4_ITERATOR_EXTRA_ARG/>, </dnl
+dnl # if column is of type HString we use HStringIterator otherwise
+dnl # we use ColumnIterator<type>
+<//>m4_case($1,HString,</, localDictionary/>,<//>) dnl
+/>)
 
 
 dnl # macro to declare the correct basic type
 dnl # $1=column type
-m4_define(</M4_BASIC_TYPE/>, </$1/>)
+m4_define(</M4_BASIC_TYPE/>, </dnl
+dnl # if column is of type HString we use HStringIterator otherwise
+dnl # we use ColumnIterator<type>
+<//>m4_case($1,VARCHAR,</HString/>,</$1/>) dnl
+/>)
 m4_divert(0)<//>dnl

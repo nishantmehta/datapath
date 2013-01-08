@@ -44,7 +44,7 @@ void TextLoaderWayPointImp :: RequestTokens(){
 	FATALIF (noReq < 0, "This should not be smaller than 0");
 
 	// is that too many?
-	int dblBuf = 2*numStreams - chunksOut - tokensRequested;
+	int dblBuf = 2*numStreams - chunksOut - tokensRequested; 
 	WARNINGIF(noReq > dblBuf, "Too many request: %d\n", noReq);
 
 	// queue up some more work requests
@@ -52,7 +52,7 @@ void TextLoaderWayPointImp :: RequestTokens(){
 	for (int i=0; i<noReq; i++) {
 		tokensRequested++;
 		RequestTokenDelayOK (CPUWorkToken::type);
-	}
+	}		
 }
 
 void TextLoaderWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &configData) {
@@ -61,7 +61,7 @@ void TextLoaderWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &conf
 	// first, extract the extra config info
 	TextLoaderConfigureData tempConfig;
 	tempConfig.swap (configData);
-
+	
 	// store query exits
 	myExits.swap(tempConfig.get_queries());
 
@@ -81,21 +81,24 @@ void TextLoaderWayPointImp :: TypeSpecificConfigure (WayPointConfigureData &conf
 			perror(NULL);
 			break;
 		}
-
+		
 		// set the buffer at 1M so that we read faster
 		// default buffer size is really bad
 		setvbuf(stream, NULL /* system allocated */, _IOFBF, 1<<20 /* 1MB */);
 
 		LOG_ENTRY_P(1, "Loader %s Started", file.c_str());
+		
+		HString::DictionaryWrapper localDictionary;
+		HString::CreateLocalDictionary(localDictionary);
 
-		TextLoaderDS task(stream, file);
+		TextLoaderDS task(stream, file, localDictionary);
 		tasks.Append(task);
 		numStreams++;
 
 	}END_FOREACH
 
 }
-
+	
 void TextLoaderWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 	PDEBUG ("TextLoaderWayPointImp :: RequestGranted ()");
 
@@ -134,8 +137,8 @@ void TextLoaderWayPointImp :: RequestGranted (GenericWorkToken &returnVal) {
 	tempList.Insert (myHistory);
 
 	// set up the work description
-	TextLoaderWorkDescription workDesc (task.get_stream(), task.get_file(),
-					    myOutputExits);
+	TextLoaderWorkDescription workDesc (task.get_stream(), task.get_file(), 
+					    task.get_localDictionary(), myOutputExits);
 
 	// now, actually get the chunk sent out!  Again, note that here we use a CPU to do this...
 	// but that is just because we have a toy table scan imp
@@ -162,7 +165,7 @@ void TextLoaderWayPointImp :: ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &mes
 	cout << "About to start ";
 	queryToStart.Print ();
 	cout << "\n";
-
+	
 	RequestTokens();
 }
 
@@ -173,7 +176,7 @@ void TextLoaderWayPointImp :: ProcessDropMsg (QueryExitContainer &whichExits, Hi
 
 }
 
-void TextLoaderWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &history,
+void TextLoaderWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &history, 
 																						 int result, ExecEngineData& data) {
 	PDEBUG ("TextLoaderWayPointImp :: DoneProducing ()");
 	TextLoaderHistory myHistory;
@@ -191,7 +194,7 @@ void TextLoaderWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, Hist
 	// put it into data (what should have been)
 	data.swap(chkCont);
 	chunksOut++; // one chunk out
-
+	
 	// if the result is 1, the stream exhausted the input
 	if (result == 1) {
 		numStreams--; // one stream done
@@ -204,9 +207,10 @@ void TextLoaderWayPointImp :: DoneProducing (QueryExitContainer &whichOnes, Hist
 
 	} else {
 		// just take the returned stream back to the tasks list
-		TextLoaderDS task(tempResult.get_stream(), file);
+		TextLoaderDS task(tempResult.get_stream(), file, 
+											tempResult.get_localDictionary());
 		tasks.Append(task);
-
+		
 	}
 
 	RequestTokens();
@@ -234,14 +238,15 @@ void TextLoaderWayPointImp :: ProcessAckMsg (QueryExitContainer &whichExits, His
 		QueryDoneMsg qDone (GetID (), myExits); // do not need my exits anymore
 		HoppingDownstreamMsg myOutMsg (GetID (), allCompleteCopy, qDone);
 		SendHoppingDownstreamMsg (myOutMsg);
-
+		
 		LOG_ENTRY_P(2, "Text Loader %s finished processing ALL files.",
 								name.c_str()) ;
 
 		// make sure we merge the local dictionaries and flush
+		HString::SaveDictionary();
 		DictionaryManager::Flush();
 	}
-
+	
 }
 
 

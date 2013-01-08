@@ -43,7 +43,6 @@
 #include "Timer.h"
 #include "Diagnose.h"
 #include "Profiler.h"
-#include "PCProfiler.h"
 #include "ExternalCommands.h"
 
 #define DEBUG
@@ -133,9 +132,8 @@ int main(int argc, char** argv){
 	LOG_ENTRY(1, "MAIN: Datapath Started");
 
 	// starting the profiler
-    globalProfiler.ForkAndSpin();
-    PCProfiler pcprof(globalProfiler);
-    pcprof.Run();
+	//	Profiler profiler("PROFILE");
+	//	profiler.Run();
 
 	//	diagnose.StartDiagnose();
 
@@ -195,7 +193,6 @@ int main(int argc, char** argv){
 
 	// stop the diagnosis
 	//	diagnose.StopDiagnose();
-    globalProfiler.Seppuku();
 
 	// stop the logging
 	StopLogging();

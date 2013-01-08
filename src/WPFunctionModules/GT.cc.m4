@@ -78,8 +78,6 @@ int GTProcessChunkWorkFunc_<//>M4_WPName
     QueryToGLAStateMap& filters = myWork.get_filters();
     QueryToGLASContMap& constStates = myWork.get_constStates();
 
-    PROFILING2_START;
-
 <//>M4_DECLARE_QUERYIDS(</M4_GTDesc/>, </M4_Attribute_Queries/>)<//>dnl
 
 <//>M4_GET_QUERIES_TO_RUN(</myWork/>)<//>dnl
@@ -87,7 +85,6 @@ int GTProcessChunkWorkFunc_<//>M4_WPName
 <//>M4_ACCESS_COLUMNS(</M4_Attribute_Queries/>, </input/>)<//>dnl
 
 <//>M4_EXTRACT_BITMAP(</input/>)<//>dnl
-
 
     // Set up the output chunk
     Chunk output;
@@ -173,15 +170,10 @@ dnl # definition of constants used in expressions
 <//><//>m4_ifval( M4_QUERY_NAME(_Q_), </ dnl is this a valid query
     // constants for query M4_QUERY_NAME(_Q_)
 <//>_G_INITIALIZER(_Q_)
-
-#ifdef PER_QUERY_PROFILE
-    int64_t numTuplesIn_<//>M4_QUERY_NAME(_Q_) = 0;
-    int64_t numTuplesOut_<//>M4_QUERY_NAME(_Q_) = 0;
-#endif // PER_QUERY_PROFILE
 <//><//>/>)<//>dnl
 <//>/>)<//>dnl
 
-    int64_t numTuples = 0;
+    int numTuples = 0;
 
     FOR_EACH_TUPLE(</input/>) {
         ++numTuples;
@@ -194,9 +186,6 @@ dnl # definition of constants used in expressions
 <//><//>m4_foreach(</_Q_/>, </M4_GTDesc/>, </dnl
         // do M4_QUERY_NAME(_Q_)
         if( queriesToRun.Overlaps(M4_QUERY_NAME(_Q_)) && qry.Overlaps(M4_QUERY_NAME(_Q_)) ) {
-#ifdef PER_QUERY_PROFILE
-            ++numTuplesIn_<//>M4_QUERY_NAME(_Q_);
-#endif // PER_QUERY_PROFILE
 m4_case(G_KIND(_Q_), single, </dnl
             if ( G_STATE(_Q_)->ProcessTuple</(/>reval(</m4_args/>G_EXPRESSION(_Q_))<//>dnl
 m4_foreach(</_A_/>, m4_quote(m4_defin(</_OUTPUTS_/>M4_QUERY_NAME(_Q_))))
@@ -207,9 +196,6 @@ m4_foreach(</_A_/>, m4_quote(m4_defin(</_OUTPUTS_/>M4_QUERY_NAME(_Q_))))
 
             while( G_STATE(_Q_)->GetNextResult( m4_quote(m4_defn(</_OUTPUTS_/>M4_QUERY_NAME(_Q_))) ) ) {
 />)<//>dnl
-#ifdef PER_QUERY_PROFILE
-                ++numTuplesOut_<//>M4_QUERY_NAME(_Q_);
-#endif // PER_QUERY_PROFILE
 
                 // Write the tuple
                 myOutBStringIter.Insert( M4_QUERY_NAME(_Q_) );
@@ -237,26 +223,8 @@ m4_foreach(</_A_/>, m4_quote(m4_defin(</_OUTPUTS_/>M4_QUERY_NAME(_Q_))))
 <//><//>/>)<//>dnl
 <//>/>)<//>dnl
 
-    PROFILING2_END;
-
-    PCounterList counterList;
-    PCounter totalCnt("tuples", numTuples, "M4_WPName");
-    counterList.Append(totalCnt);
-    PCounter globalCnt("GT", numTuples, "global");
-    counterList.Append(globalCnt);
-
-#ifdef PER_QUERY_PROFILE
-<//>m4_foreach(</_Q_/>, </M4_GTDesc/>, </dnl
-    if( M4_QUERY_NAME(_Q_).Overlaps(queriesToRun)) {
-        PCounter cnt("M4_QUERY_NAME(_Q_) In", numTuplesIn_<//>M4_QUERY_NAME(_Q_), "M4_WPName");
-        counterList.Append(cnt);
-        PCounter cntOut("M4_QUERY_NAME(_Q_) Out", numTuplesOut_<//>M4_QUERY_NAME(_Q_), "M4_WPName");
-        counterList.Append(cntOut);
-    }
-/>)dnl
-#endif // PER_QUERY_PROFILE
-
-    PROFILING2_SET(counterList);
+    PROFILING2("GT", numTuples);
+    PROFILING2_FLUSH;
 
     // finally, if there were any results, put the data back in the chunk
 <//>M4_PUTBACK_COLUMNS(</M4_Attribute_Queries/>,</input/>)

@@ -32,9 +32,6 @@ LINKFLAGS = -lpthread -lstdc++
 # these are the compiler flags that are used when object files are created
 CCFLAGS = -c -w -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
-# Use C++11 standard with GNU extensions
-#CCFLAGS += -std=gnu++11
-
 # debug info
 CCFLAGS += -g
 # print the debug messages
@@ -64,10 +61,6 @@ CCFLAGS += -g
 
 # use linux performance counters
 CCFLAGS += -DUSE_PERF_LINUX
-
-# start up perf counters per cpu
-# Note: This has a very negative impact on performance.
-#CCFLAGS += -DPER_CPU_PROFILE
 
 # warm-up the system first
 #CCFLAGS += -DWARMUP_SYSTEM

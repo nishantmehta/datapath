@@ -117,7 +117,7 @@ M4_CREATE_DATA_TYPE(HashCleanerWorkDescription, WorkDescription,
 //   stream: the FILE descriptor used by this thread
 M4_CREATE_DATA_TYPE(TextLoaderWorkDescription, WorkDescription,
 </(stream, FILE*), (file, string)/>,
-</(whichQueryExits, QueryExitContainer)/>)
+</(localDictionary, HString::DictionaryWrapper), (whichQueryExits, QueryExitContainer)/>)
 
 // this is used for the "test" version of the writer... sends the waypoint that this work is being done for
 // as well as all of the chunks that have been sent

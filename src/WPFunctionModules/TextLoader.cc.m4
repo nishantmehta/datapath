@@ -34,6 +34,11 @@ int TextLoaderWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngi
     TextLoaderWorkDescription myWork;
     myWork.swap (workDescription);
 
+    // local dictionary used by all HString datatypes. This is our own dictionary so we do no
+    // not need synchronization to update it; Macros use this to let HString types to use it.
+    HString::DictionaryWrapper& localDictionaryWrp = myWork.get_localDictionary();
+    HString::Dictionary&  localDictionary = localDictionaryWrp.GetDictionary();
+
 dnl # Declare local dictionaries for columns that need it
 m4_foreach(</_C_/>, </M4_Columns/>, </dnl
 <//>m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </dnl
@@ -141,7 +146,7 @@ dnl  //column. Keep both compressed and decompressed
     chunk.SwapBitmap(outQueries);
 
     // pack the chunk, stream and other things in the result and send it back.
-    TextLoaderResult tempResult ( stream, noTuples, chunk);
+    TextLoaderResult tempResult ( stream, noTuples, localDictionaryWrp, chunk);
     tempResult.swap (result);
 
     if (finished)

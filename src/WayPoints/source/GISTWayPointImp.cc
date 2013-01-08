@@ -137,7 +137,6 @@ GISTWayPointImp :: GISTWayPointImp ()
     : lastFragmentID(0)
 {
     PDEBUG("GISTWayPointImp :: GISTWayPointImp ()");
-    SetTokensRequested( CPUWorkToken::type, NUM_EXEC_ENGINE_THREADS );
 }
 
 GISTWayPointImp :: ~GISTWayPointImp () {

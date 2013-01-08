@@ -177,7 +177,7 @@ int GISTNewRoundWorkFunc</_/>M4_WPName
             WUVector gistWorkUnits;
 
             // Second parameter is the parallelization hint.
-            G_STATE(_Q_)->PrepareRound( gistWorkUnits, NUM_EXEC_ENGINE_THREADS * 4 );
+            G_STATE(_Q_)->PrepareRound( gistWorkUnits, NUM_EXEC_ENGINE_THREADS );
 
             // Pack the work units into our own data structures.
             GistWUContainer myWorkUnits;
@@ -222,10 +222,6 @@ int GISTDoStepsWorkFunc</_/>M4_WPName
     QueryToGistWorkUnit unfinishedWork;
     QueryToGLAStateMap finishedWork;
 
-    PCounterList counterList;
-    int64_t numStepsTotal = 0;
-    PROFILING2_START;
-
 <//>M4_DECLARE_QUERYIDS(</M4_GISTDesc/>,<//>)<//>dnl
 
     FOREACH_TWL(iter, queries) {
@@ -250,8 +246,6 @@ int GISTDoStepsWorkFunc</_/>M4_WPName
         GLAPtr glaPtr;
         glaPtr.swap(glaState);
 
-        int64_t numSteps = 0;
-
         bool workFinished = false;
 m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
 <//>m4_ifval(M4_QUERY_NAME(_Q_), </dnl
@@ -274,19 +268,11 @@ m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
             GIST_TASK_TYPE(_Q_) task;
             while( localScheduler->GetNextTask( task ) ) {
                 G_STATE(_Q_)->DoStep( task, *gla );
-                ++numSteps;
             }
 
             // Deallocate scheduler
             delete localScheduler;
             workFinished = true;
-
-            numStepsTotal += numSteps;
-
-#ifdef PER_QUERY_PROFILE
-            PCounter cnt("M4_QUERY_NAME(_Q_)", numSteps, "M4_WPName");
-            counterList.Append(cnt);
-#endif // PER_QUERY_PROFILE
         }
 <//>/>)<//>dnl
 />)<//>dnl
@@ -309,15 +295,6 @@ m4_foreach(</_Q_/>, </M4_GISTDesc/>, </dnl
             unfinishedWork.Insert(key, curWork);
         }
     } END_FOREACH;
-
-    PROFILING2_END;
-
-    PCounter totalCnt("total", numStepsTotal, "M4_WPName");
-    counterList.Append( totalCnt );
-    PCounter globalCnt("GIST", numStepsTotal, "global");
-    counterList.Append( globalCnt );
-
-    PROFILING2_SET(counterList);
 
     GISTDoStepRez myResult(unfinishedWork, finishedWork);
     myResult.swap(result);

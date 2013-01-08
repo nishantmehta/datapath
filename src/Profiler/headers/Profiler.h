@@ -1,79 +1,58 @@
+//
+//  Copyright 2012 Alin Dobra and Christopher Jermaine
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 #ifndef _PROFILER_H_
 #define _PROFILER_H_
 
-// include the base class definition
-#include "EventProcessor.h"
-#include "EventProcessorImp.h"
-#include "Message.h"
-#include "ProfMSG.h"
-#include <map>
+/** Class that measures performance of the system/second
+    
+    Result is logged in a file
+
+*/
+
+#include "EventGenerator.h"
 #include <iostream>
-#include <iomanip>
+#include <fstream>
+#include "Logging.h"
+#include "PerfCounter.h"
 
-class ProfilerImp : public EventProcessorImp {
-    typedef int64_t IntType;
-    typedef std::map<std::string, IntType> CounterMap;
-    typedef std::map<std::string, CounterMap> GroupMap;
-    GroupMap cMap; // the map of counters
+class ProfilerImp; // forward definition
 
-    static const int groupColWidth;
+class Profiler : public EventGenerator{
 
-    clock_t lastCpu;
-    double lastTick;
-
-    void AddCounter(PCounter& cnt);
-    void PrintCounters(const clock_t newCpu, const double newClock);
-
-    void HumanizeNumber( IntType value, std::string& outVal );
-
-    public:
-
-    ProfilerImp();
-    ~ProfilerImp();
-
-    MESSAGE_HANDLER_DECLARATION(ProfileMessage_H);
-    MESSAGE_HANDLER_DECLARATION(ProfileSetMessage_H);
-    MESSAGE_HANDLER_DECLARATION(ProfileIntervalMessage_H);
+ public:
+  Profiler(void):EventGenerator(){}
+  
+  Profiler(const char* fileName);
 };
 
+/** File produced has the format:
 
-class Profiler : public EventProcessor {
+    time time_interval cycles instructions branches branch_misses cache_refs cache_misses contexts task_clock 
 
-    public:
-        Profiler(void){
-            evProc = new ProfilerImp;
-        }
+*/
+    
+class ProfilerImp : public EventGeneratorImp {
+  fstream out; // stream where we print profiling info
 
-        virtual ~Profiler(){}
+public:
+  ProfilerImp(const char* fileName);
 
+  virtual int ProduceMessage();
+
+  ~ProfilerImp(){ out.close(); }
 };
-
-// Global variables
-extern Profiler globalProfiler;
-
-// Inline methods
-inline void ProfilerImp::AddCounter(PCounter& cnt){
-    IntType value = cnt.get_value();
-    std::string& counter = cnt.get_name();
-    std::string& group = cnt.get_group();
-    cMap[group][counter] += value;
-}
-
-inline
-void ProfilerImp :: HumanizeNumber( IntType value, std::string& outVal ) {
-    const char * suffList = " KMGTPEZY";
-    int index = 0;
-
-    // Shift it down if the value is in danger of using more than 4 digits.
-    while( value > 9999 ) {
-        value >>= 10;
-        ++index;
-    }
-
-    std::ostringstream str;
-    str << std::setw(4) << value << suffList[index];
-    outVal = str.str();
-}
-
 
 #endif // _PROFILER_H_

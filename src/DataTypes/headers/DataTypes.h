@@ -52,6 +52,9 @@
 // the doule precision floats
 #include "DOUBLE.h"
 
+//the variable size characters
+#include "HString.h"
+
 //the date datatype
 #include "DATE.h"
 //#include "date.h"
