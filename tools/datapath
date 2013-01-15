@@ -1,0 +1,223 @@
+#!/bin/bash
+#
+#  Copyright 2013 Christopher Dudley
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+# This is a front-end script to the various datapath scripts.
+# This script will be linked into /usr/local/bin during installation so that
+# datapath can be run from any directory in the system.
+
+function printUsage {
+    echo "Usage: datapath [options] <command> <file>"
+    echo "Supported commands are:"
+    echo "      run"
+    echo "      debug"
+    echo
+    echo "Options:"
+    echo "  -h              Show this help message"
+    echo "  -o              Disable optimization of generated code"
+    echo "  -n              Run non-interactively"
+    echo "  -w              Disable read-only mode"
+}
+
+NO_OPTS=false
+READ_ONLY=true
+INTERACTIVE=1
+
+while getopts "honw" opt; do
+    case $opt in
+        h)
+            # Print usage and exit
+            printUsage
+            exit 0
+            ;;
+        o)
+            NO_OPTS=true
+            ;;
+        n)
+            INTERACTIVE=0
+            ;;
+        w)
+            READ_ONLY=false
+            ;;
+        \?)
+            echo "Error: Unknown option -$OPTARG" >&2
+            printUsage
+            exit -1
+            ;;
+    esac
+done
+
+shift $(expr $OPTIND - 1)
+
+if (( $# != 2 )); then
+    echo "Error: expected exactly 2 arguments" >&2
+    printUsage
+    exit -1
+fi
+
+validCommand=1
+debug=0
+
+case $1 in
+    run)
+        ;;
+    debug)
+        debug=1
+        ;;
+    *)
+        validCommand=0
+        ;;
+esac
+
+if [ $validCommand = 0 ]; then
+    echo "Error: Unsupported command $1"
+    printUsage
+    exit -1
+fi
+
+COMMAND=$1
+
+FILE=$(readlink -e $2)
+
+if [ $? != 0 ]; then
+    echo "Error: File $2 not found."
+    exit -1
+fi
+
+DP_OPTS="-q"
+if [ $READ_ONLY == true ]; then
+    DP_OPTS="$DP_OPTS -r"
+fi
+
+DP_OPTS="$DP_OPTS -e"
+
+function runTest {
+    cd $DP_DIR
+
+    if [ $NO_OPTS == true ]; then
+        # Turn off optimizations
+        export DEBUG_DATAPATH=true
+    fi
+
+    if [ $debug == 1 ]; then
+        # Run through the debugger
+        cat > gdb-commmands <<EOF
+run $DP_OPTS $FILE
+EOF
+
+        gdb --command=gdb-commands ./dp
+    else
+        # Just run normally
+        ./dp $DP_OPTS $FILE
+    fi
+}
+
+# Set up Datapath installation paths
+
+if [ "x$DATAPATH_INSTALL_PATH" == "x" ]; then
+    # DATAPATH_INSTALL_PATH is not set
+    # Assume we are in the trunk/tools directory
+    BASE_DIR=$(readlink -f ..)
+else
+    BASE_DIR=$DATAPATH_INSTALL_PATH
+fi
+
+if [ "x$DATAPATH_EXEC_PATH" == "x" ]; then
+    DP_DIR="$BASE_DIR/src/Tool_DataPath/executable"
+else
+    DP_DIR=$DATAPATH_EXEC_PATH
+fi
+
+if [ "x$DATAPATH_SO_PATH" == "x" ]; then
+    DP_SHARED_LIB_DIR="$BASE_DIR/Libs/libraries"
+else
+    DP_SHRED_LIB_DIR=$DATAPATH_SO_PATH
+fi
+
+if [ "x$DATAPATH_LOCK_FILE" == "x" ]; then
+    DP_LOCK_FILE="$BASE_DIR/lock"
+else
+    DP_LOCK_FILE=$DATAPATH_LOCK_FILE
+fi
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/lib:$DP_SHARED_LIB_DIR
+export LD_LIBRARY_PATH
+
+# Valid answers for yes and no
+ANS_YES="y yes"
+ANS_NO="n no"
+
+if [ ! -e $DP_LOCK_FILE ]; then
+    touch $DP_LOCK_FILE
+    if (($? != 0)); then
+        echo "Failed to create lock file at $DP_LOCK_FILE"
+        echo "Please contact the system administrator."
+        exit 1
+    fi
+fi
+
+# Open the lock file
+exec 9<$DP_LOCK_FILE
+
+finished=0
+exitCode=0
+while (( $finished == 0 )); do
+    # Try to lock the datapath-lock
+    flock -n 9
+    if (( $? != 0 )); then
+        if (($INTERACTIVE == 0)); then
+            # Just exit
+            exitCode=1
+            finished=1
+            continue
+        fi
+
+        echo "Warning: A DataPath process is currently running."
+        echo "Do you wish to terminate the currently running process?"
+
+        gotAns=0
+        while [ $gotAns == 0 ]; do
+            read -p "Kill process? (y/n): " ans
+            echo $ANS_YES | grep -i -w "$ans" &>/dev/null
+            if (( $? == 0 )); then
+                # Kill datapath and try to get the lock again
+                gotAns=1
+                echo "Killing currently running datapath instance."
+                killall dp
+                sleep 1
+            else
+                echo $ANS_NO | grep -i -w "$ans" &>/dev/null
+                if (( $? == 0 )); then
+                    echo "Aborting."
+                    gotAns=1
+                    finished=1
+                    exitCode=1
+                else
+                    echo "Please answer y(es) or n(o)."
+                fi
+            fi
+        done
+    else
+        # We got the lock
+        finished=1
+        runTest
+    fi
+done
+
+# Close the lock file
+exec 9>&-
+
+exit $exitCode

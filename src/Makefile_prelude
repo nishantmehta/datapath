@@ -83,20 +83,21 @@ ANTLR = java -jar /usr/local/lib/antlr-3.3-complete.jar
 YACC = bison
 LEX = flex
 
+# File locations
+PROFD_SCRIPT = /etc/profile.d/datapath.sh
 
 # if there are any special object files that won't be compiled using C++ or m4, then rules for making them
 # won't be automatically generated, and they should be given explicitly here
-SQLite/object/sqlite3.o: SQLite/source/sqlite3.c  SQLite/headers/sqlite3.h
-	gcc $(CCFLAGS) -o SQLite/object/sqlite3.o SQLite/source/sqlite3.c
-
-Tool_Planner/object/y.tab.o: Tool_Planner/source/Parser.y
-	$(YACC) -o Tool_Planner/source/y.tab.c -d Tool_Planner/source/Parser.y
-	sed -n -e "s/  __attribute__ ((__unused__))$$/# ifndef __cplusplus\n  __attribute__ ((__unused__));\n# endif/" Tool_Planner/source/y.tab.c 
-	$(CC) $(CCFLAGS) -o Tool_Planner/object/y.tab.o Tool_Planner/source/y.tab.c
-
-Tool_Planner/object/lex.yy.o: Tool_Planner/source/Lexer.l
-	$(LEX) -o Tool_Planner/source/lex.yy.c Tool_Planner/source/Lexer.l
-	$(CC) $(CCFLAGS) -o Tool_Planner/object/lex.yy.o Tool_Planner/source/lex.yy.c
-
 ltparser: LemonTranslator/parser/*.g 
 	parserMake.sh
+
+# These rules will probably require superuser permissions
+install: Tool_DataPath/executable/dp
+	cp ../tools/datapath /usr/local/bin/datapath
+	chmod +x /usr/local/bin/datapath
+	./installProfiledScript.sh
+	touch ../lock
+
+uninstall:
+	rm /usr/local/bin/datapath
+	rm ${PROFD_SCRIPT}

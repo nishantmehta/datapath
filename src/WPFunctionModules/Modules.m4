@@ -49,6 +49,7 @@ m4_define(</M4_CODE_GENERATION_PREAMBLE/>,</dnl
 #include "Logging.h" // for profiling facility
 #include "Profiling.h"
 #include "WPFExitCodes.h"
+#include "HashFunctions.h"
 <//>m4_divert(-1)
 />)
  

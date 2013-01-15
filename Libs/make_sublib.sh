@@ -54,6 +54,7 @@ fi
 
 TOP_DIR=$(pwd)
 PKG_CONF_DIR=$TOP_DIR/pkgconfig
+GLOBAL_LIB_DIR=$TOP_DIR/libraries
 
 SUBLIB_DIR=$(readlink -f $1/$2)
 NUM_OF_THREADS=$(cat /proc/cpuinfo | grep "processor" | wc -l);
@@ -95,11 +96,13 @@ if [ -d $SUBLIB_DIR/include ]; then
 fi
 
 # Add all of the .so and .a files to the Libs
-echo -n "Libs: -L$SUBLIB_DIR" >> $PC_FILE
+echo -n "Libs: -L$GLOBAL_LIB_DIR" >> $PC_FILE
 
 for lib in *.so *.a
 do
     if [ -e $lib ]; then
+        # Link the library to the global libraries directory
+        ln -s -f $lib $GLOBAL_LIB_DIR/$lib
         NAMESPEC=$(echo $lib | sed -r "s/(lib)?([a-zA-Z0-9]+).(so|a)/\2/")
         echo -n " -l$NAMESPEC" >> $PC_FILE
     fi
