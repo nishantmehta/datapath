@@ -10,12 +10,14 @@
  * OUTPUTS(</(l,DOUBLE),(h,DOUBLE)/>)
  * RESULT_TYPE(</single/>)
  *
- * LIBS(mixture,gsl,gslcblas,lapack,armadillo)
+ * LIBS(mixture)
  * END_DESC
  */
 
 #include <gsl/gsl_sf_gamma.h>
 #include <probdb/mixture/mixture.h>
+#include <gsl/gsl_cdf.h>
+#include <math.h>
 
 #define N 3
 #define O (2*N)
@@ -33,6 +35,8 @@ class SumProbMomentsConfGLA {
   long double sumProb; // sum of all probabilities for normalization
   uint64_t n;
   long double sumDet;
+
+  int status;
 
   typedef struct { double a,b; } c_dbl;
  public:
@@ -59,18 +63,22 @@ class SumProbMomentsConfGLA {
   void Finalize(void){
 
     //compute moments of true distribution from cumulants
-    // we scale the result to keep it numerically stable
-    nu[0] = cm[0]/sumProb;
-    nu[1] = (cm[1] + cm[0]*cm[0])/(sumProb*sumProb);
-    nu[2] = (cm[2] + 3*cm[1]*cm[0] + cm[0]*cm[0]*cm[0])/(sumProb*sumProb*sumProb);
-    nu[3] = (cm[3] + 4*cm[2]*cm[0] + 3*cm[1]*cm[1] + 6*cm[1]*cm[0]*cm[0] + cm[0]*cm[0]*cm[0]*cm[0])/(sumProb*sumProb*sumProb*sumProb);
-    nu[4] = (cm[4] + 5*cm[3]*cm[0] + 10*cm[2]*cm[1] + 10*cm[2]*cm[0]*cm[0] + 15*cm[1]*cm[1]*cm[0] + 10*cm[1]*cm[0]*cm[0]*cm[0] + cm[0]*cm[0]*cm[0]*cm[0]*cm[0])/
-      (sumProb*sumProb*sumProb*sumProb*sumProb);
-    nu[5] = (cm[5] + 6*cm[4]*cm[0] + 15*cm[3]*cm[1] + 15*cm[3]*cm[0]*cm[0] + 10*cm[2]*cm[2]*cm[2] + 60*cm[2]*cm[1]*cm[0] + 20*cm[2]*cm[0]*cm[0]*cm[0] + 15*cm[1]*cm[1]*cm[1] + 45*cm[1]*cm[1]*cm[0]*cm[0] + 15*cm[1]*cm[0]*cm[0]*cm[0]*cm[0] + cm[0]*cm[0]*cm[0]*cm[0]*cm[0]*cm[0])/
-      (sumProb*sumProb*sumProb*sumProb*sumProb*sumProb);
+    // we standardize the result to keep it numerically stable
 
+
+    nu[0] = 0;
+    nu[1] = 1;
+    nu[2] = cm[2] / pow(cm[1], 1.5);
+    nu[3] = (cm[3] + 3 * cm[1] * cm[1]) / (cm[1] * cm[1]);
+    nu[4] = (cm[4] + 10 * cm[2] * cm[1]) / pow(cm[1], 2.5);
+    nu[5] = (cm[5] + 15 * cm[3] * cm[1] + 10 * cm[2] * cm[2] * cm[2] + 15 * cm[1] * cm[1] * cm[1]) / (cm[1] * cm[1] * cm[1]);
+    cout << "Moments: ";
+    for(int i=0;i<O;i++)
+      cout << nu[i] << "\t";
+    cout << endl;
     // find mixture distribution
-    //  mixture(N, nu, &lambda, mu, pi);
+    mixture(N, nu, &lambda, mu, pi, status);
+    cout << "Mixture done" << endl;
   }
 
   float Equal(float a) {
@@ -85,19 +93,46 @@ class SumProbMomentsConfGLA {
   }
 
   c_dbl ConfidenceInterval(float conf){
-    double pp = (1.0 - conf) / 2.0;
-    double l = sumProb*solve_confidence(N, lambda, mu, pi, pp);
-    double h = sumProb*solve_confidence(N, lambda, mu, pi, 1.0 - pp);
-    c_dbl cf = {l, h};
+    c_dbl cf;
+    if (status)
+      {
+	cout << "Switching to normal approximation"<< endl;
+	double sigma2 = nu[1] - nu[0] * nu[0];
+	double sigma = pow(sigma2, 0.5);
+	double l = gsl_cdf_gaussian_Pinv(conf / 2.0, sigma) + nu[0],
+	  h = gsl_cdf_gaussian_Qinv(conf / 2.0, sigma) + nu[0];
+	l = l * pow(cm[1], 0.5) + cm[0];
+	h = h * pow(cm[1], 0.5) + cm[0];
+	cf = {l, h};
+      }
+    else
+      {
+	double pp = (1.0 - conf) / 2.0;
+	cout << "lambda: "<< lambda << endl;
+	cout << "mu: ";
+	for (int i=0; i< N;i++)
+	  cout << mu[i]<< " ";
+	cout << endl;
+	cout << "pi: ";
+	for (int i=0; i< N;i++)
+	  cout << pi[i]<< " ";
+	cout << endl;
+
+	double l = solve_confidence(N, lambda, mu, pi, pp);
+	double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
+	l = l * pow(cm[1], 0.5) + cm[0];
+	h = h * pow(cm[1], 0.5) + cm[0];
+	cf = {l, h};
+      }
     return cf;
 }
 
   void GetResult(DOUBLE &a, DOUBLE &b){
    double conf = 0.95;  
    Finalize(); // not automatically called
-   // c_dbl cf = ConfidenceInterval (conf);
-   a = 1.0;//cf.a;
-   b = 2.0;//cf.b;
+    c_dbl cf = ConfidenceInterval (conf);
+    a = cf.a;
+    b = cf.b;
  }
 
 };

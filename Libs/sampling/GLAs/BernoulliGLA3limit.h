@@ -3,6 +3,8 @@
 #include "sampling/GUSestimate/GeneralizedSamplingEstimate.h"
 #include "base/Types/BIGINT.h"
 #include "base/Types/DOUBLE.h"
+#include "sys/time.h"
+
 using namespace std;
 #ifndef _BernoulliGLA3limit_H_ 
 #define _BernoulliGLA3limit_H_ 
@@ -11,8 +13,11 @@ using namespace std;
 using namespace std;
 
 // PARAMETERS
-#define LOWER_LIMIT 1000000
-#define UPPER_LIMIT 4*LOWER_LIMIT
+#define LOWER_LIMIT 100000
+#define UPPER_LIMIT 400000
+//#define UPPER_LIMIT 4*LOWER_LIMIT
+
+//#define DET_COIN_DEBUG 0
 
 /** Info for the meta-GLAs
  * GLA_DESC
@@ -32,8 +37,16 @@ double congruenthash(double, double);
 class BernoulliGLA3limit {
  public:
 
-  static uint64_t myH_b; // my own seed for the CongruentHash
+  static uint64_t myH_b1; // my own seed for the CongruentHash
+  static uint64_t myH_b2;
+  static uint64_t myH_b3;
+  static uint64_t seed;
+
   static uint64_t RandomSeed(void){
+    srand48(time(NULL));
+    return ((uint64_t)lrand48() << 16) | lrand48();
+  }
+  static uint64_t RandomSeed2(void){
     return ((uint64_t)lrand48() << 16) | lrand48();
   }
 
@@ -76,10 +89,11 @@ class BernoulliGLA3limit {
 
   bool deterministic_coin_flip(uint64_t id11, uint64_t id22, uint64_t id33, double p) {
     uint64_t ch[3];
-    ch[0] = CongruentHashModified(id11, myH_b);
-    ch[1] = CongruentHashModified(id22, myH_b);
-    ch[2] = CongruentHashModified(id33, myH_b);
-    if ((ch[0] < p*(1ULL<<61)) && (ch[1] < p*(1ULL<<61)) && (ch[2] < p*(1ULL<<61)))
+    ch[0] = CongruentHashModified(id11, myH_b1);
+    ch[1] = CongruentHashModified(id22, myH_b2);
+    ch[2] = CongruentHashModified(id33, myH_b3);
+    // if (DET_COIN_DEBUG == 1) cout << "cf1("<<id11<<") = "<< ch[0]<< ", cf2("<<id22<<") = "<< ch[1]<< ", cf3("<<id33<<") = "<< ch[2]<< ", p =" << p<< endl;
+    if ((ch[0] <= p*(1ULL<<61)) && (ch[1] <= p*(1ULL<<61)) && (ch[2] <= p*(1ULL<<61)))
       return true;
     else
       return false;
@@ -98,9 +112,9 @@ class BernoulliGLA3limit {
 	  ch[1]= congruenthash(13.0, id22);
 	  ch[2] = congruenthash(17.0, id33);
     */
-    ch[0] = CongruentHashModified(Hash(id11), myH_b);
-    ch[1] = CongruentHashModified(Hash(id22), myH_b);
-    ch[2] = CongruentHashModified(Hash(id33), myH_b);
+    ch[0] = CongruentHashModified(Hash(id11), myH_b1);
+    ch[1] = CongruentHashModified(Hash(id22), myH_b2);
+    ch[2] = CongruentHashModified(Hash(id33), myH_b3);
 
     if (ch[0] > p*(1ULL<<61)) {
       return;
@@ -163,11 +177,11 @@ class BernoulliGLA3limit {
   
   void AddState(BernoulliGLA3limit& other){
     FATALIF(this == &other, "Why are the two objects identical?");
-
+    
     // put the two sets together
     cout<<"In AddState - p = "<<p <<", other.p = "<<other.p<<endl;
-    if (p <= other.p) {
-      cout<<"p <= other.p "<<"V.size() = "<< V.size()<< endl;
+    if (p < other.p) {
+      cout<<"p < other.p "<<"V.size() = "<< V.size()<< endl;
       for (size_t i = 0; i <  other.V.size(); i++) {
 	if (deterministic_coin_flip(other.V[i].ch[0], other.V[i].ch[1], other.V[i].ch[2], p)) {
 	  V.push_back(other.V[i]);
@@ -175,16 +189,30 @@ class BernoulliGLA3limit {
       }
       cout<<"V.size() after adding other = "<<V.size()<< endl;
     }
-    else {
+    else if (p == other.p){
+      cout<<"In AddState - p = "<<p <<", other.p = "<<other.p<<endl;
+      cout<<"V.size() = "<< V.size()<< endl;
+      for (size_t i = 0; i < other.V.size(); i++) {
+	//FATALIF(!deterministic_coin_flip(other.V[i].ch[0], other.V[i].ch[1], other.V[i].ch[2], p), "DET COIN FLIP ERROR");
+	if(!deterministic_coin_flip(other.V[i].ch[0], other.V[i].ch[1], other.V[i].ch[2], p)) {
+	  cout << "DET COIN FLIP ERROR";
+	  //DET_COIN_DEBUG = 1;
+	}
+	V.push_back(other.V[i]);
+	
+      }
+    }
+    else if (p > other.p) {
+      cout<<"In AddState - p = "<<p <<", other.p = "<<other.p<<endl;
       p = other.p;
+      std::vector< mytuple <3> >Vcopy(other.V);
       for (size_t i = 0; i < V.size(); i++) {
-	if (!(deterministic_coin_flip(V[i].ch[0], V[i].ch[1], V[i].ch[2], p))) {
-	  V.erase(V.begin() + i );
+	if ((deterministic_coin_flip(V[i].ch[0], V[i].ch[1], V[i].ch[2], p))) {
+	  Vcopy.push_back(V[i]);
 	}
       }
-      for (size_t i = 0; i < other.V.size(); i++) {
-	V.push_back(other.V[i]);
-      }
+      V.swap(Vcopy);
+      Vcopy.clear();
     }
     cout<<" In AddState, numtotaltuples = "<< numtotaltuples<< "other.numtotaltuples = "<< other.numtotaltuples<< endl; 
     numtotaltuples += other.numtotaltuples;
@@ -207,7 +235,26 @@ class BernoulliGLA3limit {
       */
       cout<<"Total num of input tuples " << numtotaltuples << endl;
       cout<<"num of sampled tuples = " << V.size() << endl;
-      cout<<"p = "<<p;
+      cout<<"SAMPLING PARAMETERS p = "<<p << "\tb1=" << myH_b1 << "\tb2=" << myH_b2 << "\tb3=" << myH_b3 << endl;
+
+      ofstream file("probseeds.txt");
+       if (file.is_open()){
+	 file <<setprecision(15) << p << "\t"<< myH_b1 << "\t" << myH_b2 << "\t"<< myH_b3<<endl;
+	//myfile.close();
+      }
+      else {
+	cout << "Unable to open file ys_readings";
+      }	
+    
+
+    if (file.is_open()) {
+      file << "\n";
+      file.close(); 
+    }
+    else {
+      cout<< "Unable to open file ys_readings";
+    }
+  
       /* TB sample from PB*/
       double a = 1.0e-9;
       double b[] = {9.999999999999999e-19, 1.0e-15, 1.0e-15, 1.0000000000000002e-12, 1.0e-15, 1.0000000000000002e-12, 1.0e-12, 1.0e-9};
@@ -222,6 +269,7 @@ class BernoulliGLA3limit {
 	 double a = 1.0;
 	 double b[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
       */
+      
       clock_t t1, t2;
       t1 = clock();
       GeneralizedSamplingData G(3, a, b, p, V);
@@ -243,6 +291,10 @@ class BernoulliGLA3limit {
   };
 
 
-uint64_t BernoulliGLA3limit::myH_b=BernoulliGLA3limit::RandomSeed();
+uint64_t seed = BernoulliGLA3limit::RandomSeed();
+uint64_t BernoulliGLA3limit::myH_b1=BernoulliGLA3limit::RandomSeed2();
+uint64_t BernoulliGLA3limit::myH_b2=BernoulliGLA3limit::RandomSeed2();
+uint64_t BernoulliGLA3limit::myH_b3=BernoulliGLA3limit::RandomSeed2();
+
 
 #endif //_BernoulliGLA3limit_H_

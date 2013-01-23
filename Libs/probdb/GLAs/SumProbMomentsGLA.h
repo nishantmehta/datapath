@@ -29,6 +29,8 @@ class SumProbMomentsGLA {
   double mu[N];
   double pi[N];
 
+  int status;
+
   typedef struct { double a,b; } c_dbl;
  public:
   SumProbMomentsGLA(void) { for(int i = 0; i < O; i++) cm[i] = 0.0; sumDet = 0.0; n = 0;}
@@ -61,7 +63,7 @@ class SumProbMomentsGLA {
     nu[5] = cm[5] + 6*cm[4]*cm[0] + 15*cm[3]*cm[1] + 15*cm[3]*cm[0]*cm[0] + 10*cm[2]*cm[2]*cm[2] + 60*cm[2]*cm[1]*cm[0] + 20*cm[2]*cm[0]*cm[0]*cm[0] + 15*cm[1]*cm[1]*cm[1] + 45*cm[1]*cm[1]*cm[0]*cm[0] + 15*cm[1]*cm[0]*cm[0]*cm[0]*cm[0] + cm[0]*cm[0]*cm[0]*cm[0]*cm[0]*cm[0];
 
     // find mixture distribution
-    mixture(N, nu, &lambda, mu, pi);
+    mixture(N, nu, &lambda, mu, pi, status);
   }
 
   float Equal(float a) {
@@ -80,12 +82,23 @@ class SumProbMomentsGLA {
   }
 
   c_dbl ConfidenceInterval(float conf){
-    double pp = (1.0 - conf) / 2.0;
-    double l = solve_confidence(N, lambda, mu, pi, pp);
-    double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
-    c_dbl cf = {l, h};
+    c_dbl cf;
+    if (status)
+      {
+	double sigma = pow(sigma2, 0.5);
+	double l = gsl_cdf_gaussian_Pinv(c / 2.0, sigma) + mu,
+	  h = gsl_cdf_gaussian_Qinv(c / 2.0, sigma) + mu;
+	cf = {l, h};
+      }
+    else
+      {
+	double pp = (1.0 - conf) / 2.0;
+	double l = solve_confidence(N, lambda, mu, pi, pp);
+	double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
+	cf = {l, h};
+      }
     return cf;
-}
+  }
 
  void GetResult(DOUBLE &a, DOUBLE &b){
    double conf = 0.95;  

@@ -12,7 +12,7 @@
  * Compile with -lgsl -lblas -llapack -larmadillo
  */
 
-void mixture(int n, double *moments, double *lambda, double *mu, double *pi);
+void mixture(int n, double *moments, double *lambda, double *mu, double *pi, int &status);
 
 // Solve equation for confidence interval using GSL
 double solve_confidence(int n, double lambda, double *mu, double *pi, double p);

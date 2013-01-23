@@ -1,15 +1,17 @@
 #include <iostream>
+#include <iomanip>
+#include <cstdio>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_cdf.h>
-#include "armadillo"
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_blas.h>
 
 #define DEBUG 1
 
-using namespace arma;
 using namespace std;
 
 typedef struct 
@@ -27,26 +29,70 @@ typedef struct
   double p;
 } conf_struct;
 
-// Construct pseudo-moment matrix
-mat construct_matrix(int dim, double lambda, double *moments)
+ostream& pretty_print_matrix( ostream& out, const gsl_matrix * mat ) {
+    const int rows = mat->size1;
+    const int cols = mat->size2;
+    out << std::scientific;
+
+    for( int i = 0; i < rows; ++i ) {
+        for( int j = 0; j < cols; ++j ) {
+            out << "   ";
+            double val = gsl_matrix_get( mat, i, j );
+            if( val >= 0.0 )
+                out << " ";
+            out << val;
+        }
+        out << endl;
+    } 
+
+    out.unsetf(std::ios_base::floatfield);
+}
+
+ostream& pretty_print_matrix( ostream& out, const gsl_matrix_long_double * mat ) {
+    const int rows = mat->size1;
+    const int cols = mat->size2;
+    out << std::scientific;
+
+    for( int i = 0; i < rows; ++i ) {
+        for( int j = 0; j < cols; ++j ) {
+            out << "   ";
+            long double val = gsl_matrix_long_double_get( mat, i, j );
+            if( val >= 0.0 )
+                out << " ";
+            out << val;
+        }
+        out << endl;
+    } 
+
+    out.unsetf(std::ios_base::floatfield);
+}
+
+//error handler
+void handler (const char * reason, const char * file, int line, int gsl_errno)
 {
-  mat a(dim,dim);
+  cout << "GSL error: " << reason << endl;
+}
+
+// Construct pseudo-moment matrix
+gsl_matrix* construct_matrix(int dim, double lambda, double *moments)
+{
+  gsl_matrix* a = gsl_matrix_alloc(dim, dim);
   int k = 0;
   double num = 1.0;
   double start_num = 1.0;
 
 #if DEBUG
-  // cout << "lambda=" << lambda << endl;
+   cout << "Construct Matrix lambda=" << lambda << endl;
 #endif
 
   // first element
-  a(0,0) = 1.0;
+   gsl_matrix_set(a, 0, 0, 1.0);
 
   // first row
   for (int j = 1; j < dim; j++)
     {
       num *= 1.0 + ((double)j - 1.0) * lambda;
-      a(0,j) = moments[j - 1] / num;
+      gsl_matrix_set(a, 0, j, moments[j -1] / num);
     }
 
   // rest of the rows
@@ -54,13 +100,13 @@ mat construct_matrix(int dim, double lambda, double *moments)
     {
       // first column
       start_num *= 1.0 + ((double)i - 1.0) * lambda;
-      a(i,0) = moments[i - 1] / start_num;
+      gsl_matrix_set(a, i, 0, moments[i - 1] / start_num);
       num = start_num;
       // rest of columns 
       for (int j = 1; j < dim; j++)
 	{
 	  num *= 1.0 + ((double)i + (double)j - 1.0) * lambda;
-	  a(i,j) = moments[i + j - 1] / num;
+	  gsl_matrix_set(a, i, j, moments[i + j - 1] / num);
 
 #if DEBUG
 	  // cout << i << " " << j << " " << moments[i + j - 1] << " " << num << " " << a(i,j) << endl;
@@ -82,8 +128,14 @@ double det_fn (double lambda, void *params)
 {
   double *moments = ((param_struct*)params)->moments;
   double p = ((param_struct*)params)->dim;
-  mat a = construct_matrix(p, lambda, moments);
-  return det(a);
+  gsl_matrix* a = construct_matrix(p, lambda, moments);
+  int s;
+  gsl_permutation * perm = gsl_permutation_alloc (p);
+  gsl_linalg_LU_decomp (a, perm, &s);
+  double d = gsl_linalg_LU_det (a, s);
+  gsl_matrix_free(a);
+  gsl_permutation_free(perm);
+  return d;
 }
 
 // CDF of gamma mixture
@@ -96,6 +148,7 @@ double gamma_cdf (double x, void *params)
   double *pi = conf_params->pi;
   double p = conf_params->p;
   double r = 0.0;
+  cout << "gamma_cdf" << endl;
   for (int i = 0; i < n; i++)
     r += pi[i] * gsl_cdf_gamma_P (x, 1.0 / lambda, lambda * mu[i]);
   return r - p;
@@ -111,6 +164,7 @@ double gamma_pdf (double x, void *params)
   double *pi = conf_params->pi;
   double p = conf_params->p;
   double r = 0.0;
+  cout << "gamma_pdf" << endl;
   for (int i = 0; i < n; i++)
     r += pi[i] * gsl_ran_gamma_pdf (x, 1.0 / lambda, lambda * mu[i]);
   return r;
@@ -126,17 +180,21 @@ void gamma_fdf (double x, void *params, double *y, double *dy)
   double *pi = conf_params->pi;
   double p = conf_params->p;
   double r = 0.0, s = 0.0;
+  cout << "gamma_fdf" << endl;
+  cout << "x=" << x << "\tlambda=" << lambda << "\tmu={" << mu[0]<< "," << mu[1] << "," << mu[2] << "}" << endl;
   for (int i = 0; i < n; i++)
     {
+      cout << i << endl;
       r += pi[i] * gsl_cdf_gamma_P (x, 1.0 / lambda, lambda * mu[i]);
       s += pi[i] * gsl_ran_gamma_pdf (x, 1.0 / lambda, lambda * mu[i]);
+      cout << "OK" << endl;
     }
   *y = r - p;
   *dy = s;
 }
 
 // Solve equation det Delta(lambda) = 0 numerically using GSL
-double solve(int dim, double *moments, double limit)
+double solve(int dim, double *moments, double limit, int &_status)
 {
   int status;
   int iter = 0, max_iter = 100;
@@ -148,20 +206,27 @@ double solve(int dim, double *moments, double limit)
   param_struct params = {dim, moments};
   F.function = det_fn;
   F.params = &params;
-
-  if (det_fn(0.0,&params)*det_fn(limit,&params)>0.0){
-    cout << "Root finder failed, setting to high" << endl;
-    return limit;
-  }
-    
-
   
   T = gsl_root_fsolver_brent;
   s = gsl_root_fsolver_alloc (T);
+    
+  int k = 0;
+  while (det_fn(x_lo,&params) * det_fn(x_hi,&params) > 0)
+  {
+    x_lo = 0.0;
+    x_hi = ((double)k + 1.0) * limit;
+    k++;
+    cout << "Enlarging interval" << endl;
+    if (k == 100)
+      {
+	cout << "Error: interval too large";
+	return limit;
+      }
+  }
   
-  status = gsl_root_fsolver_set (s, &F, x_lo, x_hi);
-  // if error, return limit
-
+  gsl_set_error_handler (handler);
+  gsl_root_fsolver_set (s, &F, x_lo, x_hi);
+  //cout << "x_lo: " << x_lo << " x_hi: " << x_hi << endl;
   do
     {
       iter++;
@@ -174,6 +239,8 @@ double solve(int dim, double *moments, double limit)
   while (status == GSL_CONTINUE && iter < max_iter);
   
   gsl_root_fsolver_free (s);
+  _status = status;
+  cout << "status = " << status << endl;
   return r;
 }
 
@@ -196,8 +263,10 @@ double solve_confidence(int n, double lambda, double *mu, double *pi, double p)
 
   T = gsl_root_fdfsolver_newton;
   s = gsl_root_fdfsolver_alloc (T);
+  gsl_set_error_handler (handler);
+
   gsl_root_fdfsolver_set (s, &FDF, x);
-  
+  cout << "solve_confidence" << endl;  
   do
     {
       iter++;
@@ -223,41 +292,32 @@ double solve_confidence(int n, double lambda, double *mu, double *pi, double p)
  * mu (out): address where to place the vector with the means of the component gamma distributions  *           (size n)
  * pi (out): address where to place the vector with the mixing weights for the mixture distribution *           (size n)
  * 
- * Compile with -lgsl -lblas -llapack -larmadillo
+ * Compile with -lgsl -lgslcblas -lm
  */
 
-void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
+void mixture(int n, double *moments, double *lambda, double *mu, double *pi, int &status)
 {
    double m1 = moments[0], m2 = moments[1], m3 = moments[2];
    //double lambda1, lambda2, lambda3;
 
    //Find lambda
 
-   *lambda = m2 / m1 / m1 - 1.0;
+   *lambda = 1000000.0;//m2 / m1 / m1 - 1.0;
 
    for (int k = 1; k < n; k++)
      {
 #if DEBUG
+       /*
        cout << "lambda: " << *lambda << endl;
        mat mat1 = construct_matrix(k + 2, 0, moments);
        cout << "Det(0): " << det(mat1) << endl;
        mat mat2 = construct_matrix(k + 2, *lambda, moments);
        cout << "Det(lambda): " << det(mat2) << endl;
        mat2.print();
+       */
 #endif
 
-
-       double sol = solve(k + 2, moments, *lambda);
-       if (sol == *lambda){
-	 cout << "Something went wrong with the root fining" << endl;
-	 pi[0]=pi[1]=pi[2]=.333333333;
-	 mu[0]=moments[0];
-	 mu[1]=moments[0]+.001;
-	 mu[2]=moments[0]+.002;
-	 return;
-       }
-
-       *lambda = sol;
+       *lambda = solve(k + 2, moments, *lambda, status);
      }   
 #if DEBUG
    cout << "lambda3: " << *lambda << endl;
@@ -265,24 +325,47 @@ void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
 
    //Find component means mu
 
-   mat delta = construct_matrix(n + 1, *lambda, moments);
+   gsl_matrix* delta = construct_matrix(n + 1, *lambda, moments);
+   gsl_matrix* delta_lu = gsl_matrix_alloc( n + 1, n + 1 );
+    gsl_matrix_memcpy( delta_lu, delta );
 
 #if DEBUG
-   delta.print();
+    FILE * dFile = fopen("delta.mat", "wb");
+    gsl_matrix_fwrite( dFile, delta );
+    fclose( dFile );
+
+   cout << "delta: " << endl;
+    pretty_print_matrix(cout, delta);
 #endif
 
-   mat delta_inv = delta.i();
+   int s;
+   gsl_permutation * perm = gsl_permutation_alloc (n + 1);
+   gsl_linalg_LU_decomp (delta_lu, perm, &s);
 
 #if DEBUG
-   delta_inv.print();
+    cout << "delta_lu:" << endl;
+    pretty_print_matrix(cout, delta_lu);
+#endif
+
+   gsl_matrix* delta_inv = gsl_matrix_alloc(n + 1, n + 1);
+   gsl_linalg_LU_invert (delta_lu, perm, delta_inv);
+
+#if DEBUG
+   cout << "delta_inv: " << endl;
+    pretty_print_matrix(cout, delta_inv);
+    
+    gsl_matrix * tmp = gsl_matrix_calloc(n+1, n+1);
+    gsl_blas_dgemm( CblasNoTrans, CblasNoTrans, 1.0, delta, delta_inv, 1.0, tmp );
+   cout << "delta * delta_inv: " << endl;
+    pretty_print_matrix(cout, tmp);
 #endif
 
    //Use analytic solution for small polynomials
    if (n <= 3)
      {
-       double c1 = delta_inv(3,2)/delta_inv(3,3), 
-	 c2 = delta_inv(3,1)/delta_inv(3,3), 
-	 c3 = delta_inv(3,0)/delta_inv(3,3);
+       double c1 = gsl_matrix_get(delta_inv,3,2) / gsl_matrix_get(delta_inv,3,3), 
+	 c2 = gsl_matrix_get(delta_inv,3,1) / gsl_matrix_get(delta_inv,3,3), 
+	 c3 = gsl_matrix_get(delta_inv,3,0) / gsl_matrix_get(delta_inv,3,3);
        int n_roots = gsl_poly_solve_cubic (c1, c2, c3, mu, mu + 1, mu + 2);
        if(n_roots < 3)
 	 {
@@ -303,7 +386,7 @@ void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
        double c[n + 1]; // coefficients
        double s[2 * n]; // solutions
        for (int i = 0; i < n + 1; i++)
-	 c[i] = delta_inv(n, i);
+	 c[i] = gsl_matrix_get(delta_inv,n, i);
        gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc (n + 1);
        gsl_poly_complex_solve (c, n + 1, w, s);
        for (int i = 0; i < n; i++)
@@ -318,24 +401,53 @@ void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
        gsl_poly_complex_workspace_free (w);
      }
    
+#if DEBUG
+   cout << "mean " << endl;
+       for (int i = 0; i < n; i++)
+	 cout << mu[i] << " ";
+       cout << endl;
+#endif
+
    //Find mixing weights pi
 
-   mat a(n,n);
+   gsl_matrix* a = gsl_matrix_alloc(n, n);
    for (int i = 0; i < n; i++)
      for(int j = 0; j < n; j++)
-       a(i,j) = pow(mu[j], i);
-   colvec b(n);
-   b(0) = 1;
-   b(1) = m1;
+       gsl_matrix_set(a, i, j, pow(mu[j], i));
+   gsl_vector * b = gsl_vector_alloc (n);
+   gsl_vector_set(b, 0, 1.0);
+   gsl_vector_set(b, 1, m1);
    double num = 1.0;
-   for (int i=2;i<n;i++)
+   for (int i = 2; i < n; i++)
      {
        num *= 1.0 + (i - 1)* *lambda;
-       b(i) = moments[i - 1] / num;
+       gsl_vector_set(b,i, moments[i - 1] / num);
      }
-   colvec p = solve(a,b);
+
+   cout << "Trying to solve system " << endl;
+
+   gsl_permutation_free(perm);
+   perm = gsl_permutation_alloc (n);
+   gsl_linalg_LU_decomp (a, perm, &s);
+   gsl_linalg_LU_svx (a, perm, b);
    for (int i = 0; i < n; i++)
-     pi[i] = p(i);
+     pi[i] = gsl_vector_get(b, i);
+/*
+   catch (std::runtime_error e){
+     cout << "Armadillo error: " << e.what() << endl;
+     a.print();
+     b.print();
+     cout << "p_i uniform " << endl;
+
+     for (int i = 0; i < n; i++)
+       pi[i] = 1.0/(double)n;
+*/
+   gsl_matrix_free(a);
+   gsl_vector_free(b);
+   gsl_matrix_free(delta);
+   gsl_matrix_free(delta_inv);
+    gsl_matrix_free(delta_lu);
+   gsl_permutation_free(perm);
 }
 
   

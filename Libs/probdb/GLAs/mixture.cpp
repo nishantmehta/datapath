@@ -27,6 +27,12 @@ typedef struct
   double p;
 } conf_struct;
 
+//error handler
+void handler (const char * reason, const char * file, int line, int gsl_errno)
+{
+  cout << reason << endl;
+}
+
 // Construct pseudo-moment matrix
 mat construct_matrix(int dim, double lambda, double *moments)
 {
@@ -36,7 +42,7 @@ mat construct_matrix(int dim, double lambda, double *moments)
   double start_num = 1.0;
 
 #if DEBUG
-  // cout << "lambda=" << lambda << endl;
+   cout << "Construct Matrix lambda=" << lambda << endl;
 #endif
 
   // first element
@@ -136,7 +142,7 @@ void gamma_fdf (double x, void *params, double *y, double *dy)
 }
 
 // Solve equation det Delta(lambda) = 0 numerically using GSL
-double solve(int dim, double *moments, double limit)
+double solve(int dim, double *moments, double limit, int &_status)
 {
   int status;
   int iter = 0, max_iter = 100;
@@ -151,9 +157,24 @@ double solve(int dim, double *moments, double limit)
   
   T = gsl_root_fsolver_brent;
   s = gsl_root_fsolver_alloc (T);
+    
+  int k = 0;
+  while (det_fn(x_lo,&params) * det_fn(x_hi,&params) > 0)
+  {
+    x_lo = 0.0;
+    x_hi = ((double)k + 1.0) * limit;
+    k++;
+    cout << "Enlarging interval" << endl;
+    if (k == 100)
+      {
+	cout << "Error: interval too large";
+	return limit;
+      }
+  }
   
+  gsl_set_error_handler (handler);
   gsl_root_fsolver_set (s, &F, x_lo, x_hi);
-  
+  //cout << "x_lo: " << x_lo << " x_hi: " << x_hi << endl;
   do
     {
       iter++;
@@ -166,6 +187,7 @@ double solve(int dim, double *moments, double limit)
   while (status == GSL_CONTINUE && iter < max_iter);
   
   gsl_root_fsolver_free (s);
+  _status = status;
   return r;
 }
 
@@ -188,6 +210,8 @@ double solve_confidence(int n, double lambda, double *mu, double *pi, double p)
 
   T = gsl_root_fdfsolver_newton;
   s = gsl_root_fdfsolver_alloc (T);
+  gsl_set_error_handler (handler);
+
   gsl_root_fdfsolver_set (s, &FDF, x);
   
   do
@@ -218,7 +242,7 @@ double solve_confidence(int n, double lambda, double *mu, double *pi, double p)
  * Compile with -lgsl -lblas -llapack -larmadillo
  */
 
-void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
+void mixture(int n, double *moments, double *lambda, double *mu, double *pi, int &status)
 {
    double m1 = moments[0], m2 = moments[1], m3 = moments[2];
    //double lambda1, lambda2, lambda3;
@@ -238,7 +262,7 @@ void mixture(int n, double *moments, double *lambda, double *mu, double *pi)
        mat2.print();
 #endif
 
-       *lambda = solve(k + 2, moments, *lambda);
+       *lambda = solve(k + 2, moments, *lambda, status);
      }   
 #if DEBUG
    cout << "lambda3: " << *lambda << endl;

@@ -90,6 +90,17 @@ else
     echo "Version: 1.0" >> $PC_FILE
 fi
 
+# If the sublibrary requires other libraries, use them here
+if [ -f $SUBLIB_DIR/REQUIRES ]; then
+    echo -n "Requires: " >> $PC_FILE
+    cat $SUBLIB_DIR/REQUIRES >> $PC_FILE
+fi
+
+if [ -f $SUBLIB_DIR/REQUIRES.PRIVATE ]; then
+    echo -n "Requires.private: " >> $PC_FILE
+    cat $SUBLIB_DIR/REQUIRES.PRIVATE >> $PC_FILE
+fi
+
 # If the sublibrary has an include directory, add that to the Cflags
 if [ -d $SUBLIB_DIR/include ]; then
     echo "Cflags: -I$SUBLIB_DIR/include" >> $PC_FILE
