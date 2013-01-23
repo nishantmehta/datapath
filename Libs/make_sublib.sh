@@ -113,7 +113,7 @@ for lib in *.so *.a
 do
     if [ -e $lib ]; then
         # Link the library to the global libraries directory
-        ln -s -f $lib $GLOBAL_LIB_DIR/$lib
+        ln -sf $(readlink -f $lib) $GLOBAL_LIB_DIR/$lib
         NAMESPEC=$(echo $lib | sed -r "s/(lib)?([a-zA-Z0-9]+).(so|a)/\2/")
         echo -n " -l$NAMESPEC" >> $PC_FILE
     fi

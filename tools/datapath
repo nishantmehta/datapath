@@ -30,13 +30,15 @@ function printUsage {
     echo "  -o              Disable optimization of generated code"
     echo "  -n              Run non-interactively"
     echo "  -w              Disable read-only mode"
+    echo "  -v              Enable verbose ouput"
 }
 
 NO_OPTS=false
 READ_ONLY=true
 INTERACTIVE=1
+VERBOSE=0
 
-while getopts "honw" opt; do
+while getopts "honwv" opt; do
     case $opt in
         h)
             # Print usage and exit
@@ -51,6 +53,9 @@ while getopts "honw" opt; do
             ;;
         w)
             READ_ONLY=false
+            ;;
+        v)
+            VERBOSE=1
             ;;
         \?)
             echo "Error: Unknown option -$OPTARG" >&2
@@ -114,7 +119,7 @@ function runTest {
 
     if [ $debug == 1 ]; then
         # Run through the debugger
-        cat > gdb-commmands <<EOF
+        cat > gdb-commands <<EOF
 run $DP_OPTS $FILE
 EOF
 
@@ -144,7 +149,7 @@ fi
 if [ "x$DATAPATH_SO_PATH" == "x" ]; then
     DP_SHARED_LIB_DIR="$BASE_DIR/Libs/libraries"
 else
-    DP_SHRED_LIB_DIR=$DATAPATH_SO_PATH
+    DP_SHARED_LIB_DIR=$DATAPATH_SO_PATH
 fi
 
 if [ "x$DATAPATH_LOCK_FILE" == "x" ]; then
@@ -155,6 +160,14 @@ fi
 
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/lib:$DP_SHARED_LIB_DIR
 export LD_LIBRARY_PATH
+
+if [ $VERBOSE == 1 ]; then
+    echo "Install Directory     : $BASE_DIR"
+    echo "Executable Directory  : $DP_DIR"
+    echo "Shared Libraries      : $DP_SHARED_LIB_DIR"
+    echo "Lock File             : $DP_LOCK_FILE"
+    echo "LD_LIBRARY_PATH       : $LD_LIBRARY_PATH"
+fi
 
 # Valid answers for yes and no
 ANS_YES="y yes"
