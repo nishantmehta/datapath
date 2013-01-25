@@ -84,8 +84,8 @@ DiskArrayImp::DiskArrayImp(bool isReadOnly)
         // no disk array defined yet. Must interact with the user
         printf("No Disk Array defined yet. Please answer the following quesions so we can set one up\n");
         meta.arrayID = 1; // default
-        printf("What is the page muliplier exponent of the array? The disk requests will be pmultExp^2*%d\n", MMAP_PAGE_SIZE);
-    cin >> meta.pageMultExp;
+        printf("What is the page muliplier exponent of the array? The disk requests will be (2 ^ pmultExp) * %d bytes\n", MMAP_PAGE_SIZE);
+        cin >> meta.pageMultExp;
         FATALIF(meta.pageMultExp > 8, "Now, now, is that not excessive?");
         meta.stripeParam1 = lrand48();
         meta.stripeParam2 = lrand48();

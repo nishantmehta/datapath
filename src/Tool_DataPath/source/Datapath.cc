@@ -134,12 +134,13 @@ int main(int argc, char** argv){
 
 	// starting the profiler
     globalProfiler.ForkAndSpin();
-    PCProfiler pcprof(globalProfiler);
-    pcprof.Run();
 
 	//	diagnose.StartDiagnose();
 
 	DiskArray::LoadDiskArray(rdOnly);
+
+    PCProfiler pcprof(globalProfiler);
+    pcprof.Run();
 
 	cout << "Initializing the hash table" << endl;
 	Timer clock;
