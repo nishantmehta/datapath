@@ -13,8 +13,8 @@ using namespace std;
 using namespace std;
 
 // PARAMETERS
-#define LOWER_LIMIT 100000
-#define UPPER_LIMIT 400000
+#define LOWER_LIMIT 10000
+#define UPPER_LIMIT 40000
 //#define UPPER_LIMIT 4*LOWER_LIMIT
 
 //#define DET_COIN_DEBUG 0
@@ -255,10 +255,10 @@ class BernoulliGLA3limit {
       cout<< "Unable to open file ys_readings";
     }
   
-      /* TB sample from PB*/
+      /* TB sample from PB
       double a = 1.0e-9;
       double b[] = {9.999999999999999e-19, 1.0e-15, 1.0e-15, 1.0000000000000002e-12, 1.0e-15, 1.0000000000000002e-12, 1.0e-12, 1.0e-9};
-    
+      */
 
       /*Tb sample from 10TB
 	double a = 0.0010000000000000002;
@@ -269,6 +269,10 @@ class BernoulliGLA3limit {
 	 double a = 1.0;
 	 double b[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
       */
+
+    /* [0.5, 0.5, 0.5] Bernoulli sample from 1Tb*/
+    double a = 0.125;
+    double b[] = {0.015625, 0.03125, 0.03125, 0.0625, 0.03125, 0.0625, 0.0625, 0.125};
       
       clock_t t1, t2;
       t1 = clock();

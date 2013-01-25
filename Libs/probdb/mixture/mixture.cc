@@ -11,6 +11,7 @@
 #include <gsl/gsl_blas.h>
 
 #define DEBUG 1
+#define MIN_SLOPE (1.0 / 100.0)
 
 using namespace std;
 
@@ -167,6 +168,14 @@ double gamma_pdf (double x, void *params)
   cout << "gamma_pdf" << endl;
   for (int i = 0; i < n; i++)
     r += pi[i] * gsl_ran_gamma_pdf (x, 1.0 / lambda, lambda * mu[i]);
+  
+  double r_abs = r > 0 ? r : -r;
+  if( r_abs < MIN_SLOPE ) {
+    if( x > 10 )
+      r = -MIN_SLOPE;
+    else
+      r = MIN_SLOPE;
+  }
   return r;
 }
 
@@ -190,6 +199,17 @@ void gamma_fdf (double x, void *params, double *y, double *dy)
       cout << "OK" << endl;
     }
   *y = r - p;
+
+  cout << "f(x) = " << *y << " df(x) = " << s << endl;
+
+  double s_abs = s > 0 ? s : -s;
+  if( s_abs < MIN_SLOPE ) {
+    if( *y < 0 )
+      s = -MIN_SLOPE;
+    else
+      s = MIN_SLOPE;
+  }
+
   *dy = s;
 }
 
@@ -267,6 +287,11 @@ double solve_confidence(int n, double lambda, double *mu, double *pi, double p)
 
   gsl_root_fdfsolver_set (s, &FDF, x);
   cout << "solve_confidence" << endl;  
+  cout << "mu: ";
+  for(int i=0;i<n;i++)
+    cout << mu[i] << " ";
+  cout << endl;
+  cout << "x=" << x << endl;
   do
     {
       iter++;

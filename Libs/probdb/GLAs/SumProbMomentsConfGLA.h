@@ -65,13 +65,25 @@ class SumProbMomentsConfGLA {
     //compute moments of true distribution from cumulants
     // we standardize the result to keep it numerically stable
 
+    double sigma = pow(cm[1],0.5);
+    double psigma = sigma;
+    psigma *= sigma;
+    psigma *= sigma;
+    double tmp2 = cm[2] / psigma;
+    psigma *= sigma;
+    double tmp3 = (cm[3] + 3 * cm[1] * cm[1]) / psigma;
+    psigma *= sigma;
+    double tmp4 = (cm[4] + 10 * cm[2] * cm[1]) / psigma;
+    psigma *= sigma;
+    double tmp5 = (cm[5] + 15 * cm[3] * cm[1] + 10 * cm[2] * cm[2] * cm[2] + 15 * cm[1] * cm[1] * cm[1]) / psigma;
 
-    nu[0] = 0;
-    nu[1] = 1;
-    nu[2] = cm[2] / pow(cm[1], 1.5);
-    nu[3] = (cm[3] + 3 * cm[1] * cm[1]) / (cm[1] * cm[1]);
-    nu[4] = (cm[4] + 10 * cm[2] * cm[1]) / pow(cm[1], 2.5);
-    nu[5] = (cm[5] + 15 * cm[3] * cm[1] + 10 * cm[2] * cm[2] * cm[2] + 15 * cm[1] * cm[1] * cm[1]) / (cm[1] * cm[1] * cm[1]);
+    nu[0] = 10.0;
+    nu[1] = 101.0;
+    nu[2] = tmp2 + 1030.0;
+    nu[3] = tmp3 + 40.0 * tmp2 + 10600.0;
+    nu[4] = tmp4 + 50.0 * tmp3 + 1000.0 * tmp2 + 110000.0;
+    nu[5] = tmp5 + 60.0 * tmp4 + 1500.0 * tmp3 + 20000.0 * tmp2 + 1150000.0;
+
     cout << "Moments: ";
     for(int i=0;i<O;i++)
       cout << nu[i] << "\t";
@@ -101,8 +113,8 @@ class SumProbMomentsConfGLA {
 	double sigma = pow(sigma2, 0.5);
 	double l = gsl_cdf_gaussian_Pinv(conf / 2.0, sigma) + nu[0],
 	  h = gsl_cdf_gaussian_Qinv(conf / 2.0, sigma) + nu[0];
-	l = l * pow(cm[1], 0.5) + cm[0];
-	h = h * pow(cm[1], 0.5) + cm[0];
+	l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
+	h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
 	cf = {l, h};
       }
     else
@@ -120,8 +132,9 @@ class SumProbMomentsConfGLA {
 
 	double l = solve_confidence(N, lambda, mu, pi, pp);
 	double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
-	l = l * pow(cm[1], 0.5) + cm[0];
-	h = h * pow(cm[1], 0.5) + cm[0];
+	cout << "l=" << l << " h="<< h << endl; 
+	l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
+	h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
 	cf = {l, h};
       }
     return cf;
