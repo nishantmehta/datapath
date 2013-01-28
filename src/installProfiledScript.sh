@@ -28,6 +28,7 @@ echo "export DATAPATH_INSTALL_PATH=$(readlink -f ..)" >> temp.sh
 echo 'export DATAPATH_LOCK_FILE=$DATAPATH_INSTALL_PATH/lock' >> temp.sh
 echo 'export DATAPATH_EXEC_PATH=$DATAPATH_INSTALL_PATH/src/Tool_DataPath/executable' >> temp.sh
 echo 'export DATAPATH_SO_PATH=$DATAPATH_INSTALL_PATH/Libs/libraries' >> temp.sh
+echo 'export DATAPATH_HEADER_PATH=$DATAPATH_INSTALL_PATH/src/Headersdp' >> temp.sh
 
 cp temp.sh $SCRIPT_FILE
 

@@ -15,7 +15,7 @@ do
     pkg-config --exists $lib
     if (($? == 0));
     then
-        echo  $(pkg-config --cflags --libs $lib)
+        echo  $(pkg-config --libs $lib)
     else
         echo "-l$lib"
     fi

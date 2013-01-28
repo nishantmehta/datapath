@@ -3,13 +3,13 @@
 # make -f MK-generaged -DOBJECTS="WP1.O ..." 
 # The macro OBJECTS must list the objects needed
 
-LINK_PATH = -L../../../../Libs/libraries
+LINK_PATH := -L../../../../Libs/libraries
 
 # COMPILER SELECTION
-CC=g++
+CC := g++
 #CC=/opt/intel/Compiler/11.1/056/bin/intel64/icc
 
-CCFLAGS = -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
+CCFLAGS := -fPIC -g -D_FILE_OFFSET_BITS=64 -DDEBUG
 
 #CCFLAGS += -DSLOW_MAP_DSTRING
 
@@ -21,7 +21,7 @@ CCFLAGS += -std=gnu++11
 # Note: has a negative impact on performance
 #CCFLAGS += -DPER_QUERY_PROFILE
 
-M4=m4 
+M4 := m4 
 
 # COMPILER OPTIMIZATION
 ifdef DEBUG_DATAPATH
@@ -31,9 +31,9 @@ OPT= -O3 -march=native -ffast-math
 endif
 
 
-GLA_INC = -I ../../../GLAs/
-LIB_INC = -I ../../../../Libs/
-M4INCLUDES = -I ../../../M4/m4 
+GLA_INC := -I ../../../GLAs/
+LIB_INC := -I ../../../../Libs/
+M4INCLUDES := -I ../../../M4/m4 
 M4INCLUDES += -I ../../../WPFunctionModules 
 M4INCLUDES += -I ../../../GLAs 
 M4INCLUDES += -I ../../../UDFs 
@@ -45,10 +45,15 @@ M4INCLUDES += -I $(DP_GLAs)
 FUNC_INC += -I $(DP_FUNCTIONS)
 endif
 
-CINCLUDES = -I ../../../Headersdp ${GLA_INC} $(FUNC_INC) ${LIB_INC}
+CINCLUDES := -I ../../../Headersdp ${GLA_INC} $(FUNC_INC) ${LIB_INC}
 
-LIB_EXTRACT = ../extract_libs.awk
-LIB_PROCESS = ../process_libs.sh
+LIB_EXTRACT := ../extract_libs.awk
+LIB_PROCESS := ../process_libs.sh
+LIB_CFLAGS := ../process_cflags.sh
+
+CC_FILES := ${OBJECTS:.o=.cc}
+CFLAGS_FILES := ${OBJECTS:.o=.cflags}
+LIB_FILES := ${OBJECTS:.o=.lib}
 
 # to preserve the generated cc files we need this
 .PRECIOUS: %.cc
@@ -56,16 +61,19 @@ LIB_PROCESS = ../process_libs.sh
 DataTypes.m4:
 	ln -s ../DataTypes.m4
 
-%.cc: %.m4 DataTypes.m4
+$(CC_FILES) : %.cc: %.m4 DataTypes.m4
 	$(M4) $(M4INCLUDES) $< > $@
 
-%.o : %.cc
-	$(CC) $(CINCLUDES) $(CCFLAGS) $(OPT) -c -o $@ $^
-
-%.lib : %.cc
+$(LIB_FILES) : %.lib : %.cc
 	${LIB_EXTRACT} $^ > $@
 
-libfile: ${OBJECTS:.o=.lib}
+$(CFLAGS_FILES) : %.cflags : %.lib
+	$(LIB_CFLAGS) $< > $@
+
+$(OBJECTS) : %.o : %.cc %.cflags
+	$(CC) $(CINCLUDES) $(CCFLAGS) $(OPT) -c -o $@ $< $(shell cat $(<:.cc=.cflags))
+
+libfile: $(LIB_FILES)
 	sort -u $^ > libfile.temp
 	${LIB_PROCESS} libfile.temp > libfile
 	rm libfile.temp
