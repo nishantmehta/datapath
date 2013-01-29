@@ -1,6 +1,15 @@
 #ifndef _HASH_FCT_GUS_H_
 #define _HASH_FCT_GUS_H_
 
+#include "sampling/GUSestimate/SpookyV2_inlined.h"
+
+inline __uint64_t CongruentHashModified( const __uint64_t value, const __uint64_t seed ) {
+    SpookyHash hasher;
+
+    return hasher.Hash64( (const void *) &value, sizeof( __uint64_t ), seed ); 
+}
+
+/*
 /////////////////// Alin's congruent hash ///////////////////////
 // if changing these constants, leave 0x0000 at the beginning
 // if the constants are too large, they can produce overflows
@@ -35,5 +44,6 @@ inline __uint64_t CongruentHashModified(const __uint64_t x, const __uint64_t b =
 	return rez2;
 }
 
+*/
 
 #endif // _HASH_FCT_GUS_H_

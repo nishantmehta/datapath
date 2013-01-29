@@ -327,7 +327,7 @@ void mixture(int n, double *moments, double *lambda, double *mu, double *pi, int
 
    //Find lambda
 
-   *lambda = 1000000.0;//m2 / m1 / m1 - 1.0;
+   *lambda = /*1000000.0;*/m2 / m1 / m1 - 1.0;
 
    for (int k = 1; k < n; k++)
      {

@@ -13,8 +13,8 @@ using namespace std;
 using namespace std;
 
 // PARAMETERS
-#define LOWER_LIMIT 10000
-#define UPPER_LIMIT 40000
+#define LOWER_LIMIT 100000
+#define UPPER_LIMIT 400000
 //#define UPPER_LIMIT 4*LOWER_LIMIT
 
 //#define DET_COIN_DEBUG 0
@@ -66,6 +66,9 @@ class BernoulliGLA3limit {
   /** maintain the datastructure that keeps the tuples */
   std::vector< mytuple<3> > V;
 
+ private:
+    static const uint64_t MAX_HASH = 0xFFFFFFFFFFFFFFFF;
+
  public: 
 
  BernoulliGLA3limit(): p(1.0) {
@@ -75,11 +78,11 @@ class BernoulliGLA3limit {
     //cout<<"Bernoulli constructor"<<endl;
   } 
 
- BernoulliGLA3limit(double _p): p(_p){
+  /*BernoulliGLA3limit(double _p): p(_p){
     upper_limit = 2000;
     lower_limit = 1000;
     //cout<<"Bernoulli constructor"<<endl
-  } 
+    } */
 	
   void printtuples() {
     for(size_t i = 0; i < V.size(); i++) {
@@ -93,7 +96,7 @@ class BernoulliGLA3limit {
     ch[1] = CongruentHashModified(id22, myH_b2);
     ch[2] = CongruentHashModified(id33, myH_b3);
     // if (DET_COIN_DEBUG == 1) cout << "cf1("<<id11<<") = "<< ch[0]<< ", cf2("<<id22<<") = "<< ch[1]<< ", cf3("<<id33<<") = "<< ch[2]<< ", p =" << p<< endl;
-    if ((ch[0] <= p*(1ULL<<61)) && (ch[1] <= p*(1ULL<<61)) && (ch[2] <= p*(1ULL<<61)))
+    if ((ch[0] <= p*MAX_HASH) && (ch[1] <= p*MAX_HASH) && (ch[2] <= p*MAX_HASH))
       return true;
     else
       return false;
@@ -112,6 +115,8 @@ class BernoulliGLA3limit {
 	  ch[1]= congruenthash(13.0, id22);
 	  ch[2] = congruenthash(17.0, id33);
     */
+
+    /*
     ch[0] = CongruentHashModified(Hash(id11), myH_b1);
     ch[1] = CongruentHashModified(Hash(id22), myH_b2);
     ch[2] = CongruentHashModified(Hash(id33), myH_b3);
@@ -131,7 +136,12 @@ class BernoulliGLA3limit {
       V.push_back(T);
       // cout <<T<<endl;
     }
-
+    */
+    
+    if(deterministic_coin_flip(id11, id22, id33, p)) {
+      mytuple<3> T(id, agg);
+      V.push_back(T);      
+    }
     if (V.size() > upper_limit){
       resize();
     }
@@ -181,7 +191,7 @@ class BernoulliGLA3limit {
     // put the two sets together
     cout<<"In AddState - p = "<<p <<", other.p = "<<other.p<<endl;
     if (p < other.p) {
-      cout<<"p < other.p "<<"V.size() = "<< V.size()<< endl;
+      cout<<"p < other.p , V.size() = "<< V.size()<< endl;
       for (size_t i = 0; i <  other.V.size(); i++) {
 	if (deterministic_coin_flip(other.V[i].ch[0], other.V[i].ch[1], other.V[i].ch[2], p)) {
 	  V.push_back(other.V[i]);

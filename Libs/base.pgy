@@ -1,7 +1,12 @@
 #ifndef _base_PGY_
 #define _base_PGY_
 // Piggy description file for library base
-// generated on Tuesday, November 27, 2012 at 13:27 EST
+// generated on Monday, January 28, 2013 at 21:28 EST
+
+// base/Types/BIGINT.h
+DEFINE DATATYPE BIGINT FROM "base/Types/BIGINT.h";
+DEFINE IDENTIFIER AS BIGINT;
+DEFINE IDENTIFIER AS BIGINT;
 
 // base/Types/bool.h
 DEFINE DATATYPE bool FROM "base/Types/bool.h";
@@ -12,35 +17,15 @@ DEFINE OPERATOR "!" ( bool ) -> bool FROM "base/Types/bool.h";
 DEFINE OPERATOR "&&" ( bool, bool ) -> bool FROM "base/Types/bool.h";
 DEFINE OPERATOR "||" ( bool, bool ) -> bool FROM "base/Types/bool.h";
 
-// base/Types/STATE.h
-DEFINE DATATYPE STATE FROM "base/Types/STATE.h";
+// base/Types/DATE.h
+DEFINE DATATYPE DATE FROM "base/Types/DATE.h";
 
-// base/Types/BIGINT.h
-DEFINE DATATYPE BIGINT FROM "base/Types/BIGINT.h";
-DEFINE IDENTIFIER AS BIGINT;
-DEFINE IDENTIFIER AS BIGINT;
-
-// base/Types/STRING.h
-DEFINE DATATYPE STRING FROM "base/Types/STRING.h";
-DEFINE VARCHAR AS STRING;
-
-// base/Types/STRING_LITERAL.h
-DEFINE DATATYPE STRING_LITERAL FROM "base/Types/STRING_LITERAL.h";
-
-// base/Types/MACADDR.h
-DEFINE DATATYPE macAddr FROM "base/Types/MACADDR.h";
-DEFINE MACADDR AS macAddr;
+// base/Types/DOUBLE.h
+DEFINE DATATYPE DOUBLE FROM "base/Types/DOUBLE.h";
 
 // base/Types/FLOAT.h
 DEFINE DATATYPE FLOAT FROM "base/Types/FLOAT.h";
 DEFINE REAL AS FLOAT;
-
-// base/Types/IPV4ADDR.h
-DEFINE DATATYPE IPv4 FROM "base/Types/IPV4ADDR.h";
-DEFINE IPV4ADDR AS IPv4;
-
-// base/Types/DATE.h
-DEFINE DATATYPE DATE FROM "base/Types/DATE.h";
 
 // base/Types/INT.h
 DEFINE DATATYPE INT FROM "base/Types/INT.h";
@@ -48,8 +33,23 @@ DEFINE TINYINT AS INT;
 DEFINE SMALLINT AS INT;
 DEFINE INTEGER AS INT;
 
-// base/Types/DOUBLE.h
-DEFINE DATATYPE DOUBLE FROM "base/Types/DOUBLE.h";
+// base/Types/IPV4ADDR.h
+DEFINE DATATYPE IPv4 FROM "base/Types/IPV4ADDR.h";
+DEFINE IPV4ADDR AS IPv4;
+
+// base/Types/MACADDR.h
+DEFINE DATATYPE macAddr FROM "base/Types/MACADDR.h";
+DEFINE MACADDR AS macAddr;
+
+// base/Types/STATE.h
+DEFINE DATATYPE STATE FROM "base/Types/STATE.h";
+
+// base/Types/STRING.h
+DEFINE DATATYPE STRING FROM "base/Types/STRING.h";
+DEFINE VARCHAR AS STRING;
+
+// base/Types/STRING_LITERAL.h
+DEFINE DATATYPE STRING_LITERAL FROM "base/Types/STRING_LITERAL.h";
 
 // base/Functions/DATE-Funcs.h
 DEFINE FUNCTION DATE ( INT  ) -> DATE FROM "base/Functions/DATE-Funcs.h";
@@ -72,6 +72,29 @@ DEFINE FUNCTION GetWeekOfYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h
 DEFINE FUNCTION GetYearForWeekOfYear ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
 DEFINE FUNCTION GetDayOfWeek ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
 DEFINE FUNCTION GetJulianDay ( DATE  ) -> INT FROM "base/Functions/DATE-Funcs.h";
+
+// base/Functions/IPVRADDR-Funcs.h
+DEFINE FUNCTION IPv4 ( INT, INT, INT, INT  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION IPv4 ( STRING_LITERAL  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "<" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "<=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR ">" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR ">=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "==" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE OPERATOR "!=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Domain ( IPv4  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Hash ( IPv4  ) -> BIGINT FROM "base/Functions/IPVRADDR-Funcs.h";
+DEFINE FUNCTION Between ( IPv4, IPv4, IPv4  ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
+
+// base/Functions/MACADDR-Funcs.h
+DEFINE FUNCTION macAddr ( STRING_LITERAL  ) -> macAddr FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "==" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "!=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "<" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR "<=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR ">" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE OPERATOR ">=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
+DEFINE FUNCTION Hash ( macAddr  ) -> BIGINT FROM "base/Functions/MACADDR-Funcs.h";
 
 // base/Functions/Number-Funcs.h
 DEFINE FUNCTION DOUBLE ( FLOAT  ) -> DOUBLE FROM "base/Functions/Number-Funcs.h";
@@ -260,6 +283,10 @@ DEFINE FUNCTION Hash ( BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( INT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 DEFINE FUNCTION Hash ( BIGINT, BIGINT  ) -> BIGINT FROM "base/Functions/Number-Funcs.h";
 
+// base/Functions/Random-Funcs.h
+DEFINE FUNCTION RandInt (   ) -> BIGINT FROM "base/Functions/Random-Funcs.h";
+DEFINE FUNCTION RandDouble (   ) -> DOUBLE FROM "base/Functions/Random-Funcs.h";
+
 // base/Functions/STRING-Funcs.h
 DEFINE FUNCTION STRING ( STRING_LITERAL  ) -> STRING FROM "base/Functions/STRING-Funcs.h";
 DEFINE FUNCTION Hash ( STRING  ) -> BIGINT FROM "base/Functions/STRING-Funcs.h";
@@ -272,54 +299,29 @@ DEFINE OPERATOR "<=" ( STRING, STRING ) -> bool FROM "base/Functions/STRING-Func
 DEFINE FUNCTION ToStringLit ( STRING  ) -> STRING_LITERAL FROM "base/Functions/STRING-Funcs.h";
 DEFINE FUNCTION Length ( STRING  ) -> INT FROM "base/Functions/STRING-Funcs.h";
 
-// base/Functions/MACADDR-Funcs.h
-DEFINE FUNCTION macAddr ( STRING_LITERAL  ) -> macAddr FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR "==" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR "!=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR "<" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR "<=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR ">" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE OPERATOR ">=" ( macAddr, macAddr ) -> bool FROM "base/Functions/MACADDR-Funcs.h";
-DEFINE FUNCTION Hash ( macAddr  ) -> BIGINT FROM "base/Functions/MACADDR-Funcs.h";
+// base/GLAs/AverageGLA.h
+DEFINE GLA Average ( DOUBLE ) -> ( BIGINT, DOUBLE, DOUBLE ) FROM "base/GLAs/AverageGLA.h";
+DEFINE AverageGLA AS Average;
 
-// base/Functions/IPVRADDR-Funcs.h
-DEFINE FUNCTION IPv4 ( INT, INT, INT, INT  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE FUNCTION IPv4 ( STRING_LITERAL  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR "<" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR "<=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR ">" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR ">=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR "==" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE OPERATOR "!=" ( IPv4, IPv4 ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE FUNCTION Domain ( IPv4  ) -> IPv4 FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE FUNCTION Hash ( IPv4  ) -> BIGINT FROM "base/Functions/IPVRADDR-Funcs.h";
-DEFINE FUNCTION Between ( IPv4, IPv4, IPv4  ) -> bool FROM "base/Functions/IPVRADDR-Funcs.h";
-
-// base/GLAs/ExtremeTuplesGLA.h.m4
-DEFINE TEMPLATE GLA ExtremeTuples FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
-DEFINE TEMPLATE GLA ExtremeTuplesGLA FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
-
-// base/GLAs/TopKGLA.h.m4
-DEFINE TEMPLATE GLA TopK FROM "base/GLAs/TopKGLA.h.m4";
-DEFINE TEMPLATE GLA TopKGLA FROM "base/GLAs/TopKGLA.h.m4";
-
-// base/GLAs/Repeater.h.m4
-DEFINE TEMPLATE GLA Repeater FROM "base/GLAs/Repeater.h.m4";
-
-// base/GLAs/GroupByGLA.h.m4
-DEFINE TEMPLATE GLA GroupBy FROM "base/GLAs/GroupByGLA.h.m4";
-DEFINE TEMPLATE GLA GroupByGLA FROM "base/GLAs/GroupByGLA.h.m4";
+// base/GLAs/CountGLA.h
+DEFINE GLA Count ( INT ) -> ( BIGINT ) FROM "base/GLAs/CountGLA.h";
+DEFINE CountGLA AS Count;
 
 // base/GLAs/SumGLA.h
 DEFINE GLA Sum ( DOUBLE ) -> ( DOUBLE ) FROM "base/GLAs/SumGLA.h";
 DEFINE SumGLA AS Sum;
 
-// base/GLAs/Segmented.h.m4
-DEFINE TEMPLATE GLA Segmented FROM "base/GLAs/Segmented.h.m4";
-
 // base/GLAs/DistinctGLA.h.m4
 DEFINE TEMPLATE GLA Distinct FROM "base/GLAs/DistinctGLA.h.m4";
 DEFINE TEMPLATE GLA DistinctGLA FROM "base/GLAs/DistinctGLA.h.m4";
+
+// base/GLAs/ExtremeTuplesGLA.h.m4
+DEFINE TEMPLATE GLA ExtremeTuples FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
+DEFINE TEMPLATE GLA ExtremeTuplesGLA FROM "base/GLAs/ExtremeTuplesGLA.h.m4";
+
+// base/GLAs/GroupByGLA.h.m4
+DEFINE TEMPLATE GLA GroupBy FROM "base/GLAs/GroupByGLA.h.m4";
+DEFINE TEMPLATE GLA GroupByGLA FROM "base/GLAs/GroupByGLA.h.m4";
 
 // base/GLAs/Multiplexer.h.m4
 DEFINE TEMPLATE GLA Multiplexer FROM "base/GLAs/Multiplexer.h.m4";
@@ -328,23 +330,25 @@ DEFINE TEMPLATE GLA Multiplexer FROM "base/GLAs/Multiplexer.h.m4";
 DEFINE TEMPLATE GLA OrderBy FROM "base/GLAs/OrderByGLA.h.m4";
 DEFINE TEMPLATE GLA OrderByGLA FROM "base/GLAs/OrderByGLA.h.m4";
 
-// base/GLAs/CountGLA.h
-DEFINE GLA Count ( INT ) -> ( BIGINT ) FROM "base/GLAs/CountGLA.h";
-DEFINE CountGLA AS Count;
+// base/GLAs/Repeater.h.m4
+DEFINE TEMPLATE GLA Repeater FROM "base/GLAs/Repeater.h.m4";
 
-// base/GLAs/AverageGLA.h
-DEFINE GLA Average ( DOUBLE ) -> ( BIGINT, DOUBLE, DOUBLE ) FROM "base/GLAs/AverageGLA.h";
-DEFINE AverageGLA AS Average;
+// base/GLAs/Segmented.h.m4
+DEFINE TEMPLATE GLA Segmented FROM "base/GLAs/Segmented.h.m4";
+
+// base/GLAs/TopKGLA.h.m4
+DEFINE TEMPLATE GLA TopK FROM "base/GLAs/TopKGLA.h.m4";
+DEFINE TEMPLATE GLA TopKGLA FROM "base/GLAs/TopKGLA.h.m4";
 
 // base/UDFs/AbsoluteValue.h.m4
 DEFINE TEMPLATE FUNCTION AbsoluteValue FROM "base/UDFs/AbsoluteValue.h.m4";
 
-// base/GFs/AndGF.m4
-DEFINE TEMPLATE GF AndGF FROM "base/GFs/AndGF.m4";
+// base/GFs/PassThroughGF.h
+DEFINE GF PassThroughGF ( bool ) FROM "base/GFs/PassThroughGF.h";
 
 // base/GFs/PatternMatcherOnig.h
 DEFINE GF PatternMatcherOnig ( STRING_LITERAL ) FROM "base/GFs/PatternMatcherOnig.h";
 
-// base/GFs/PassThroughGF.h
-DEFINE GF PassThroughGF ( bool ) FROM "base/GFs/PassThroughGF.h";
+// base/GFs/AndGF.m4
+DEFINE TEMPLATE GF AndGF FROM "base/GFs/AndGF.m4";
 #endif // _base_PGY_

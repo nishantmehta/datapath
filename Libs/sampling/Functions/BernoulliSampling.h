@@ -17,7 +17,7 @@
 inline 
 bool BernoulliSampling(const DOUBLE& p, const BIGINT& b, const BIGINT& id){
   uint64_t hash = CongruentHashModified(id, b);
-  return hash <= p*(1ULL<<61);
+  return hash <= p*0xFFFFFFFFFFFFFFFFULL;
 }
 
 

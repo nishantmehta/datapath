@@ -1,7 +1,6 @@
 #ifndef _GeneralizedSamplingEstimate_H_
 #define _GeneralizedSamplingEstimate_H_
 
-
 #include <stdint.h>
 #include <iostream>
 #include <fstream>
@@ -17,6 +16,9 @@
 
 //#define USE_SORT
 #define USE_HASH
+
+#define H_bMod 0x970c34faccba783fULL
+#define HASH_INIT_MOD H_bMod
 
 using namespace std;
 

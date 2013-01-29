@@ -113,8 +113,9 @@ m4_case(MY_REZTYPE, </multi/>, </dnl
         // Call Finalize on each GLA individually
 
 m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
-<//>m4_if(
+<//>m4_if(reval(__GLA__</_REZTYPE/>), </multi/>, </
         m4_first(__GLA__).Finalize();
+<//>/>)dnl
 />)dnl
     }
 

@@ -166,7 +166,8 @@ defineStatement
   ;
 
 typeList returns [vector<string> vect]
-    : a=ID {$vect.push_back(STR($a));} (COMMA b=ID {$vect.push_back(STR($b));})*
+    : /* nothing */
+    | a=ID {$vect.push_back(STR($a));} (COMMA b=ID {$vect.push_back(STR($b));})*
     ;
 
 reqStateList returns [vector<string> vect]

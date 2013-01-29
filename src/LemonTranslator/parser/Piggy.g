@@ -69,7 +69,7 @@ createStatement
 defineStatement
   : DATATYPE n=ID FROM f=STRING -> ^(CRDATATYPE $n $f)
   | SYNONYM syn=ID FROM base=ID -> ^(CRSYNONYM $base $syn)
-  | FUNCTION n=ID LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
+  | FUNCTION n=ID LPAREN params=typeList? RPAREN ARROW ret=type FROM f=STRING
     -> ^(FUNCTION $n $f $ret $params)
   | OPKEYWORD n=STRING LPAREN params=typeList RPAREN ARROW ret=type FROM f=STRING
     -> ^(OPDEF $n $f $ret $params)
