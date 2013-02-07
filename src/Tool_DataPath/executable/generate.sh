@@ -24,7 +24,6 @@ numParallelJobs=20
 dirPath=$1
 objects=$2
 
-
 # echo "Parameters: $1 $2"
 
 cd $dirPath

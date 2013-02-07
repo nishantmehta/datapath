@@ -49,12 +49,6 @@ parser.add_argument('-f', '--scale-factor',
         metavar='scale',
         help='the scale factor to use for the TPC-H data. [1]')
 
-parser.add_argument('-s', '--source-dir',
-        action='store',
-        default='../../',
-        metavar='path',
-        help='the path to the datapath source directory. [../../]')
-
 parser.add_argument('-k', '--keep-files',
         action='store_true',
         default=False,
@@ -65,11 +59,11 @@ parser.add_argument('-r', '--reload',
         default=False,
         help='redownload the tpch data generator and regenerate the data, even if it already exists.')
 
-parser.add_argument('-q', '--query',
+parser.add_argument('-s', '--schema',
         action='store',
         default='./LOAD_TPCH/schema.pgy',
         metavar='path',
-        help='the query file that creates the tables. [./LOAD_TPCH/tpch.pgy]')
+        help='the query file that creates the schema. [./LOAD_TPCH/tpch.pgy]')
 
 parser.add_argument('-n', '--num-stripes',
         action='store',
@@ -118,9 +112,7 @@ args = parser.parse_args()
 
 # Set up constants we'll use
 dataDir = realpath(args.data)
-srcDir = realpath(args.source_dir)
-dpDir = os.path.join( srcDir, 'Tool_DataPath/executable')
-dpExec = os.path.join( dpDir, 'dp' )
+dpExec = "datapath"
 
 tpchVersion = args.gen_version.replace('.', '_')
 tpchDir = os.path.join( dataDir, 'tpch_' + tpchVersion)
@@ -341,8 +333,7 @@ def loadTable( relation ):
     queryFileName = generateQuery( relation )
 
     try:
-        subprocess.check_call([dpExec, '-q', '-e', queryFileName],
-            cwd=dpDir)
+        subprocess.check_call([dpExec, '-w', 'run', queryFileName])
     except:
         # Kill any running processes
         for p in tpchProcs:
@@ -373,7 +364,7 @@ def getDPInit():
 
         return tmpFile
     else:
-        return None
+        return subprocess.STDIN
 
 def loadData():
     """Load the generated TPC-H data into the database."""
@@ -384,14 +375,11 @@ def loadData():
         print 'Error: specified data directory is not actually a directory!'
         sys.exit(7)
 
-    schemaFile = os.path.realpath(args.query)
+    schemaFile = os.path.realpath(args.schema)
     if not os.path.exists( schemaFile ):
         print 'Error: specified schema query file does not exist!'
         sys.exit(8)
 
-    # TODO: Fix DataPath so that it will exit cleanly with the -q switch.
-    # It currently does not save meta-data when bulkloading relations if
-    # you have the -q switch.
     print "NOTICE: DataPath currently does not exit cleanly when running a single script."
     print "In order to work around this, DataPath will simply sit idle and do nothing"
     print "once it has finished executing its query. At this point, you will need to"
@@ -413,7 +401,7 @@ def loadData():
     inFile = getDPInit()
 
     try:
-        subprocess.check_call([dpExec, '-q', '-e', schemaFile], stdin=inFile, cwd=dpDir)
+        subprocess.check_call([dpExec, '-w', 'run', schemaFile], stdin=inFile)
     except subprocess.CalledProcessError:
         if not args.ignore_dp:
             print 'Warning: an error occurred while loading the schema. It\'s possible that'

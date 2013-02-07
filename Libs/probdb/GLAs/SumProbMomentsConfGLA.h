@@ -1,5 +1,5 @@
-#ifndef _SUMPROBMOMENTSCONFGLA_H_ 
-#define _SUMPROBMOMENTSCONFGLA_H_ 
+#ifndef _SUMPROBMOMENTSCONFGLA_H_
+#define _SUMPROBMOMENTSCONFGLA_H_
 
 
 /** Info for the meta-GLAs
@@ -26,8 +26,8 @@
 class SumProbMomentsConfGLA {
   // cumulants of the true distribution
   long double cm[O];
-  // moments of the true distribution 
-  double nu[O]; 
+  // moments of the true distribution
+  double nu[O];
 
   double lambda;
   double mu[N];
@@ -42,7 +42,7 @@ class SumProbMomentsConfGLA {
  public:
   SumProbMomentsConfGLA(void) { for(int i = 0; i < O; i++) cm[i] = 0.0; sumProb=0.0; sumDet = 0.0; n = 0;}
 
-  //update cumulants of the true distribution 
+  //update cumulants of the true distribution
   //with the new data point
   void AddItem(DOUBLE x, DOUBLE p){
     if (p<0.0 || p>1.0)
@@ -59,7 +59,7 @@ class SumProbMomentsConfGLA {
   }
 
   void AddState(SumProbMomentsConfGLA& o) { for (int i = 0; i < O; i++) cm[i] += o.cm[i]; sumProb+=o.sumProb; sumDet += o.sumDet;}
-  
+
   void Finalize(void){
 
     //compute moments of true distribution from cumulants
@@ -98,50 +98,51 @@ class SumProbMomentsConfGLA {
   }
 
   float GreaterEq(float a) {
-    double p = 0.0; 
+    double p = 0.0;
     for (int i = 0; i < N; i++)
       p += pi[i] * gsl_sf_gamma_inc_Q(1.0 / lambda, (a/sumProb) / (lambda * mu[i]));
-    return p;   
+    return p;
   }
 
   c_dbl ConfidenceInterval(float conf){
-    c_dbl cf;
-    if (status)
+      c_dbl cf;
+      if (status != 0)
       {
-	cout << "Switching to normal approximation"<< endl;
-	double sigma2 = nu[1] - nu[0] * nu[0];
-	double sigma = pow(sigma2, 0.5);
-	double l = gsl_cdf_gaussian_Pinv(conf / 2.0, sigma) + nu[0],
-	  h = gsl_cdf_gaussian_Qinv(conf / 2.0, sigma) + nu[0];
-	l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
-	h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
-	cf = {l, h};
+          double pp = (1.0 - conf) / 2.0;
+          cout << "Switching to normal approximation"<< endl;
+          double sigma2 = nu[1] - nu[0] * nu[0];
+          double sigma = pow(sigma2, 0.5);
+          double l = gsl_cdf_gaussian_Pinv(pp, sigma) + nu[0],
+                 h = gsl_cdf_gaussian_Qinv(pp, sigma) + nu[0];
+          l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
+          h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
+          cf = {l, h};
       }
-    else
+      else
       {
-	double pp = (1.0 - conf) / 2.0;
-	cout << "lambda: "<< lambda << endl;
-	cout << "mu: ";
-	for (int i=0; i< N;i++)
-	  cout << mu[i]<< " ";
-	cout << endl;
-	cout << "pi: ";
-	for (int i=0; i< N;i++)
-	  cout << pi[i]<< " ";
-	cout << endl;
+          double pp = (1.0 - conf) / 2.0;
+          cout << "lambda: "<< lambda << endl;
+          cout << "mu: ";
+          for (int i=0; i< N;i++)
+              cout << mu[i]<< " ";
+          cout << endl;
+          cout << "pi: ";
+          for (int i=0; i< N;i++)
+              cout << pi[i]<< " ";
+          cout << endl;
 
-	double l = solve_confidence(N, lambda, mu, pi, pp);
-	double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
-	cout << "l=" << l << " h="<< h << endl; 
-	l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
-	h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
-	cf = {l, h};
+          double l = solve_confidence(N, lambda, mu, pi, pp);
+          double h = solve_confidence(N, lambda, mu, pi, 1.0 - pp);
+          cout << "l=" << l << " h="<< h << endl;
+          l = (l - 10.0) * pow(cm[1], 0.5) + cm[0];
+          h = (h - 10.0) * pow(cm[1], 0.5) + cm[0];
+          cf = {l, h};
       }
-    return cf;
-}
+      return cf;
+  }
 
   void GetResult(DOUBLE &a, DOUBLE &b){
-   double conf = 0.95;  
+   double conf = 0.95;
    Finalize(); // not automatically called
     c_dbl cf = ConfidenceInterval (conf);
     a = cf.a;
@@ -150,4 +151,4 @@ class SumProbMomentsConfGLA {
 
 };
 
-#endif // _SUMPROBMOMENTSCONFGLA_H_ 
+#endif // _SUMPROBMOMENTSCONFGLA_H_

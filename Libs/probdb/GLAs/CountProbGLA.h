@@ -11,7 +11,7 @@
  *
  * LIBS(zPoly)
  * END_DESC
-*/ 
+*/
 
 #include "probdb/zPoly/zPoly.h"
 #include <iostream>
@@ -22,16 +22,16 @@ class CountProbGLA{
   long int NN;
   zPoly pgf;
 
-  
+
  public:
 
   typedef struct {int a,b;} c_int;
 
-  // constructor, builds empty object 
+  // constructor, builds empty object
   CountProbGLA(){NN = 0; }
 
   // incorporate one datapoint into PGF
-  // p: probability,x: value 
+  // p: probability,x: value
   void AddItem(float p, float x=1.0){
     pgf.AddEvent(p); NN++;
   }
@@ -103,7 +103,7 @@ class CountProbGLA{
     return cf;
   }
 
-  void GetResult(int &a, int &b){  
+  void GetResult(int &a, int &b){
     double conf= 0.95;
     c_int cf = ConfidenceInterval (conf);
     a=cf.a;

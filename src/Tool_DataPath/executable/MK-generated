@@ -3,7 +3,28 @@
 # make -f MK-generaged -DOBJECTS="WP1.O ..." 
 # The macro OBJECTS must list the objects needed
 
-LINK_PATH := -L../../../../Libs/libraries
+### Handle library paths
+
+# Find all existing libraries defined in DATAPATH_LIBRARY_PATH
+LIBRARY_PATHS := $(foreach path,$(subst :, ,$(DATAPATH_LIBRARY_PATH)),$(realpath $(path)))
+# Find existing `libraries` directories in those paths
+LIBRARY_SO_PATHS := $(foreach path,$(LIBRARY_PATHS),$(realpath $(path)/libraries))
+
+# Set up the linker flags
+LINK_PATH := $(foreach path,$(LIBRARY_SO_PATHS),-L $(path))
+
+# Set up RPATH flags
+LINK_RPATH := "-Wl,--enable-new-dtags"
+LINK_RPATH += $(foreach path,$(LIBRARY_SO_PATHS),-Wl,-rpath=$(path))
+
+# Set up the include flags
+LIB_INC := $(foreach path,$(subst :, ,$(DATAPATH_LIBRARY_PATH)),-I $(path))
+
+### Handle M4 paths
+M4_SOURCE_PATHS := $(foreach path,$(subst :, ,$(DATAPATH_M4_PATH)),$(realpath $(path)))
+M4INCLUDES := $(foreach path,$(M4_SOURCE_PATHS),-I $(path))
+
+M4INCLUDES += $(LIB_INC)
 
 # COMPILER SELECTION
 CC := g++
@@ -21,7 +42,7 @@ CCFLAGS += -std=gnu++11
 # Note: has a negative impact on performance
 #CCFLAGS += -DPER_QUERY_PROFILE
 
-M4 := m4 
+M4 := m4
 
 # COMPILER OPTIMIZATION
 ifdef DEBUG_DATAPATH
@@ -31,25 +52,17 @@ OPT= -O3 -march=native -ffast-math
 endif
 
 
-GLA_INC := -I ../../../GLAs/
-LIB_INC := -I ../../../../Libs/
-M4INCLUDES := -I ../../../M4/m4 
-M4INCLUDES += -I ../../../WPFunctionModules 
-M4INCLUDES += -I ../../../GLAs 
-M4INCLUDES += -I ../../../UDFs 
-M4INCLUDES += $(LIB_INC)
-
 ifdef DP_GLAs
 GLA_INC += -I $(DP_GLAs)
-M4INCLUDES += -I $(DP_GLAs) 
+M4INCLUDES += -I $(DP_GLAs)
 FUNC_INC += -I $(DP_FUNCTIONS)
 endif
 
-CINCLUDES := -I ../../../Headersdp ${GLA_INC} $(FUNC_INC) ${LIB_INC}
+CINCLUDES := -I $(DATAPATH_HEADER_PATH) ${GLA_INC} $(FUNC_INC) ${LIB_INC}
 
-LIB_EXTRACT := ../extract_libs.awk
-LIB_PROCESS := ../process_libs.sh
-LIB_CFLAGS := ../process_cflags.sh
+LIB_EXTRACT := $(DATAPATH_EXEC_PATH)/extract_libs.awk
+LIB_PROCESS := $(DATAPATH_EXEC_PATH)/process_libs.sh
+LIB_CFLAGS := $(DATAPATH_EXEC_PATH)/process_cflags.sh
 
 CC_FILES := ${OBJECTS:.o=.cc}
 CFLAGS_FILES := ${OBJECTS:.o=.cflags}
@@ -79,4 +92,4 @@ libfile: $(LIB_FILES)
 	rm libfile.temp
 
 Generated.so: ${OBJECTS} libfile
-	${CC} ${OPT} -rdynamic -shared  -o Generated.so   $(LINK_PATH) ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)
+	${CC} ${OPT} -rdynamic -shared  -o Generated.so $(LINK_RPATH) $(LINK_PATH) ${OBJECTS} ${LIBS} ${STAT_LIBS} $(shell cat libfile)

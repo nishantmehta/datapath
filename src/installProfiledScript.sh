@@ -23,12 +23,14 @@ SCRIPT_FILE=/etc/profile.d/datapath.sh
 # Remove any temporary files
 [ -e temp.sh ] && rm temp.sh
 
-echo '#!/bin/bash' >> temp.sh
+echo '#!/bin/sh' >> temp.sh
 echo "export DATAPATH_INSTALL_PATH=$(readlink -f ..)" >> temp.sh
 echo 'export DATAPATH_LOCK_FILE=$DATAPATH_INSTALL_PATH/lock' >> temp.sh
 echo 'export DATAPATH_EXEC_PATH=$DATAPATH_INSTALL_PATH/src/Tool_DataPath/executable' >> temp.sh
-echo 'export DATAPATH_SO_PATH=$DATAPATH_INSTALL_PATH/Libs/libraries' >> temp.sh
 echo 'export DATAPATH_HEADER_PATH=$DATAPATH_INSTALL_PATH/src/Headersdp' >> temp.sh
+echo 'export DATAPATH_LIBRARY_PATH=$DATAPATH_INSTALL_PATH/Libs' >> temp.sh
+echo 'export DATAPATH_PKGCONFIG_PATH=$DATAPATH_INSTALL_PATH/pkgconfig' >> temp.sh
+echo 'export DATAPATH_M4_PATH=$DATAPATH_INSTALL_PATH/src/M4/m4:$DATAPATH_INSTALL_PATH/src/WPFunctionModules' >> temp.sh
 
 cp temp.sh $SCRIPT_FILE
 

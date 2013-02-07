@@ -1,16 +1,45 @@
 #!/bin/bash
+# Copyright 2013 Christopher Dudley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # $1 = base of the file names
 # Note: this file is run in the context of the executable folder
 
-DP_EXEC_DIR=$(readlink -f .)
-DP_SRC_DIR=$(readlink -f $DP_EXEC_DIR/../..)
+DP_EXEC_DIR=$(DATAPATH_EXEC_PATH)
+DP_SRC_DIR=$(DATAPATH_INSTALL_PATH)/src
 M4_DIR=$DP_SRC_DIR/M4/m4
 WPF_DIR=$DP_SRC_DIR/WPFunctionModules
-GLA_DIR=$DP_SRC_DIR/GLAs
-UDF_DIR=$DP_SRC_DIR/UDFs
 LIB_DIR=$(readlink -f $DP_EXEC_DIR/Libs)
 
-M4INCLUDES="-I $M4_DIR -I $WPF_DIR -I $GLA_DIR -I $UDF_DIR -I $LIB_DIR"
+prevIFS="$IFS"
+IFS=":"
+
+for path in $DATAPATH_M4_PATH; do
+    canonicalPath=$(readlink -f $path)
+    if [ $? == 0 ]; then
+        M4INCLUDES+=" -I $canonicalPath"
+    fi
+done
+
+for path in $DATAPATH_LIBRARY_PATH; do
+    canonicalPath=$(readlink -f $path)
+    if [ $? == 0 ]; then
+        M4INCLUDES+=" -I $canonicalPath"
+    fi
+done
+
+IFS="$prevIFS"
 
 DESC_M4="descfile.m4"
 
