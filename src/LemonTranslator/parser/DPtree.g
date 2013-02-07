@@ -1169,21 +1169,36 @@ textloaderWP
 }
   :
     ^(TEXTLOADER__ (
-        ^(ATTFROM ID) {
+    textloaderAttributes[attribs, defs]
+  | ^(SEPARATOR a=STRING) {sep = char(*(StripQuotes(TXT($a)).c_str()));}
+  | ^(FILE__ b=STRING { tablePattern = TXTS($b); count=1; } (INT {count= atoi(TXT($INT));})? )
+  )+ )
+;
+
+textloaderAttributes[SlotContainer& attribs, string& defs]
+    :   ^(ATTFROM ID) {
             am.GetAttributesSlots(TXT($ID), attribs);
 
             FOREACH_TWL(sID, attribs) {
                 string name = am.GetAttributeName( sID );
                 string type = am.GetAttributeType( name );
-                FATALIF( !dTM.IsType( type ), "Attempting to read file \%s containing type \%s, please ensure all required libraries are loaded.", tablePattern.c_str(), type.c_str() );
+                FATALIF( !dTM.IsType( type ), "Unknown type \%s, please ensure all required libraries are loaded.", type.c_str() );
                 string file = dTM.GetTypeFile( type );
                 ADD_INCLUDE(defs, file);
             } END_FOREACH;
         }
-  | ^(SEPARATOR a=STRING) {sep = char(*(StripQuotes(TXT($a)).c_str()));}
-  | ^(FILE__ b=STRING { tablePattern = TXTS($b); count=1; } (INT {count= atoi(TXT($INT));})? )
-  )+ )
-;
+    |   ^(ATTS
+            (^(ATTWT name=ID ty=dType) {
+                string type = $ty.type;
+                FATALIF( !dTM.IsType( type ), "Unknown type \%s, please ensure all required libraries are loaded.", type.c_str() );
+                string file = dTM.GetTypeFile( type );
+                ADD_INCLUDE(defs, file);
+
+                SlotID nSlot = am.AddSynthesizedAttribute( qry, TXT($name), type);
+                attribs.Append(nSlot);
+            } )+
+        )
+    ;
 
 wpDefinition
   : selectWP
