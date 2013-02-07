@@ -230,15 +230,16 @@ void zPoly :: ComputePolynomialCoefficients(void){
 
 void zPoly::AddState(zPoly& other, int numThreads){
 
-  ensureComputed();
+    ensureComputed();
+    other.ensureComputed();
 
-  if (other.NN==0)
-    return; // the other guy is empty
+    if (other.NN==0)
+        return; // the other guy is empty
 
-  if (NN==0){ // I'm empty
-    Swap(other);
-    return;
-  }
+    if (NN==0){ // I'm empty
+        Swap(other);
+        return;
+    }
 
 	// figure out the size of the result polynomial and allocate space for the direct ffts
 

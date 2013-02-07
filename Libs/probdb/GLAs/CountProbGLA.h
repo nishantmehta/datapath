@@ -14,6 +14,8 @@
 */ 
 
 #include "probdb/zPoly/zPoly.h"
+#include <iostream>
+#include <iomanip>
 // #include "base/Types/STATE.h"
 
 class CountProbGLA{
@@ -30,10 +32,14 @@ class CountProbGLA{
 
   // incorporate one datapoint into PGF
   // p: probability,x: value 
-  void AddItem(float p, float x=1.0){ pgf.AddEvent(p); NN++;}
+  void AddItem(float p, float x=1.0){
+    pgf.AddEvent(p); NN++;
+  }
 
   // merge info or other PGFs into current
-  void AddState(CountProbGLA& other){ pgf.AddState(other.pgf); }
+  void AddState(CountProbGLA& other){
+    pgf.AddState(other.pgf);
+  }
 
   // expand PGF
   void Finalize(){ pgf.ComputePolynomialCoefficients(); }
@@ -79,7 +85,9 @@ class CountProbGLA{
 
   // compute confidence interval [l,h]
   // such that P[l<X<h] = conf
-  c_int ConfidenceInterval(float conf){
+  c_int ConfidenceInterval(double conf){
+    pgf.ensureComputed();
+    std::cout << "Sum of coefficients: " << pgf.SumOfCoefs() << std::endl;
     double p = (1.0 - conf) / 2.0, a = 0.0;
     int l = 0;
     while (a < p){
@@ -96,7 +104,7 @@ class CountProbGLA{
   }
 
   void GetResult(int &a, int &b){  
-    int conf=.95;
+    double conf= 0.95;
     c_int cf = ConfidenceInterval (conf);
     a=cf.a;
     b=cf.b;

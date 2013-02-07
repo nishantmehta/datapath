@@ -13,8 +13,8 @@ using namespace std;
 using namespace std;
 
 // PARAMETERS
-#define LOWER_LIMIT 100000
-#define UPPER_LIMIT 400000
+#define LOWER_LIMIT 1000000
+#define UPPER_LIMIT 4000000
 //#define UPPER_LIMIT 4*LOWER_LIMIT
 
 //#define DET_COIN_DEBUG 0

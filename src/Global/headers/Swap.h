@@ -17,6 +17,7 @@
 #define _SWAP_H_
 
 #include "Constants.h"
+#include <cstring>
 
 /**
 	This header contains macro definitions to streamline the swapping of data.

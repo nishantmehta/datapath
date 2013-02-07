@@ -6,15 +6,15 @@
 #include "Constants.h"
 #include "Swap.h"
 #include "probdb/zPoly/DFT.h"
+#include <limits>
+#include <iostream>
 
-#if 1
-#ifdef NUM_EXEC_ENGINE_THREADS /* We are running in DataPath */
+#ifdef NUM_EXEC_ENGINE_THREADS // We are running in DataPath
 #warning "USING MMAP ALLOCATOR"
 #include "MmapAllocator.h"
 #define Z_USE_MMAP
 #else
 #include "probdb/zPoly/DFT.h"
-#endif
 #endif
 
 // at what level to switch between the O(N^2) to the O(N log^2 N) alg
@@ -71,8 +71,8 @@ class zPoly {
 	// numThreads indicates the level of parallelism to suggest to fftw3
 	void AddState(zPoly& other, int numThreads=1);
 
-  // compute polynomial expansion of the current polynomial
-  void ComputePolynomialCoefficients(void);
+    // compute polynomial expansion of the current polynomial
+    void ComputePolynomialCoefficients(void);
 
 	// compute polynomial expansion of (parts) of the current polynomial
 	// this algorithm is O(N^2)
@@ -94,6 +94,9 @@ class zPoly {
 
 	// test correctness by computing the sum (should be 1.0)
 	bool TestCorrectness(void);
+
+    // Return sum of coefficients (should be 1.0)
+    long double SumOfCoefs(void);
 
 	//spreads the coefficients by inserting 0's
 	void spread(int power);
@@ -130,6 +133,25 @@ inline bool zPoly::TestCorrectness(void){
     sum+=coefs[i];
   
   return fabs(sum-1.0)<1.0e-4;
+}
+
+inline long double zPoly::SumOfCoefs(void) {
+    double min = std::numeric_limits<double>::infinity();
+    double max = - std::numeric_limits<double>::infinity();
+
+    long double sum = 0.0;
+    for( size_t i = 0; i < NN; ++i ) {
+        sum += coefs[i];
+        if( coefs[i] < min )
+            min = coefs[i];
+
+        if( coefs[i] > max )
+            max = coefs[i];
+    }
+
+    std::cout << "zPoly - Sum: " << sum << " Min: " << min << " Max: " << max << std::endl;
+
+    return sum;
 }
 
 inline double zPoly::Coef(int i){ return coefs[i]; }
