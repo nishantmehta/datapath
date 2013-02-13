@@ -108,19 +108,98 @@ m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
 />)dnl
     }
 
-m4_case(MY_REZTYPE, </multi/>, </dnl
+m4_case(MY_REZTYPE, </fragment/>, </dnl
+    struct Iterator {
+<//>m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//><//>m4_if(reval(m4_second(__GLA__)</_REZTYPE/>), fragment, </dnl
+        m4_second(__GLA__)</_Iterator/> * m4_first(__GLA__)</_It/> = NULL;
+<//><//>/>)dnl
+<//>/>)dnl
+
+        Iterator( int fragNo, TYPED_REF_ARGS(INNER_GLA) ) {
+<//>m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//><//>m4_if(reval(m4_second(__GLA__)</_REZTYPE/>), fragment, </dnl
+            m4_first(__GLA__)</_It/> = m4_first(__GLA__).Finalize( fragNo );
+<//><//>/>)dnl
+<//>/>)dnl
+        }
+
+        ~Iterator() {
+<//>m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//><//>m4_if(reval(m4_second(__GLA__)</_REZTYPE/>), fragment, </dnl
+            if( m4_first(__GLA__)</_It/> != NULL ) {
+                delete m4_first(__GLA__)</_It/>;
+            }
+<//><//>/>)dnl
+<//>/>)dnl
+        }
+
+        bool GetNextResult( TYPED_REF_ARGS(MY_OUTPUTS), TYPED_REF_ARGS(INNER_GLA) ) {
+            bool retval = false;
+m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//>m4_case(reval(m4_second(__GLA__)</_REZTYPE/>), </fragment/>, </dnl
+            retval |= m4_first(__GLA__).GetNextResult(m4_first(__GLA__)</_It/>, ARGS(m4_quote(reval(m4_first(__GLA__)</_OUTPUT/>))));
+<//>/>, </multi/>, </dnl
+<//><//>m4_fatal(</You can't multiplex both fragmented and multi GLAs!/>)
+<//>/>, </single/>, </dnl
+            // Just duplicate the result for each tuple
+            m4_first(__GLA__).GetResult(ARGS(m4_quote(reval(m4_first(__GLA__)</_OUTPUT/>))));
+<//>/>, </m4_fatal(Unsupported GLA type in multiplexer!)/>)dnl
+/>)dnl
+            return retval;
+        }
+
+    };
+
+    int GetNumFragments(void) {
+        bool first = true;
+        int numFrags = 0;
+        int curFrags = 0;
+<//>m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//><//>m4_if(reval(m4_second(__GLA__)</_REZTYPE/>), fragment, </dnl
+        curFrags = m4_first(__GLA__).GetNumFragments();
+        if( first ) {
+            first = false;
+            numFrags = curFrags;
+        } else {
+            FATALIF( curFrags != numFrags, "Can't multiplex 2 fragmented GLAs with different numbers of fragments!");
+        }
+<//><//>/>)dnl
+
+        return numFrags;
+<//>/>)dnl
+    }
+
+    Iterator * Finalize( int fragNo ) {
+        return new Iterator( fragNo, ARGS(INNER_GLA) );
+    }
+
+    bool GetNextResult( Iterator * it, TYPED_REF_ARGS(MY_OUTPUTS) ) {
+        return it->GetNextResult( ARGS(MY_OUTPUTS), ARGS(INNER_GLA) );
+    }
+
+/>, </multi/>, </dnl
     void Finalize() {
         // Call Finalize on each GLA individually
 
 m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
-<//>m4_if(reval(__GLA__</_REZTYPE/>), </multi/>, </
+<//>m4_if(reval(m4_second(__GLA__)</_REZTYPE/>), </multi/>, </
         m4_first(__GLA__).Finalize();
 <//>/>)dnl
 />)dnl
     }
 
     bool GetNextResult(TYPED_REF_ARGS(MY_OUTPUTS)) {
-        
+        bool retval = false;
+m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
+<//>m4_case(reval(m4_second(__GLA__)</_REZTYPE/>), </multi/>, </dnl
+        retval |= m4_first(__GLA__).GetNextResult(ARGS(m4_quote(reval(m4_first(__GLA__)</_OUTPUT/>))));
+<//>/>, </single/>, </dnl
+        // Just duplicate the result for each tuple
+        m4_first(__GLA__).GetResult(ARGS(m4_quote(reval(m4_first(__GLA__)</_OUTPUT/>))));
+<//>/>, </m4_fatal(Unsupported GLA type in multiplexer!)/>)dnl
+/>)dnl
+        return retval;
     }
 />, </single/>, </dnl
 
@@ -133,4 +212,9 @@ m4_foreach(</__GLA__/>, m4_quote(INNER_GLA), </dnl
     }
 />)dnl
 };
+
+m4_if(MY_REZTYPE, </fragment/>, </dnl
+typedef GLA_NAME</::Iterator/> GLA_NAME</_Iterator/>;
+/>)dnl
+
 />)dnl
