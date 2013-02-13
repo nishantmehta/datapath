@@ -19,8 +19,6 @@
 #include <string.h>
 #include "MMappedStorage.h"
 
-DistributedCounter* Column::colCount = new DistributedCounter(0);
-
 int Column :: GetColLength () {
 	return myData->GetNumBytes ();
 }
@@ -37,9 +35,9 @@ Column :: ~Column () {
 	}
 
 	// and kill the storage
-	delete myData;	
+	delete myData;
 
-} 
+}
 
 bool Column :: IsWriteMode () {
 	return myData->IsWriteMode ();
@@ -94,7 +92,7 @@ void Column :: Detach () {
 	// first, make a deep copy if we need to
 	if (!myData->IsLoneCopy ()) {
 		myData->SetLoneCopy ();
-		myData->Detach ();	
+		myData->Detach ();
 	}
 
 	// now, we have to unlink ourselves from all of the copies of this data
@@ -131,10 +129,9 @@ Column :: Column (MMappedStorage &loadMe) {
 	// make a copy of the guy who is being sent in
   myData = new MMappedStorage;
   myData->swap(loadMe);
-	
+
 	// allocate everything
 	refCount = new DistributedCounter(1);
-	Column::colCount->Increment(1); // REMOVE
 }
 
 Column :: Column () {
@@ -150,14 +147,13 @@ void Column :: copy (Column &copyMe) {
 	if (copyMe.refCount == NULL)
 		return; // no point in copying empty columns
 
-	Column::colCount->Increment(1); // REMOVE
 	refCount = copyMe.refCount;
-	fragments = copyMe.fragments;	
+	fragments = copyMe.fragments;
 	refCount->Increment(1);// one more copy
-	
+
 	// and now make a shallow copy of the storage
 	myData = copyMe.myData->CreateShallowCopy ();
-	
+
 	// and remember that the new one is a copy of the existing one
 	myData->SetCopyOf (*(copyMe.myData));
 }
@@ -168,8 +164,8 @@ void Column :: Done (int numBytes) {
 		return;
 
 	// see if the storage wants us to create a new version of itself
-	MMappedStorage *newStorage = myData->Done (numBytes); 
-	
+	MMappedStorage *newStorage = myData->Done (numBytes);
+
 	FATALIF(newStorage != 0, "ColumnStorage that morphs into different storage not supported");
 }
 

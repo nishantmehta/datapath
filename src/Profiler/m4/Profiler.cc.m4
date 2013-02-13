@@ -4,6 +4,11 @@
 #include "Stl.h""
 #include <inttypes.h>
 
+#ifdef MMAP_DIAG_TICK
+#include "MmapAllocator.h"
+#endif
+
+
 dnl # // M4 PREAMBLE CODE
 include(SQLite.m4)
 dnl # END OF M4 CODE
@@ -47,6 +52,10 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(ProfilerImp, ProfileSetMessage_H, ProfileSetMes
 
 MESSAGE_HANDLER_DEFINITION_BEGIN(ProfilerImp, ProfileIntervalMessage_H, ProfileIntervalMessage) {
     evProc.PrintCounters(msg.cTime, msg.wallTime);
+
+#ifdef MMAP_DIAG_TICK
+    MMAP_DIAG;
+#endif
 } MESSAGE_HANDLER_DEFINITION_END
 
 void ProfilerImp::PrintCounters(const clock_t newCpu, const double newClock){
@@ -69,7 +78,6 @@ void ProfilerImp::PrintCounters(const clock_t newCpu, const double newClock){
             int64_t val = value;
             if (val>0){
                 gotOne = true;
-                val/=(newClock-lastTick);
                 gOut <<"\t";
                 gOut << counter << ":";
                 string outVal;

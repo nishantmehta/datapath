@@ -308,7 +308,8 @@ bool LemonTranslator::AddScannerWP(WayPointID scannerID, string relName, SlotCon
 
 
 bool LemonTranslator::AddTextLoaderWP(WayPointID loaderID, SlotContainer& atts,
-        char separator, SlotContainer& atts2, string pattern, int count, string defs)
+        char separator, SlotContainer& atts2, string pattern, int count, string defs,
+        size_t tuplesPerChunk)
 {
     PDEBUG("LemonTranslator::AddTextLoaderWP(WayPointID loaderID = %s, SlotContainer& atts = %s, char separator = %c,\
          SlotContainer& atts2 = %s, string pattern = %s, int count = %d", loaderID.getName().c_str(),
@@ -316,7 +317,7 @@ bool LemonTranslator::AddTextLoaderWP(WayPointID loaderID, SlotContainer& atts,
     FATALIF(!loaderID.IsValid(), "Invalid WaypointID received in AddTextLoaderWP");
     set<SlotID> attr;
     ConvertToSTLSet (atts, attr);
-    LT_Waypoint* WP = new LT_TextLoader(loaderID, attr, separator, atts2, pattern, count, defs);
+    LT_Waypoint* WP = new LT_TextLoader(loaderID, attr, separator, atts2, pattern, count, defs, tuplesPerChunk);
     return AddGraphNode(loaderID, TextLoaderWaypoint, WP);
 }
 

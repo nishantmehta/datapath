@@ -115,7 +115,13 @@ void LT_TextLoader :: WriteM4File (ostream& out) {
   out << "/>";
 
 	// 3rd argument
-	out << ", </(" << (int)separator << ")/> )";
+	out << ", </(" << (int)separator << ")/>";
+
+    // 4th argument
+    out << ", </" << tuplesPerChunk << "/>";
+
+    // End of macro call
+    out << " )";
 
 }
 

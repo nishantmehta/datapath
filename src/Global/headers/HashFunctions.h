@@ -18,8 +18,8 @@
 
 /** This header file contains various hash functions.
 
-		NOTE: plese keep this file clean and add only hash functions not
-		hash table stuff
+    NOTE: plese keep this file clean and add only hash functions not
+    hash table stuff
 
 */
 #ifdef __APPLE__
@@ -33,6 +33,11 @@
 // if the constants are too large, they can produce overflows
 // H_a has to be at most 56 bits. so we can avoid costly mod
 #define H_a 0x0000b2334cff35abUL
+// The H_a value used by drand48 and java.util.Random
+//#define H_a 0x00000005DEECE66DUL
+// H_a used by MMIX
+//#define H_a 6364136223846793005UL
+
 // H_b has to be at most 60 bits
 // We select both to be 48bit to bt on the safe side
 #define H_b 0x000034faccba783fUL
@@ -134,6 +139,7 @@
 
 **/
 
+/*
 inline __uint64_t CongruentHash(const __uint64_t x, const __uint64_t b = H_b){
 	__uint128_t y = (__uint128_t) x * H_a + b;
 	__uint64_t yLo = y & H_p; // the lower 61 bits
@@ -147,12 +153,80 @@ inline __uint64_t CongruentHash(const __uint64_t x, const __uint64_t b = H_b){
 	__uint64_t rez2 = (rez & H_p) + (rez >> 61);
 	return rez2;
 }
+*/
+
+// Modified MurmurHash2
+inline __uint64_t CongruentHash ( __uint64_t data, __uint64_t seed = H_b )
+{
+	const __uint64_t m = 0xc6a4a7935bd1e995;
+	const int r = 47;
+
+	__uint64_t h = seed ^ (sizeof(__uint64_t) * m);
+
+    data *= m;
+    data ^= data >> r;
+    data *= m;
+
+    h ^= data;
+    h *= m;
+
+	h ^= h >> r;
+	h *= m;
+	h ^= h >> r;
+
+	return h;
+}
 
 /** All bytes after the first byte that is 0 are turned to 0
 */
 
 /** funtion to hash a \0 terminated string */
 
+// MurmurHash2, 64-bit versions, by Austin Appleby
+inline __uint64_t HashString ( const void * key, int len, __uint64_t seed = H_b )
+{
+	const __uint64_t m = 0xc6a4a7935bd1e995;
+	const int r = 47;
+
+	__uint64_t h = seed ^ (len * m);
+
+	const __uint64_t * data = (const __uint64_t *)key;
+	const __uint64_t * end = data + (len/8);
+
+	while(data != end)
+	{
+		__uint64_t k = *data++;
+
+		k *= m;
+		k ^= k >> r;
+		k *= m;
+
+		h ^= k;
+		h *= m;
+	}
+
+	const unsigned char * data2 = (const unsigned char*)data;
+
+	switch(len & 7)
+	{
+	case 7: h ^= __uint64_t(data2[6]) << 48;
+	case 6: h ^= __uint64_t(data2[5]) << 40;
+	case 5: h ^= __uint64_t(data2[4]) << 32;
+	case 4: h ^= __uint64_t(data2[3]) << 24;
+	case 3: h ^= __uint64_t(data2[2]) << 16;
+	case 2: h ^= __uint64_t(data2[1]) << 8;
+	case 1: h ^= __uint64_t(data2[0]);
+	        h *= m;
+	};
+
+	h ^= h >> r;
+	h *= m;
+	h ^= h >> r;
+
+	return h;
+}
+
+/*
 inline __uint64_t HashString(const char* str, __uint64_t b = H_b){
 
 	__uint64_t hash = b;
@@ -203,5 +277,6 @@ inline __uint64_t HashString(const char* str, __uint64_t b = H_b){
 
 	return hash;
 }
+*/
 
 #endif // _HASH_FUNCTIONS_H_

@@ -20,7 +20,7 @@ friend class ColumnReadWrite;
 private:
 
 	// protects the reference counter
-DistributedCounter* refCount; // reference counter
+    DistributedCounter* refCount; // reference counter
 
 	// the actual column storage
 	MMappedStorage *myData;
@@ -34,7 +34,7 @@ protected:
 	int GetColLength ();
 
 	// tell the column we are done iterating, and that it should be truncated at numBytes
-	void Done (int numBytes);	
+	void Done (int numBytes);
 
 	// tell the column that we want to detach from any shallow copies (if they exist) by
 	// making a deep copy

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #
 #  Copyright 2012 Christopher Dudley
 #
@@ -364,7 +364,7 @@ def getDPInit():
 
         return tmpFile
     else:
-        return subprocess.STDIN
+        return sys.stdin
 
 def loadData():
     """Load the generated TPC-H data into the database."""

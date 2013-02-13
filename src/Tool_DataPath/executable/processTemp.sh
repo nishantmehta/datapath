@@ -16,12 +16,6 @@
 # $1 = base of the file names
 # Note: this file is run in the context of the executable folder
 
-DP_EXEC_DIR=$(DATAPATH_EXEC_PATH)
-DP_SRC_DIR=$(DATAPATH_INSTALL_PATH)/src
-M4_DIR=$DP_SRC_DIR/M4/m4
-WPF_DIR=$DP_SRC_DIR/WPFunctionModules
-LIB_DIR=$(readlink -f $DP_EXEC_DIR/Libs)
-
 prevIFS="$IFS"
 IFS=":"
 

@@ -26,6 +26,7 @@ GENERATE : 'generate' | 'Generate' | 'GENERATE';
 DEFINE : 'define' | 'Define' | 'DEFINE';
 REQUIRES : 'requires' | 'Requires' | 'REQUIRES';
 SELF : 'self' | 'Self' | 'SELF';
+CHUNKSIZE : 'chunksize' | 'Chunksize' | 'CHUNKSIZE';
 
 parse[LemonTranslator* trans]
     : {
@@ -133,8 +134,8 @@ actionBody
         -> ^(GIST_WP) ^(QUERRY__ ID[qry.c_str()] ^(GIST__ $ct $st $gist $rez))
     | AGGREGATE t=ID (FROM? inp=ID) USING expr=expression AS name=ID
         -> ^(AGGREGATE $inp) ^(QUERRY__ ID[$inp,qry.c_str()] ^(AGGREGATE $name $t $expr))
-    | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? attrs=readAttributes
-        -> ^(TEXTLOADER__ $attrs ^(SEPARATOR $s)?  ^(FILE__ $f $b) )
+    | READ FILE? f=STRING (COLON b=INT)? (SEPARATOR s=STRING)? cs=readChunkSize attrs=readAttributes
+        -> ^(TEXTLOADER__ $attrs ^(SEPARATOR $s)? $cs  ^(FILE__ $f $b) )
     | FOREACH a=ID GENERATE generateList
         -> ^(SELECT__ $a) ^(QUERRY__ ID[$a,qry.c_str()] generateList )
     ;
@@ -142,6 +143,11 @@ actionBody
 readAttributes
     : ATTRIBUTES FROM c=ID -> ^(ATTFROM $c)
     | ATTRIBUTES attrs=attListWTypes -> ^(ATTS $attrs)
+    ;
+
+readChunkSize
+    : /* nothing */
+    | CHUNKSIZE n=INT -> ^(TUPLE_COUNT $n)
     ;
 
 generateItem

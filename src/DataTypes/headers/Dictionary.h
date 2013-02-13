@@ -20,7 +20,7 @@ private:
     IndexMap indexMap;
     // Mapping from String to ID
     ReverseMap reverseMap;
-    // Mapping from ID to index in sorted order 
+    // Mapping from ID to index in sorted order
     TranslationTable orderMap;
 
     // Next ID to be given
@@ -67,7 +67,7 @@ public:
     //  first = second  : retVal = 0
     //  first < second  : retVal < 0
     DiffType Compare( IntType firstID, IntType secondID );
- 
+
 private:
     // Helper method for reverse lookups
     IntType Lookup( StringType& str ) const;

@@ -54,11 +54,11 @@ void WayPoint :: GetFlowThruQueryExits (QueryExitContainer &putResHere) {
 	PDEBUG ("WayPoint :: GetFlowThruQueryExits ()");
 	data->GetFlowThruQueryExits (putResHere);
 }
-	
+
 void WayPoint :: Configure (WayPointConfigureData &configData) {
 	PDEBUG ("WayPoint :: Configure ()");
 
-	// do the configuration 
+	// do the configuration
 	WayPointImp *temp = data->Configure (configData);
 
 	// if this results in a new waypoint (we went from generic to specific) then
@@ -104,7 +104,7 @@ void WayPoint :: ProcessDirectMsg (DirectMsg &message) {
 	data->ProcessDirectMsg (message);
 }
 
-void WayPoint :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &withMe, 
+void WayPoint :: DoneProducing (QueryExitContainer &whichOnes, HistoryList &withMe,
 																int returnVal, ExecEngineData& retData) {
 	PDEBUG ("WayPoint :: DoneProducing ()");
 	data->DoneProducing (whichOnes, withMe, returnVal, retData);

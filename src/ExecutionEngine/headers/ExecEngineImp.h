@@ -61,10 +61,10 @@ private:
 	// this is the set of outstanding requests that are too low in priority to be fulfilled
 	TwoWayList <TokenRequest> frozenOutFromCPU;
 	TwoWayList <TokenRequest> frozenOutFromDisk;
-	
+
 	// this is the cutoff in priority for the CPU and the disk... a higher cutoff means that
-	// it is harder to get te resources.  Any resource request having a priority that is a 
-	// larger number than the cutoff for the resource can never be fulfilled until the 
+	// it is harder to get te resources.  Any resource request having a priority that is a
+	// larger number than the cutoff for the resource can never be fulfilled until the
 	// priority cutoff changes to a value that is no smaller than the priority of the request
 	int priorityCPU;
 	int priorityDisk;
@@ -89,6 +89,7 @@ protected:
 	// these functions are called by the ExecEngine class to actually send messages... they should NOT
 	// be called by anyone else.  If a particular waypoint type wants to send a message, it should make
 	// a call to the ExecEngine class and not call these functions directly
+    void SendHoppingDataMsg( HoppingDataMsg &);
 	void SendHoppingDownstreamMsg (HoppingDownstreamMsg &);
 	void SendHoppingUpstreamMsg (HoppingUpstreamMsg &);
 	void SendAckMsg (QueryExitContainer &, HistoryList &);
@@ -109,18 +110,18 @@ protected:
 	// a zero is returned... called when you cannot wait and will drop work if no worker is availbale
 	// Note the priority field.  The smaller the number, the greater the priority associated with the
 	// request being made.  The way that this works is that your request will be denied (even if
-	// there are tokens available) if the priority cutoff for your request type has been set to be 
+	// there are tokens available) if the priority cutoff for your request type has been set to be
 	// a number that is less than your request's priority
 	int RequestTokenImmediate (WayPointID &whoIsAsking, off_t requestType, GenericWorkToken &returnVal, int priority = 1);
 
 	// request a work token for some future time... note that your request can never be granted until
 	// the priority cutoff for your request type has been set to a number that is equal to or greater
 	// than your request's priority
-	void RequestTokenDelayOK (WayPointID &whoIsAsking, off_t requestType, int priority = 1); 
+	void RequestTokenDelayOK (WayPointID &whoIsAsking, off_t requestType, int priority = 1);
 
 	// this sets the priority cutoff for a particular requet type (note a lower number means a higher
 	// cutoff, since 1 is the highest priority).  The way that this works is that no token requests will
-	// ever be granted for the particular request type if the priority associated with the request is 
+	// ever be granted for the particular request type if the priority associated with the request is
 	// a greater number than the current cutoff
 	void SetPriorityCutoff (off_t requestType, int priority);
 
@@ -168,7 +169,7 @@ struct TokenRequest {
 		memmove (&withMe, this, sizeof (TokenRequest));
 		memmove (this, temp, sizeof (TokenRequest));
 	}
-	
+
 };
 
 #endif

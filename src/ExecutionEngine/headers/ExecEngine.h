@@ -24,7 +24,7 @@
 
 /** Class to provide an interface to ExecEngineImp class.
 
-    See ExecEngineImp.h for a description of the functions 
+    See ExecEngineImp.h for a description of the functions
     and behavior of the class
 */
 class ExecEngine : public EventProcessor {
@@ -36,6 +36,12 @@ protected:
 	// these functions are called by the WayPointImp class to actually send messages... they should NOT
 	// be called by anyone else.  If a particular waypoint type wants to send a message, it should make
 	// a call to the WayPointImp class and not call these functions directly
+
+    void SendHoppingDataMsg( HoppingDataMsg &msg ) {
+		ExecEngineImp *temp = dynamic_cast <ExecEngineImp *> (evProc);
+        temp->SendHoppingDataMsg(msg);
+    }
+
 	void SendHoppingDownstreamMsg (HoppingDownstreamMsg &msg) {
 		ExecEngineImp *temp = dynamic_cast <ExecEngineImp *> (evProc);
 		temp->SendHoppingDownstreamMsg (msg);

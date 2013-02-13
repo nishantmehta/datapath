@@ -40,7 +40,7 @@
 /* System description block
  *  TYPE_DESC
  *      NAME(</STRING/>)
- *      SIMPLE_TYPE(</ColumnVarIterator< STRING >/>)
+ *      COMPLEX_TYPE(</ColumnVarIterator< STRING >/>)
  *  END_DESC
  *
  *  SYN_DEF(</VARCHAR/>, </STRING/>)
@@ -89,13 +89,15 @@ public:
     ///// Serialization / Deserialization operations /////
 
     // Serialize myself to the buffer.
-    void Serialize( char * buffer ) const;
+    char * Serialize( char * buffer ) const;
+    void * Serialize( void * buffer ) const;
 
     // Deserialize myself from the buffer
     void Deserialize( char * buffer );
 
     // Return the size (in bytes) this object writes in Serialize and reads in Deserialize.
     int GetObjLength() const;
+    int GetSize() const;
 
     ///// Utilities /////
 
@@ -148,6 +150,11 @@ inline
 STRING& STRING :: operator = ( const STRING& other ) {
     Clear();
 
+#ifdef STRING_ASSIGN_DEEP
+    length = other.length;
+    str = strdup( other.str );
+    localStorage = true;
+#else
     length = other.length;
     str = other.str;
     localStorage = other.localStorage;
@@ -155,6 +162,7 @@ STRING& STRING :: operator = ( const STRING& other ) {
     if( localStorage ) {
         str = strdup( other.str );
     }
+#endif
 }
 
 inline
@@ -173,12 +181,18 @@ void STRING :: Clear() {
 }
 
 inline
-void STRING :: Serialize( char * buffer ) const {
+char * STRING :: Serialize( char * buffer ) const {
 #ifdef DEBUG_STRING
     std::cout << "Serializing -> " << DebugString() << std::endl;
 #endif // DEBUG_STRING
 
     strcpy( buffer, str );
+
+    return buffer;
+}
+inline
+void * STRING :: Serialize( void * buffer ) const {
+    return (void *) Serialize( (char *) buffer );
 }
 
 inline
@@ -193,8 +207,15 @@ void STRING :: Deserialize( char * buffer ) {
 #endif // DEBUG_STRING
 }
 
+// Used for serialization
 inline
 int STRING :: GetObjLength() const {
+    return length + 1;
+}
+
+// Used for serialization
+inline
+int STRING :: GetSize() const {
     return length + 1;
 }
 
@@ -288,7 +309,7 @@ const char & STRING :: at( SizeType index ) const {
 // Hash function
 inline
 uint64_t Hash( const STRING& str ) {
-    return HashString( str.ToString() );
+    return HashString( (void *) str.ToString(), str.Length() );
 }
 
 #ifdef _HAS_STD_HASH

@@ -109,6 +109,9 @@ public:
     // gets the ID
     WayPointID GetID ();
 
+    // Gets the name of the waypoint
+    std::string GetName();
+
     // constructor; creates a dummy wayPoint of no particular type
     WayPointImp ();
 
@@ -135,6 +138,9 @@ public:
     // the following five methods provide five different ways to send messages to/beween waypoints.  There is
     // a sixth way to send a message (the so-called "hopping data message") but this is always sent
     // asynchronously to the exec engine via an event processor
+
+    // Send a data message downstream to everyone listed as a destination
+    void SendHoppingDataMsg( QueryExitContainer& whichOnes, HistoryList& lineage, ExecEngineData& data );
 
     // send a message downstream in the graph to everyone listed as a desitination
     void SendHoppingDownstreamMsg (HoppingDownstreamMsg &msg);

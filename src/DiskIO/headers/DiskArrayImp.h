@@ -86,7 +86,7 @@ public:
 
 private:
 	#include "DiskArrayImpPrivate.h"
-	
+
 public:
 	// constructor & destructor
 	DiskArrayImp(bool isReadOnly);
@@ -107,7 +107,7 @@ public:
 
 	// update within another action (so that we can run a single transactin)
 	void Flush(sqlite3* db);
-	
+
 	// get the ID
 	int getArrayID(void){ return meta.arrayID; }
 
@@ -150,7 +150,7 @@ inline off_t DiskArrayImp::AllocatePages(off_t _noPages, int relID){
 
 	// first allign the page request
 	_noPages =  PageAllign(_noPages);
-	
+
 	return diskSpaceMng.DiskAlloc(_noPages, relID);
 }
 

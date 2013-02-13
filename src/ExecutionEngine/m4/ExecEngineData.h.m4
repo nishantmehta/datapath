@@ -26,6 +26,7 @@ include(DataFunctions.m4)
 #include "GLAData.h"
 #include "HashTableSegment.h"
 #include "Tokens.h"
+#include "History.h"
 #include <stdio.h>
 
 // this file has all of the data types that can be sent downstream thru the
@@ -41,6 +42,12 @@ M4_CREATE_BASE_DATA_TYPE(ExecEngineData, DataC,
 M4_CREATE_DATA_TYPE(ChunkContainer, ExecEngineData,
  <//>,
  </(myChunk, Chunk)/>)
+
+// A datatype used for caching rejected chunks, while keeping track of its
+// history.
+M4_CREATE_DATA_TYPE(CachedChunk, DataC,
+ <//>,
+ </(myChunk, ChunkContainer), (lineage, HistoryList), (whichExits, QueryExitContainer)/>)
 
 // another type of EEData used to transport states between waypoints
 M4_CREATE_DATA_TYPE(StateContainer, ExecEngineData,

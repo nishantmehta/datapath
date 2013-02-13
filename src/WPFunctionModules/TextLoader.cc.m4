@@ -28,6 +28,7 @@ dnl M4_Columns -- list of columns that the bulkloader loads.
 dnl   each element is of type (name, type)
 dnl   If value is NONE, the attribute is skipped
 dnl M4_Separator -- the separator used in the input
+dnl M4_ChunkSize -- the maximum number of tuples per chunk
 dnl
 extern "C"
 int TextLoaderWorkFunc_<//>M4_WPName (WorkDescription &workDescription, ExecEngineData &result) {
@@ -50,6 +51,8 @@ m4_foreach(</_C_/>, </M4_Columns/>, </dnl
     char* curr;
     char* next;
     bool finished = false; // did we finish
+
+    const size_t maxTuplesPerChunk = m4_if(m4_eval(M4_ChunkSize == 0), 1, PREFERED_TUPLES_PER_CHUNK, M4_ChunkSize);
 
     size_t lineSize=1024; // the size of the line
     char* buffer = (char*)malloc(lineSize); // will be resized by getline
@@ -96,7 +99,7 @@ dnl # END OF M4 CODE
 
         noTuples++;
 
-        if (noTuples>=PREFERED_TUPLES_PER_CHUNK)
+        if (noTuples>=maxTuplesPerChunk)
             break;
     }
 
@@ -128,6 +131,7 @@ m4_if(_TYPE_REQ_DICT(M4_ATT_TYPE(_C_)), 1, </, _C_</_Local_Dict/>/>)<//>dnl
 );
 dnl _C_<//>Column.Compress(false); // compress the
 dnl  //column. Keep both compressed and decompressed
+    FATALIF( ! _C_<//>Column.IsValid(), "Column _C_ invalid when packing into chunk!");
     chunk.SwapColumn( _C_<//>Column, cSlot );
 <//>/>)<//>dnl
 />)

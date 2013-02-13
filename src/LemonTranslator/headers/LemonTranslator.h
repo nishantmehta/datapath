@@ -64,7 +64,8 @@ public:
                                                 slot is skipped */
             string pattern,
             int count,
-            string defs
+            string defs,
+            size_t tuplesPerChunk
             );
 
     bool AddSelectionWP(WayPointID selWP);

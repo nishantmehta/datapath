@@ -64,10 +64,28 @@
 	double averageVariance; // the average variance of disks
 
 	off_t totalPages; // total number of pages read by the system
-  off_t pagesAtLastCall;
+    off_t pagesAtLastCall;
 
 	// allign the page to the larger disk page using pageMultiplier
 	off_t PageAllign(off_t page);
+
+    static const __uint64_t Hash_a = 0x0000b2334cff35abUL;
+    static const __uint64_t Hash_b = 0x000034faccba783fUL;
+    static const __uint64_t Hash_p = 0x1fffffffffffffffUL;
+
+    inline __uint64_t PageHash(const __uint64_t x, const __uint64_t b = Hash_b){
+        __uint128_t y = (__uint128_t) x * Hash_a + b;
+        __uint64_t yLo = y & Hash_p; // the lower 61 bits
+        __uint64_t yHi= (y>>61) ; // no need to mask to get next 61 bits due to low constant H_a
+        __uint64_t rez=yLo+yHi;
+
+        // Below statement essentially means: __uint64_t rez2 = (rez<H_p ? rez : rez-H_p);
+        // But only problem below is, we do not get zero result. May be we could say, it's
+        // not the problem, but the solution. This nifty trick solves the branching statements,
+        // which may or may not shown to be problematic
+        __uint64_t rez2 = (rez & Hash_p) + (rez >> 61);
+        return rez2;
+    }
 
 // space manager
 DiskMemoryAllocator diskSpaceMng;

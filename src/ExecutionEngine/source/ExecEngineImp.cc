@@ -86,7 +86,7 @@ int ExecEngineImp :: DeliverSomeMessage () {
 	// first, see if there are any requests
 	if (!AreRequests ())
 		return 0;
-	
+
 	int whatToDo;
 	RemoveRequest (whatToDo);
 
@@ -94,7 +94,7 @@ int ExecEngineImp :: DeliverSomeMessage () {
 
 		/************************/
 		case HOPPING_DOWNSTREAM_MESSAGE: {
-		
+
 		// take the message out
 		hoppingDownstreamMessages.MoveToStart ();
 		HoppingDownstreamMsg temp;
@@ -115,7 +115,7 @@ int ExecEngineImp :: DeliverSomeMessage () {
 			// put the destination query exits into it
 			temp2.get_dest ().swap (allSubsets.CurrentData ());
 			temp2.get_currentPos () = allSubsets.CurrentKey ();
-			
+
 			// find the waypoint it needs to be delivered to
 			WayPointID myWayPointID;
 			myWayPointID = allSubsets.CurrentKey ();
@@ -139,20 +139,20 @@ int ExecEngineImp :: DeliverSomeMessage () {
 			myWayPoint.ProcessHoppingDownstreamMsg (temp2);
 
 			// and move on in the list of subsets
-			allSubsets.Advance ();	
+			allSubsets.Advance ();
 		}
 
-		// and get outta here!	
-		return 1;	
+		// and get outta here!
+		return 1;
 
 		/****************************/
 		} case HOPPING_UPSTREAM_MESSAGE: {
-	
+
 		// take the message out
 		hoppingUpstreamMessages.MoveToStart ();
 		HoppingUpstreamMsg temp;
 		hoppingUpstreamMessages.Remove (temp);
-		
+
 		// now find the place it needs to be routed to
 		WayPointIDContainer nextOnes;
 		myGraph.FindUpstreamWaypoints (temp.get_currentPos (), temp.get_dest (), nextOnes);
@@ -171,18 +171,18 @@ int ExecEngineImp :: DeliverSomeMessage () {
 			myWayPoint.ProcessHoppingUpstreamMsg (temp2);
 		}
 
-		// and get outta here!	
-		return 1;	
+		// and get outta here!
+		return 1;
 
 
 		/*******/
 		} case ACK: {
-		
+
 		// take the message out
 		acks.MoveToStart ();
 		LineageData temp;
 		acks.Remove (temp);
-		
+
 		// now find the place it needs to be routed to
 		temp.history.MoveToFinish ();
 		FATALIF (!temp.history.LeftLength (), "Why do I have an empty HistoryList?");
@@ -194,17 +194,17 @@ int ExecEngineImp :: DeliverSomeMessage () {
 		DIAGNOSE_ENTRY("ExecutionEngine", myWayPoint.GetID().getName().c_str(), "ACK");
 		myWayPoint.ProcessAckMsg (temp.whichOnes, temp.history);
 
-		// and get outta here!	
-		return 1;	
-	
+		// and get outta here!
+		return 1;
+
 		/********/
 		} case DROP: {
-		
+
 		// take the message out
 		drops.MoveToStart ();
 		LineageData temp;
 		drops.Remove (temp);
-		
+
 		// now find the place it needs to be routed to
 		temp.history.MoveToFinish ();
 		FATALIF (!temp.history.LeftLength (), "Why do I have an empty HistoryList?");
@@ -216,34 +216,34 @@ int ExecEngineImp :: DeliverSomeMessage () {
 		DIAGNOSE_ENTRY("ExecutionEngine", myWayPoint.GetID().getName().c_str(), "DROP");
 		myWayPoint.ProcessDropMsg (temp.whichOnes, temp.history);
 
-		// and get outta here!	
-		return 1;	
+		// and get outta here!
+		return 1;
 
 		/******************/
 		} case DIRECT_MESSAGE: {
-	
+
 		// send a direct message
 		directMessages.MoveToStart ();
 		DirectMsg temp;
 		directMessages.Remove (temp);
-		
+
 		// now, actually deliver the message
 		WayPoint &myWayPoint = myWayPoints.Find (temp.get_receiver ());
 		PDEBUG("Sending DIRECT message to %s", myWayPoint.GetID().getName().c_str());
 		DIAGNOSE_ENTRY("ExecutionEngine", myWayPoint.GetID().getName().c_str(), "DIRECT");
 		myWayPoint.ProcessDirectMsg (temp);
 
-		// and get outta here!	
+		// and get outta here!
 		return 1;
 
 		/************************/
 		} case HOPPING_DATA_MESSAGE: {
-		
+
 		// take the message out
 		hoppingDataMessages.MoveToStart ();
 		HoppingDataMsg temp;
 		hoppingDataMessages.Remove (temp);
-		
+
 		// now find all of the places it needs to be routed to
 		InefficientMap <WayPointID, QueryExitContainer> allSubsets;
 
@@ -286,11 +286,11 @@ int ExecEngineImp :: DeliverSomeMessage () {
 			myWayPoint.ProcessHoppingDataMsg (temp2);
 
 			// and move on in the list of subsets
-			allSubsets.Advance ();	
+			allSubsets.Advance ();
 		}
 
-		// and get outta here!	
-		return 1;	
+		// and get outta here!
+		return 1;
 
 		/*********************/
 		} case CPU_TOKEN_REQUEST: {
@@ -324,7 +324,7 @@ int ExecEngineImp :: DeliverSomeMessage () {
                 WayPoint &thisOne = myWayPoints.Find (whoIsAsking.whoIsAsking);
                 thisOne.RequestGranted (workToken);
                 return 1;
-	
+
 		/*********************/
 		} case DISK_TOKEN_REQUEST: {
 
@@ -436,6 +436,16 @@ void ExecEngineImp :: RequestTokenDelayOK (WayPointID &whoIsAsking, off_t reques
 	}
 }
 
+void ExecEngineImp :: SendHoppingDataMsg( HoppingDataMsg &sendMe ) {
+	FATALIF(sendMe.Type() == ABSTRACT_DATA_TYPE, "Message is invalid");
+    FATALIF(CHECK_DATA_TYPE(sendMe.get_data(), ExecEngineData), "Payload is invalid");
+
+    // store the message for later processing
+    hoppingDataMessages.MoveToFinish ();
+    hoppingDataMessages.Insert( sendMe );
+    InsertRequest( HOPPING_DATA_MESSAGE );
+}
+
 void ExecEngineImp :: SendHoppingDownstreamMsg (HoppingDownstreamMsg &sendMe) {
 
 	FATALIF(sendMe.Type() == ABSTRACT_DATA_TYPE, "Message is invalid");
@@ -443,8 +453,8 @@ void ExecEngineImp :: SendHoppingDownstreamMsg (HoppingDownstreamMsg &sendMe) {
 
 	// store the message for later processing
 	hoppingDownstreamMessages.MoveToFinish ();
-	hoppingDownstreamMessages.Insert (sendMe);	
-	InsertRequest (HOPPING_DOWNSTREAM_MESSAGE);	
+	hoppingDownstreamMessages.Insert (sendMe);
+	InsertRequest (HOPPING_DOWNSTREAM_MESSAGE);
 }
 
 void ExecEngineImp :: SendHoppingUpstreamMsg (HoppingUpstreamMsg &sendMe) {
@@ -454,7 +464,7 @@ void ExecEngineImp :: SendHoppingUpstreamMsg (HoppingUpstreamMsg &sendMe) {
 
 	// and store the message for later processing
 	hoppingUpstreamMessages.MoveToFinish ();
-	hoppingUpstreamMessages.Insert (sendMe);	
+	hoppingUpstreamMessages.Insert (sendMe);
 	InsertRequest (HOPPING_UPSTREAM_MESSAGE);
 }
 
@@ -484,9 +494,9 @@ void ExecEngineImp :: SendDirectMsg (DirectMsg &sendMe) {
 	InsertRequest (DIRECT_MESSAGE);
 }
 
-MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, ConfigureExecEngine, ConfigureExecEngineMessage) 
+MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, ConfigureExecEngine, ConfigureExecEngineMessage)
 
-	// we go thru the list of guys that are being configured... 
+	// we go thru the list of guys that are being configured...
 	msg.configs.MoveToStart ();
 	while (msg.configs.RightLength ()) {
 
@@ -525,20 +535,20 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, ConfigureExecEngine, ConfigureEx
 
 	// at this point, we are fully configured, so we process any messages that are waiting to be delivered
 	while (evProc.DeliverSomeMessage ());
-		
+
 MESSAGE_HANDLER_DEFINITION_END
 
 extern CPUWorkerPool myCPUWorkers;
 extern CPUWorkerPool myDiskWorkers;
 
 void ExecEngineImp :: GiveBackToken (GenericWorkToken &giveBack) {
-	
+
 	if (CHECK_DATA_TYPE(giveBack, CPUWorkToken)) {
 
 		// store the token for later use
 		CPUWorkToken temp;
 		temp.swap (giveBack);
-		unusedCPUTokens.Insert (temp);		
+		unusedCPUTokens.Insert (temp);
 
 		// if there was someone waiting on the token, then put in the request
 		if (unusedCPUTokens.Length () <= requestListCPU.Length ()) {
@@ -551,7 +561,7 @@ void ExecEngineImp :: GiveBackToken (GenericWorkToken &giveBack) {
 		// store the token for later use
 		DiskWorkToken temp;
 		temp.swap (giveBack);
-		unusedDiskTokens.Insert (temp);		
+		unusedDiskTokens.Insert (temp);
 
 		// if there was someone waiting on the token, then put in the request
 		if (unusedDiskTokens.Length () <= requestListDisk.Length ()) {
@@ -566,9 +576,9 @@ void ExecEngineImp :: GiveBackToken (GenericWorkToken &giveBack) {
 
 
 MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, HoppingDataMsgReady, HoppingDataMsgMessage)
-	
+
 	// first, we let the person who produced this data know that we have gotten it back
-	if (evProc.myWayPoints.IsThere (msg.message.get_currentPos ())) { 
+	if (evProc.myWayPoints.IsThere (msg.message.get_currentPos ())) {
 
 		WayPoint &thisOne = evProc.myWayPoints.Find (msg.message.get_currentPos ());
 
@@ -593,7 +603,7 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, HoppingDataMsgReady, HoppingData
 	} else {
 		FATAL ("Got some data back from a worker, but I have never seen the producing waypoint.\n");
 	}
-	
+
 	// next, we take care of the work token that was given back
 	WayPointID foo = msg.message.get_currentPos ();
 
@@ -605,7 +615,7 @@ MESSAGE_HANDLER_DEFINITION_BEGIN(ExecEngineImp, HoppingDataMsgReady, HoppingData
 
 	// and then process any messages that are waiting to be delivered
 	while (evProc.DeliverSomeMessage ());
-	
+
 MESSAGE_HANDLER_DEFINITION_END
 
 
@@ -614,7 +624,7 @@ void ExecEngineImp :: InsertRequest (int requestID) {
 	SwapifiedInt temp;
 	temp = requestID;
 	requests.Append (temp);
-	
+
 }
 
 int ExecEngineImp :: AreRequests () {

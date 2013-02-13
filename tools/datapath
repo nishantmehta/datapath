@@ -46,10 +46,13 @@ function getFile {
 
 # Returns 1 if yes and 0 if no
 # $1 = Prompt
+# $2 = variable in which to store result
 function getYesOrNo {
     # Valid answers for yes and no
     local ANS_YES="y yes"
     local ANS_NO="n no"
+
+    local __resultvar=$2
 
     while [ 0 ]; do
         read -p "$1" ans
@@ -57,13 +60,17 @@ function getYesOrNo {
         # Check if yes
         echo $ANS_YES | grep -i -w "$ans" &>/dev/null
         if [ $? == 0 ]; then
-            return 1
+            local myresult=1
+            eval $__resultvar="'$myresult'"
+            return
         fi
 
         # Check if no
         echo $ANS_NO | grep -i -w "$ans" &>/dev/null
         if [ $? == 0 ]; then
-            return 0
+            local myresult=0
+            eval $__resultvar="'$myresult'"
+            return
         fi
 
         # Didn't get either
@@ -173,7 +180,8 @@ function executeDatapath {
             echo "Warning: A DataPath process is currently running."
             echo "Do you wish to terminate the currently running process?"
 
-            if [ $(getYesOrNo "Kill process? (y/n): ") == 1 ]; then
+            getYesOrNo "Kill process? (y/n): " yesOrNoResult
+            if [ ${yesOrNoResult} == 1 ]; then
                 # Kill datapath and try to get the lock again
                 gotAns=1
                 echo "Killing currently running datapath instance."

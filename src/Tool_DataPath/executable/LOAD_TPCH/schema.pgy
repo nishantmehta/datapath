@@ -1,6 +1,4 @@
 /* Piggy program to create the TPC-H relations
-
-   Creates the probabilistic version
  */
 
 #include "tpch.pgy" // for types

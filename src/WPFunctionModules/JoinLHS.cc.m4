@@ -208,7 +208,7 @@ dnl             # SS TBD TBD void* used in arithemetic
                 // see if we got attribute
                 if (lastLen > 0) {
 dnl                 # _A_<//>RHS = ((M4_ATT_TYPE(_A_) *) (serializeHere + lenSoFar));
-                    _A_<//>RHSobj = M4_OPTIMIZED_DESERIALIZE(M4_ATT_TYPE(_A_), _A_<//>RHSobj, serializeHere, lenSoFar);
+                    M4_OPTIMIZED_DESERIALIZE(M4_ATT_TYPE(_A_), _A_<//>RHSobj, serializeHere, lenSoFar);
                     _A_<//>RHS = &<//>_A_<//>RHSobj;
                     lenSoFar += lastLen;
                 }

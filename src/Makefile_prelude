@@ -45,6 +45,9 @@ CCFLAGS += -g
 # run a Valgrind-like check of the mmap memory allocator
 # CCFLAGS+= -DMMAP_CHECK
 
+# Run the MMAP check every tick of the profiler
+# CCFLAGS += -DMMAP_DIAG_TICK
+
 # switch to malloc allocation for everythign to allow Valgrind to test memory
 # WARNING: THIS DEACTIVATES DISK AND MEMORY OPTIMIZATION SO USE ONLY FOR DEBUGGING
 # CCFLAGS+=-DMMAP_IS_MALLOC

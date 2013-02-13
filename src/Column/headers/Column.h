@@ -20,11 +20,11 @@
 #include <pthread.h>
 #include "RawStorageDesc.h"
 #include "FileMetadata.h"
-#include "DistributedCounter.h" 
+#include "DistributedCounter.h"
 
 class MMappedStorage;
 
-/** Alin's changes: I broked the general implementation that depends on ColumnStorage and 
+/** Alin's changes: I broked the general implementation that depends on ColumnStorage and
     made everithing depend on MMappedStorage.
 
     To revert, do MMappedStorage->ColumnStorage in Column.h, ColumnPrivate.h and Column.cc
@@ -39,9 +39,6 @@ class Column {
 
 public:
 
-  	static DistributedCounter* colCount; // REMOVE
-
-
 	// standard constructor and destructor
 	Column ();
 	~Column ();
@@ -53,7 +50,7 @@ public:
 	// copy of the storage is made and loaded into the Column, so that after
 	// the call, loadMe can be loaded into another column if desired
 	Column (MMappedStorage &loadMe);
-	
+
 	// interface to the storage functions
 
 
@@ -72,7 +69,7 @@ public:
 	off_t GetCompressedSizeBytes();
 	off_t GetCompressedSizePages();
 	bool GetIsCompressed();
-	
+
 
 	// access to uncompressed data. Should return the size of
 	// uncompressed data even if where is not populated (in which case
@@ -81,7 +78,7 @@ public:
 	off_t GetUncompressedSizeBytes();
 	off_t GetUncompressedSizePages();
 
-	
+
 	// makes a shallow copy of the column... for performance-related reasons,
 	// this should NOT be sued when a swap would suffice, since a write when
 	// you have multiple copies will trigger a copy-on-write

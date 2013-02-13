@@ -25,6 +25,10 @@ WayPointID WayPointImp :: GetID () {
     return myID;
 }
 
+string WayPointImp :: GetName() {
+    return myID.getName();
+}
+
 WayPointImp :: WayPointImp () {
     isGeneric = 1;
 }
@@ -73,6 +77,13 @@ int WayPointImp :: RequestTokenImmediate (off_t requestType, GenericWorkToken &r
 void WayPointImp :: RequestTokenDelayOK (off_t requestType, int priority) {
     WayPointID temp = myID;
     executionEngine.RequestTokenDelayOK (temp, requestType, priority);
+}
+
+void WayPointImp :: SendHoppingDataMsg( QueryExitContainer& whichOnes, HistoryList& lineage, ExecEngineData& data ) {
+    WayPointID idCopy;
+    idCopy.copy(myID);
+    HoppingDataMsg message( myID, whichOnes, lineage, data );
+    executionEngine.SendHoppingDataMsg( message );
 }
 
 void WayPointImp :: SendHoppingDownstreamMsg (HoppingDownstreamMsg &msg) {

@@ -19,25 +19,34 @@
 
 #include "ID.h"
 #include "History.h"
+#include "ExecEngineData.h"
 
 struct LineageData {
 
-	HistoryList history;
-	QueryExitContainer whichOnes;
+    HistoryList history;
+    QueryExitContainer whichOnes;
+    ExecEngineData data;
 
-	LineageData () {}
+    LineageData () {}
 
-	~LineageData () {}
+    ~LineageData () {}
 
-	LineageData (QueryExitContainer &whichOnesIn, HistoryList &historyIn) {
-		historyIn.swap (history);
-		whichOnesIn.swap (whichOnes);
-	}
+    LineageData (QueryExitContainer &whichOnesIn, HistoryList &historyIn) {
+        historyIn.swap (history);
+        whichOnesIn.swap (whichOnes);
+    }
 
-	void swap (LineageData &withMe) {
-		withMe.history.swap (history);
-		withMe.whichOnes.swap (whichOnes);
-	}
+    LineageData (QueryExitContainer &whichOnesIn, HistoryList &historyIn, ExecEngineData& dataIn) {
+        historyIn.swap (history);
+        whichOnesIn.swap (whichOnes);
+        dataIn.swap(data);
+    }
+
+    void swap (LineageData &withMe) {
+        withMe.history.swap (history);
+        withMe.whichOnes.swap (whichOnes);
+        withMe.data.swap( data );
+    }
 };
 
 #endif

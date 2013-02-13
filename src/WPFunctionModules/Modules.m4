@@ -165,12 +165,14 @@ m4_define(</M4_TEXTLOADER_MODULE/>, </dnl
 <//>m4_define(</M4_WPName/>, </$1/>)
 <//>m4_define(</M4_Columns/>, </$2/>)
 <//>m4_define(</M4_Separator/>, </$3/>)
+<//>m4_define(</M4_ChunkSize/>, m4_if(</$4/>,<//>,</0/>,</$4/>))
 <//>m4_divert(0)
 <//>m4_include(TextLoader.cc.m4)
 <//>m4_divert(-1)
 <//>m4_undefine(</M4_WPName/>)
 <//>m4_undefine(</M4_Columns/>)
 <//>m4_undefine(</M4_Separator/>)
+<//>m4_undefine(</M4_ChunkSize/>)
 />)
 
 dnl Definition of the Join Module

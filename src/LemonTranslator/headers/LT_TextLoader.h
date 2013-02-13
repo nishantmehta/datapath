@@ -42,12 +42,18 @@ private:
 
     string defs;
 
+    size_t tuplesPerChunk;
+
 public:
 
 	LT_TextLoader(WayPointID id, SlotSet& atts, char _separator,
-								SlotContainer& _attributesInOrder, string _pattern, int _count, string defs):
-	LT_Scanner(id, id.getName(),atts), separator(_separator),
-		pattern(_pattern), count(_count), defs(defs) {attributesInOrder.swap(_attributesInOrder);}
+            SlotContainer& _attributesInOrder, string _pattern, int _count, string defs,
+            size_t _tuplesPerChunk):
+        LT_Scanner(id, id.getName(),atts), separator(_separator),
+        pattern(_pattern), count(_count), defs(defs), tuplesPerChunk(_tuplesPerChunk)
+    {
+        attributesInOrder.swap(_attributesInOrder);
+    }
 
 	virtual WaypointType GetType() {return TextLoaderWaypoint;}
 

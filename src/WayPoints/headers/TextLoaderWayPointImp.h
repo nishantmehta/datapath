@@ -22,69 +22,88 @@
 
 /** Waypoint that reads plain text and builds chunks.
 
-		Capabilities:
-		1. Can work in parallel from many files
-		2. Aggressive so that a lot of work is done simultaneously
-    3. Can skip columns (addapts to the query plan)
+Capabilities:
+1. Can work in parallel from many files
+2. Aggressive so that a lot of work is done simultaneously
+3. Can skip columns (addapts to the query plan)
 
-    Limitations:
-		1. Cannot support dropped chunks for now
-		   This is due to the fact hat pipes cannot be rewind so a
-		complicated dance involving caching chunks needs to be used (a
-		chunk is let go only when a confirmation of it's processing is
-		obtained). This seems to be unavoidable with pipes.
+Limitations:
+1. Cannot support dropped chunks for now
+This is due to the fact hat pipes cannot be rewind so a
+complicated dance involving caching chunks needs to be used (a
+chunk is let go only when a confirmation of it's processing is
+obtained). This seems to be unavoidable with pipes.
 
 */
 
 class TextLoaderWayPointImp : public WayPointImp {
 
-private:
+    private:
 
-	// list of tasks we can accomplish
-	TextLoaderDSContainer tasks;
+        // list of tasks we can accomplish
+        TextLoaderDSContainer tasks;
 
-	// these are the query-exits we are producing data for
-	QueryExitContainer myExits;
-	
-	// how many streams we have overall
-	// when a stream is closed, we decrease this counter
-	// when the counter is 0 and all the chunks are back we know we are done
-	off_t numStreams;
+        // these are the query-exits we are producing data for
+        QueryExitContainer myExits;
 
-	// how many tokens we asked for so far
-  off_t tokensRequested;
+        // how many streams we have overall
+        // when a stream is closed, we decrease this counter
+        // when the counter is 0 and all the chunks are back we know we are done
+        off_t numStreams;
 
-	// chunks out for writting
-	off_t chunksOut;
+        // how many tokens we asked for so far
+        off_t tokensRequested;
 
-	// counte for requests
-	// in the future it will be used to tell chunks apart
-	off_t requestCnt;
+        // chunks out for writting
+        off_t chunksOut;
 
-	// the scan id we created for ourselves to tag our chunks
-	TableScanID tID;
+        // counte for requests
+        // in the future it will be used to tell chunks apart
+        off_t requestCnt;
 
-	// my name, for  fast access
-	string name;
+        // the scan id we created for ourselves to tag our chunks
+        TableScanID tID;
 
-	// function to request as many tokens as we could use
-	void RequestTokens();
+        // my name, for  fast access
+        string name;
 
-public:
+        ///// BEGIN TEMPORARY SOLUTION /////
+        // System time we last sent out a cached chunk. Used for throttling.
+        double lastCacheSend;
 
-	// constructor and destructor
-	TextLoaderWayPointImp();
-	~TextLoaderWayPointImp();
+        // Number of seconds inbetween sent chunks when caching
+        static const double CACHE_INTERVAL = 0.2;
+        ///// END TEMPORARY SOLUTION /////
 
-	// here we over-ride the standard WayPointImp functions
-	void TypeSpecificConfigure (WayPointConfigureData &configData);
-	void RequestGranted (GenericWorkToken &returnVal);
-	void ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message);
-	void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
-	void DoneProducing (QueryExitContainer &whichOnes, HistoryList &history, 
-											int returnVal, ExecEngineData& data);
-	void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
-	
+        // Shallow copies of chunks sent out
+        typedef EfficientMap<ChunkID, ChunkContainer> ChunkMap;
+        ChunkMap chunkMap;
+
+        // Cache of chunks that need to be sent out
+        typedef TwoWayList<CachedChunk> ChunkCache;
+        ChunkCache chunkCache;
+
+        // function to request as many tokens as we could use
+        void RequestTokens();
+
+        // function to send out a chunk (used for sending chunks from cache).
+        void SendCachedChunk( CachedChunk& chunk );
+
+    public:
+
+        // constructor and destructor
+        TextLoaderWayPointImp();
+        ~TextLoaderWayPointImp();
+
+        // here we over-ride the standard WayPointImp functions
+        void TypeSpecificConfigure (WayPointConfigureData &configData);
+        void RequestGranted (GenericWorkToken &returnVal);
+        void ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message);
+        void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
+        void DoneProducing (QueryExitContainer &whichOnes, HistoryList &history,
+                int returnVal, ExecEngineData& data);
+        void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
+
 };
 
 #endif

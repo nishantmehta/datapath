@@ -32,6 +32,10 @@ void* mmap_alloc_imp(size_t noBytes, int node, const char* f, int l){
 }
 
 void mmap_free_imp(void* ptr, const char* f, int l){
+    if( ptr == NULL ) {
+        WARNING("Warning: Attempted free of null pointer at %s:%d", f, l);
+    }
+
 	NumaMemoryAllocator& aloc=NumaMemoryAllocator::GetAllocator();
 	aloc.MmapFree(ptr);
 }
@@ -449,7 +453,7 @@ void* NumaMemoryAllocator::MmapAlloc(size_t noBytes, int node, const char* f, in
 	// test code
 	// look up the new page to ensure it is not already out
 	SizeMap::iterator it=sizeMap.find(rezPtr);
-	FATALIF(it!=sizeMap.end(), "Allocating already allocated pointer %p.", rezPtr); 
+	FATALIF(it!=sizeMap.end(), "Allocating already allocated pointer %p.", rezPtr);
 	// record the allocation in sizeMap
 	sizeMap.insert(pair<void*, int>(rezPtr, pSize));
 
@@ -463,8 +467,9 @@ void* NumaMemoryAllocator::MmapAlloc(size_t noBytes, int node, const char* f, in
 
 
 void NumaMemoryAllocator::MmapFree(void* ptr){
-	if (ptr==NULL)
+	if (ptr==NULL) {
 		return;
+    }
 
 	pthread_mutex_lock(&mutex);
 
@@ -483,7 +488,7 @@ void NumaMemoryAllocator::MmapFree(void* ptr){
 
 	// find the size and insert the freed memory in the
 	SizeMap::iterator it=sizeMap.find(ptr);
-	FATALIF(it==sizeMap.end(), "Deallocating unallocated pointer %p.", ptr); 
+	FATALIF(it==sizeMap.end(), "Deallocating unallocated pointer %p.", ptr);
 	// delete the element from the sizeMap.
 	sizeMap.erase(it);
 
@@ -660,7 +665,7 @@ size_t NumaMemoryAllocator::FreePages() {
 void NumaMemoryAllocator::Diagnose() {
 	pthread_mutex_lock(&mutex);
 	memChk.Print();
-	printf("\n =================  %ld", AllocatedPages());
+	printf("\n =================  %ld\n", AllocatedPages());
 	pthread_mutex_unlock(&mutex);
 }
 #endif

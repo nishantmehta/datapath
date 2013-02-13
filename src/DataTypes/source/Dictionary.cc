@@ -3,13 +3,15 @@
 
 #include <list>
 
+#include <iostream>
+
 using namespace std;
 
 ///// Static Initialization /////
 const Dictionary::IntType Dictionary::InvalidID = 0;
 
 // Constructor
-Dictionary :: Dictionary( void ) : modified(false), orderValid(true) {
+Dictionary :: Dictionary( void ) : modified(false), orderValid(false) {
     indexMap[InvalidID] = StringType("NULL");
     nextID = InvalidID + 1;
 }

@@ -39,7 +39,7 @@ dnl # $1=type of object
 dnl # $2=object
 dnl # $3=buffer /* if cannot serialize in place */
 m4_define(</M4_OPTIMIZED_SERIALIZE/>,</dnl
-m4_case(M4_DT_TYPE($1),DT_SIMPLE,(void*)&($2),DT_COMPLEX,$2.OptimizedSerialize($2,$3),noSizeInfo)<//>dnl
+m4_case(M4_DT_TYPE($1),DT_SIMPLE,(void*)&($2),DT_COMPLEX,$2.Serialize($3),noSizeInfo)<//>dnl
 />)<//>dnl
 
 dnl # macro to serialize an object in an optimal way
@@ -48,7 +48,7 @@ dnl # $2=object
 dnl # $3=buffer /* if cannot serialize in place */
 dnl # $4=offset in buffer
 m4_define(</M4_OPTIMIZED_DESERIALIZE/>,</dnl
-m4_case(M4_DT_TYPE($1),DT_SIMPLE,*(($1 *) ($3 + $4)),DT_COMPLEX,$2.Deserialize($3 + $4),noSizeInfo)<//>dnl
+m4_case(M4_DT_TYPE($1),DT_SIMPLE,$2 = *(($1 *) ($3 + $4)),DT_COMPLEX,$2.Deserialize($3 + $4),noSizeInfo)<//>dnl
 />)<//>dnl
 
 
@@ -121,8 +121,7 @@ m4_define(</M4_EXTRACT_COLUMN_FRAGMENT/>, </dnl
             if ($1<//>_Qrys.Overlaps(queriesToRun)){
                 </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
                 if (! M4_ATT_COL($1).IsValid()){
-                printf("ERROR: Column $1 not found in M4_WPName\n");
-                exit(1);
+                    FATAL("Error: Column $1 not found in M4_WPName\n");
                 }
             }
             M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/, $3, $4);
@@ -141,8 +140,7 @@ m4_define(</M4_EXTRACT_COLUMN/>, </dnl
     if ($1<//>_Qrys.Overlaps(queriesToRun)){
         </$2/>.SwapColumn(M4_ATT_COL($1), M4_ATT_SLOT($1));
         if (! M4_ATT_COL($1).IsValid()){
-            printf("ERROR: Column $1 not found in M4_WPName\n");
-            exit(1);
+                FATAL("Error: Column $1 not found in M4_WPName\n");
         }
     }
     M4_COL_TYPE($1) M4_ATT_DATA($1) (M4_ATT_COL($1)/*, 8192*/);

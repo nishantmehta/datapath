@@ -40,7 +40,7 @@ protected:
 public:
 
 	/***************************************************************************/
-	// this first set of functions is provided by the basic WayPoint/WayPointImp 
+	// this first set of functions is provided by the basic WayPoint/WayPointImp
 	// class, and should not be re-implemented by any particular "Imp" class
 	/***************************************************************************/
 
@@ -61,7 +61,7 @@ public:
 
 	// returns all of the query-exits that flow through this waypoint on their way to some dest
 	void GetFlowThruQueryExits (QueryExitContainer &putResHere);
-	
+
 	// this method configures the wayPoint... it is called either to (a) transform
 	// the waypoint into one of an appropriate type and load it up with the code
 	// that is is supposed to run and/or new metadata, or to (b) reload it with new
@@ -72,11 +72,11 @@ public:
 	void Configure (WayPointConfigureData &configData);
 
 	/***************************************************************************/
-	// this second set of functions is provided by the basic WayPoint/WayPointImp 
+	// this second set of functions is provided by the basic WayPoint/WayPointImp
 	// class, but can be re-defined for any particular derived class
 	/***************************************************************************/
 
-	// this method is called by Configure to handle any additional, type-specific 
+	// this method is called by Configure to handle any additional, type-specific
 	// configuration... the default version of this function does nothing
 	void TypeSepcificConfigure (WayPointConfigureData &configData);
 
@@ -88,24 +88,24 @@ public:
 	// this is called by the execution engine when a hopping data message that the waypoint
 	// initiated has been produced and is moving through the system... all of the lineage
 	// associated with the object is sent to the waypoint for processing
-	void DoneProducing (QueryExitContainer &whichOnes, HistoryList &lineage, 
+	void DoneProducing (QueryExitContainer &whichOnes, HistoryList &lineage,
 											int returnVal, ExecEngineData& data);
 
-	// these next six functions handle the six types of messages in the exec engine.  A 
+	// these next six functions handle the six types of messages in the exec engine.  A
 	// particular type of waypoint can choose to over-ride one or more of these functions,
-	// or to use the basic implementation. 
-	
+	// or to use the basic implementation.
+
 	// most waypoints will process a hopping data message as follows.  Assuming they want to
-	// be notified with an ack or a drop message regarding this data object, they will 
+	// be notified with an ack or a drop message regarding this data object, they will
 	// append their own lineage object to the HistoryList; they will then process the
 	// data in some way, and then send the whole thing on with a call to SendHoppingDataMsg.
 	// It is possible to use the default imlementation, which just forwards the message on
 	void ProcessHoppingDataMsg (HoppingDataMsg &msg);
 
-	// The first function processes a downstream message to a bunch of query exits, and the 
+	// The first function processes a downstream message to a bunch of query exits, and the
 	// second produces an upstream message to the waypoint producing data for a particular
 	// query exit... the default implementation for both just forwards the message on.
-	// Most implementations will look at the message, process it in some way, and then forward 
+	// Most implementations will look at the message, process it in some way, and then forward
 	// the message on.
 	void ProcessHoppingDownstreamMsg (HoppingDownstreamMsg &message);
 	void ProcessHoppingUpstreamMsg (HoppingUpstreamMsg &message);
@@ -115,7 +115,7 @@ public:
 	// implementations will remove the lineage information that the waypoint added in the
 	// first place, examine it, and then decide what to do---re-produce dropped data, note
 	// that a chunk reached its final destination, etc.
-	void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);	
+	void ProcessAckMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
 	void ProcessDropMsg (QueryExitContainer &whichOnes, HistoryList &lineage);
 
 	// the basic implementation here ignores the message and does nothing.  Most specific

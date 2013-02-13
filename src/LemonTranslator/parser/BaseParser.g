@@ -43,6 +43,7 @@ tokens {
   STATE__;
   STATE_LIST;
   CLIST;
+  TUPLE_COUNT;
 
   // Used for typeof
   TYPEOF_;

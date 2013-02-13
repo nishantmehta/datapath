@@ -1163,17 +1163,27 @@ textloaderWP
     string tablePattern;
     int count = 0;
     string defs;
+    size_t tuplesPerChunk;
 }
 @after {
-    lT->AddTextLoaderWP(wp, attribs, sep, attribs, tablePattern, count, defs);
+    lT->AddTextLoaderWP(wp, attribs, sep, attribs, tablePattern, count, defs, tuplesPerChunk);
 }
   :
-    ^(TEXTLOADER__ (
-    textloaderAttributes[attribs, defs]
-  | ^(SEPARATOR a=STRING) {sep = char(*(StripQuotes(TXT($a)).c_str()));}
-  | ^(FILE__ b=STRING { tablePattern = TXTS($b); count=1; } (INT {count= atoi(TXT($INT));})? )
-  )+ )
+    ^(TEXTLOADER__
+            textloaderAttributes[attribs, defs]
+            ^(SEPARATOR a=STRING) {sep = char(*(StripQuotes(TXT($a)).c_str()));}
+            textloaderChunkSize[tuplesPerChunk]
+            ^(FILE__ b=STRING { tablePattern = TXTS($b); count=1; } (INT {count= atoi(TXT($INT));})? )
+   )
 ;
+
+textloaderChunkSize[size_t& tuplesPerChunk]
+    : /* nothing */ { tuplesPerChunk = 0; } // default
+    | ^(TUPLE_COUNT n=INT)
+        {
+            tuplesPerChunk = atoi(TXT($n));
+        }
+    ;
 
 textloaderAttributes[SlotContainer& attribs, string& defs]
     :   ^(ATTFROM ID) {
